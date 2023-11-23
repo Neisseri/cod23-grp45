@@ -30,8 +30,8 @@ module ID(
         output logic [7:0] op_type_out, // for branch comp
 
         output logic [3:0] alu_op,
-        output logic [1:0] alu_mux_a,
-        output logic [1:0] alu_mux_b,
+        output logic [2:0] alu_mux_a,
+        output logic [2:0] alu_mux_b,
 
         output logic mem_en,
         output logic we,
@@ -50,6 +50,31 @@ module ID(
         funct3 = instr[14:12];
         funct7 = instr[31:25];
     end
+    
+    typedef enum logic [7:0]{
+        OP_LUI,
+        OP_BEQ,
+        OP_LB,
+        OP_SB,
+        OP_SW,
+        OP_ADDI,
+        OP_ANDI,
+        OP_ADD,
+
+        OP_AND,
+        OP_AUIPC,
+        OP_BNE,
+        OP_JAL,
+        OP_JALR,
+        OP_LW,
+        OP_OR,
+        OP_ORI,
+        OP_SLLI,
+        OP_SRLI,
+        OP_XOR,
+
+        OP_UNKNOWN
+    } OP_TYPE_T;
 
     OP_TYPE_T op_type;
     assign op_type_out = op_type;
@@ -324,16 +349,6 @@ module ID(
                 alu_op = `ALU_OR;
                 alu_mux_a = `ALU_MUX_DATA;
                 alu_mux_b = `ALU_MUX_DATA;
-                mem_en = 0;
-                we = 0;
-                sel = 4'b0000;
-                rf_wen = 1;
-                wb_if_mem = 0;
-            end
-            OP_ORI: begin
-                alu_op = `ALU_OR;
-                alu_mux_a = `ALU_MUX_DATA;
-                alu_mux_b = `ALU_MUX_IMM_B;
                 mem_en = 0;
                 we = 0;
                 sel = 4'b0000;

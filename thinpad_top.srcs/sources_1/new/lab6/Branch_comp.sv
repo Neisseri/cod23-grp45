@@ -33,11 +33,42 @@ module Branch_comp #(
         output logic comp_result,
         output logic [DATA_WIDTH-1:0] new_pc
     );
+    
+    typedef enum logic [7:0]{
+        OP_LUI,
+        OP_BEQ,
+        OP_LB,
+        OP_SB,
+        OP_SW,
+        OP_ADDI,
+        OP_ANDI,
+        OP_ADD,
+
+        OP_AND,
+        OP_AUIPC,
+        OP_BNE,
+        OP_JAL,
+        OP_JALR,
+        OP_LW,
+        OP_OR,
+        OP_ORI,
+        OP_SLLI,
+        OP_SRLI,
+        OP_XOR,
+
+        OP_UNKNOWN
+    } OP_TYPE_T;
 
     OP_TYPE_T op_type;
     assign op_type = OP_TYPE_T'(op_type_in);
 
-    assign new_pc = imm + pc;
+    //assign new_pc = imm + pc;
+    always_comb begin
+        case (op_type)
+            OP_JALR: new_pc = (imm + data_a) & -1;
+            default: new_pc = imm + pc;
+        endcase
+    end
 
     always_comb begin
         case (op_type)

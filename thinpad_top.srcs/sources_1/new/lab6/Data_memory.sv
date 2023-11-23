@@ -70,17 +70,17 @@ module Data_memory #(
 
     reg [DATA_WIDTH-1:0] data_out_raw;
 
-    //符号位拓展
+    //符号位拓�?
     logic sign_bit;
     always_comb begin
         case (sel)
             4'b0001: begin
                 sign_bit = data_out_raw[7];
-                data_out = {24{sign_bit}, data_out_raw[7:0]};
+                data_out = {{24{sign_bit}}, data_out_raw[7:0]};
             end
             4'b0011: begin
                 sign_bit = data_out_raw[15];
-                data_out = {16{sign_bit}, data_out_raw[15:0]};
+                data_out = {{16{sign_bit}}, data_out_raw[15:0]};
             end
             default: begin
                 sign_bit = 0;
