@@ -19,3 +19,4 @@
     `define ALU_MUX_IMM_B 1
     `define ALU_MUX_ZERO 2
     `define ALU_MUX_FORWARD 3
+    `define ALU_MUX_FOUR_B 4 // for compute PC+4

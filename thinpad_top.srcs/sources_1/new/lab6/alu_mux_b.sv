@@ -24,7 +24,7 @@ module alu_mux_b #(
     parameter ADDR_WIDTH = 32,
     parameter DATA_WIDTH = 32
 ) (
-        input wire [1:0] code,
+        input wire [2:0] code,
         input wire [DATA_WIDTH-1:0] data,
         input wire [DATA_WIDTH-1:0] imm,
         input wire [DATA_WIDTH-1:0] forward_data,
@@ -37,6 +37,7 @@ module alu_mux_b #(
             1: result = imm;
             2: result = 0;
             3: result = forward_data;
+            4: result = 4;
             default: result = data;
         endcase
     end

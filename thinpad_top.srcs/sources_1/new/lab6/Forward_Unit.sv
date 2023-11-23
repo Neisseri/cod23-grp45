@@ -43,11 +43,11 @@ module Forward_Unit #(
     input wire use_mem_dat_b,
     input wire [DATA_WIDTH-1:0] mem_wb_dat,
 
-    input wire [1:0] id_exe_alu_mux_a,
-    input wire [1:0] id_exe_alu_mux_b,
+    input wire [2:0] id_exe_alu_mux_a,
+    input wire [2:0] id_exe_alu_mux_b,
 
-    output logic [1:0] alu_mux_a,
-    output logic [1:0] alu_mux_b,
+    output logic [2:0] alu_mux_a,
+    output logic [2:0] alu_mux_b,
     output logic [DATA_WIDTH-1:0] alu_a_forward,
     output logic [DATA_WIDTH-1:0] alu_b_forward,
 

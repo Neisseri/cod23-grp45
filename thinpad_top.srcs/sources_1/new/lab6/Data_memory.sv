@@ -43,7 +43,7 @@ module Data_memory #(
     input wire [ADDR_WIDTH-1:0] addr,
     input wire [DATA_WIDTH-1:0] data_in,
     input wire [DATA_WIDTH/8-1:0] sel,
-    output reg [DATA_WIDTH-1:0] data_out,
+    output logic [DATA_WIDTH-1:0] data_out,
 
     input wire pipeline_stall,
     output logic idle_stall
@@ -68,9 +68,30 @@ module Data_memory #(
 
     assign idle_stall = 0;
 
+    reg [DATA_WIDTH-1:0] data_out_raw;
+
+    //符号位拓展
+    logic sign_bit;
+    always_comb begin
+        case (sel)
+            4'b0001: begin
+                sign_bit = data_out_raw[7];
+                data_out = {24{sign_bit}, data_out_raw[7:0]};
+            end
+            4'b0011: begin
+                sign_bit = data_out_raw[15];
+                data_out = {16{sign_bit}, data_out_raw[15:0]};
+            end
+            default: begin
+                sign_bit = 0;
+                data_out = data_out_raw;
+            end
+        endcase
+    end
+
     always_ff @(posedge clk) begin
         if(rst)begin
-            data_out <= 0;
+            data_out_raw <= 0;
             state <= STATE_IDLE;
         end else begin
             if(mem_en)begin
@@ -84,13 +105,13 @@ module Data_memory #(
                     end
                     STATE_WRITE_SRAM_ACTION: begin
                         if(wb_ack_i) begin
-                            data_out <= wb_dat_i;
+                            data_out_raw <= wb_dat_i;
                             state <= STATE_DONE;
                         end
                     end
                     STATE_READ_SRAM_ACTION: begin
                         if(wb_ack_i) begin
-                            data_out <= wb_dat_i;
+                            data_out_raw <= wb_dat_i;
                             state <= STATE_DONE;
                         end
                     end

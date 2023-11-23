@@ -24,7 +24,7 @@ module alu_mux_a #(
     parameter ADDR_WIDTH = 32,
     parameter DATA_WIDTH = 32
 ) (
-        input wire [1:0] code,
+        input wire [2:0] code,
         input wire [DATA_WIDTH-1:0] data,
         input wire [ADDR_WIDTH-1:0] pc,
         input wire [DATA_WIDTH-1:0] forward_data,

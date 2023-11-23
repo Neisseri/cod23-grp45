@@ -1,5 +1,31 @@
 `default_nettype none
 
+    typedef enum logic [7:0]{
+        OP_LUI,
+        OP_BEQ,
+        OP_LB,
+        OP_SB,
+        OP_SW,
+        OP_ADDI,
+        OP_ANDI,
+        OP_ADD,
+
+        OP_AND,
+        OP_AUIPC,
+        OP_BNE,
+        OP_JAL,
+        OP_JALR,
+        OP_LW,
+        OP_OR,
+        OP_ORI,
+        OP_SLLI,
+        OP_SRLI,
+        OP_SW,
+        OP_XOR,
+
+        OP_UNKNOWN
+    } OP_TYPE_T;
+
 module thinpad_top #(
     parameter ADDR_WIDTH = 32,
     parameter DATA_WIDTH = 32
@@ -12,7 +38,7 @@ module thinpad_top #(
 
     input  wire [ 3:0] touch_btn,  // BTN1~BTN4����ť���أ�����ʱΪ 1
     input  wire [31:0] dip_sw,     // 32 λ���뿪�أ�������ON��ʱΪ 1
-    output wire [15:0] leds,       // 16 λ LED������? 1 ����
+    output wire [15:0] leds,       // 16 λ LED������? 1 ����
     output wire [ 7:0] dpy0,       // ����ܵ�λ�źţ�����С���㣬��� 1 ����
     output wire [ 7:0] dpy1,       // ����ܸ�λ�źţ�����С���㣬��� 1 ����
 
@@ -21,12 +47,12 @@ module thinpad_top #(
     output wire uart_wrn,        // д�����źţ�����Ч
     input  wire uart_dataready,  // ��������׼����
     input  wire uart_tbre,       // �������ݱ�־
-    input  wire uart_tsre,       // ���ݷ�����ϱ��?
+    input  wire uart_tsre,       // ���ݷ�����ϱ��?
 
     // BaseRAM �ź�
     inout wire [31:0] base_ram_data,  // BaseRAM ���ݣ��� 8 λ�� CPLD ���ڿ���������
     output wire [19:0] base_ram_addr,  // BaseRAM ��ַ
-    output wire [3:0] base_ram_be_n,  // BaseRAM �ֽ�ʹ�ܣ�����Ч�������ʹ���ֽ�ʹ�ܣ��뱣���? 0
+    output wire [3:0] base_ram_be_n,  // BaseRAM �ֽ�ʹ�ܣ�����Ч�������ʹ���ֽ�ʹ�ܣ��뱣���? 0
     output wire base_ram_ce_n,  // BaseRAM Ƭѡ������Ч
     output wire base_ram_oe_n,  // BaseRAM ��ʹ�ܣ�����Ч
     output wire base_ram_we_n,  // BaseRAM дʹ�ܣ�����Ч
@@ -34,7 +60,7 @@ module thinpad_top #(
     // ExtRAM �ź�
     inout wire [31:0] ext_ram_data,  // ExtRAM ����
     output wire [19:0] ext_ram_addr,  // ExtRAM ��ַ
-    output wire [3:0] ext_ram_be_n,  // ExtRAM �ֽ�ʹ�ܣ�����Ч�������ʹ���ֽ�ʹ�ܣ��뱣���? 0
+    output wire [3:0] ext_ram_be_n,  // ExtRAM �ֽ�ʹ�ܣ�����Ч�������ʹ���ֽ�ʹ�ܣ��뱣���? 0
     output wire ext_ram_ce_n,  // ExtRAM Ƭѡ������Ч
     output wire ext_ram_oe_n,  // ExtRAM ��ʹ�ܣ�����Ч
     output wire ext_ram_we_n,  // ExtRAM дʹ�ܣ�����Ч
@@ -55,7 +81,7 @@ module thinpad_top #(
 
     // USB �������źţ��ο� SL811 оƬ�ֲ�
     output wire sl811_a0,
-    // inout  wire [7:0] sl811_d,     // USB �������������������? dm9k_sd[7:0] ����
+    // inout  wire [7:0] sl811_d,     // USB �������������������? dm9k_sd[7:0] ����
     output wire sl811_wr_n,
     output wire sl811_rd_n,
     output wire sl811_cs_n,
@@ -64,7 +90,7 @@ module thinpad_top #(
     input  wire sl811_intrq,
     input  wire sl811_drq_n,
 
-    // ����������źţ��ο�? DM9000A оƬ�ֲ�
+    // ����������źţ��ο�? DM9000A оƬ�ֲ�
     output wire dm9k_cmd,
     inout wire [15:0] dm9k_sd,
     output wire dm9k_iow_n,
@@ -73,13 +99,13 @@ module thinpad_top #(
     output wire dm9k_pwrst_n,
     input wire dm9k_int,
 
-    // ͼ������ź�?
+    // ͼ������ź�?
     output wire [2:0] video_red,    // ��ɫ���أ�3 λ
     output wire [2:0] video_green,  // ��ɫ���أ�3 λ
     output wire [1:0] video_blue,   // ��ɫ���أ�2 λ
     output wire       video_hsync,  // ��ͬ����ˮƽͬ�����ź�
     output wire       video_vsync,  // ��ͬ������ֱͬ�����ź�
-    output wire       video_clk,    // ����ʱ�����?
+    output wire       video_clk,    // ����ʱ�����?
     output wire       video_de      // ��������Ч�źţ���������������
 );
 
@@ -91,11 +117,11 @@ module thinpad_top #(
       // Clock in ports
       .clk_in1(clk_50M),  // �ⲿʱ������
       // Clock out ports
-      .clk_out1(clk_10M),  // ʱ�����? 1��Ƶ���� IP ���ý���������
-      .clk_out2(clk_20M),  // ʱ�����? 2��Ƶ���� IP ���ý���������
+      .clk_out1(clk_10M),  // ʱ�����? 1��Ƶ���� IP ���ý���������
+      .clk_out2(clk_20M),  // ʱ�����? 2��Ƶ���� IP ���ý���������
       // Status and control signals
       .reset(reset_btn),  // PLL ��λ����
-      .locked(locked)  // PLL ����ָʾ�����?"1"��ʾʱ���ȶ���
+      .locked(locked)  // PLL ����ָʾ�����?"1"��ʾʱ���ȶ���
                        // �󼶵�·��λ�ź�Ӧ���������ɣ����£�
   );
 
@@ -137,16 +163,16 @@ module thinpad_top #(
   // g=dpy0[7] // |     |
   //           // ---d---  p
 
-  // 7 ���������������ʾ����? number �� 16 ������ʾ�����������?
+  // 7 ���������������ʾ����? number �� 16 ������ʾ�����������?
   // logic [7:0] number;
   // SEG7_LUT segL (
   //     .oSEG1(dpy0),
   //     .iDIG (number[3:0])
-  // );  // dpy0 �ǵ�λ�����?
+  // );  // dpy0 �ǵ�λ�����?
   // SEG7_LUT segH (
   //     .oSEG1(dpy1),
   //     .iDIG (number[7:4])
-  // );  // dpy1 �Ǹ�λ�����?
+  // );  // dpy1 �Ǹ�λ�����?
 
   // logic [15:0] led_bits;
   // assign leds = led_bits;
@@ -181,11 +207,11 @@ module thinpad_top #(
   //     .clk           (clk_50M),         // �ⲿʱ���ź�
   //     .RxD           (rxd),             // �ⲿ�����ź�����
   //     .RxD_data_ready(ext_uart_ready),  // ���ݽ��յ���־
-  //     .RxD_clear     (ext_uart_clear),  // ������ձ��?
+  //     .RxD_clear     (ext_uart_clear),  // ������ձ��?
   //     .RxD_data      (ext_uart_rx)      // ���յ���һ�ֽ�����
   // );
 
-  // assign ext_uart_clear = ext_uart_ready; // �յ����ݵ�ͬʱ�������־����Ϊ������ȡ��? ext_uart_buffer ��
+  // assign ext_uart_clear = ext_uart_ready; // �յ����ݵ�ͬʱ�������־����Ϊ������ȡ��? ext_uart_buffer ��
   // always_ff @(posedge clk_50M) begin  // ���յ������� ext_uart_buffer
   //   if (ext_uart_ready) begin
   //     ext_uart_buffer <= ext_uart_rx;
@@ -209,13 +235,13 @@ module thinpad_top #(
   //     .Baud(9600)
   // ) ext_uart_t (
   //     .clk      (clk_50M),         // �ⲿʱ���ź�
-  //     .TxD      (txd),             // �����ź����?
+  //     .TxD      (txd),             // �����ź����?
   //     .TxD_busy (ext_uart_busy),   // ������æ״ָ̬ʾ
   //     .TxD_start(ext_uart_start),  // ��ʼ�����ź�
   //     .TxD_data (ext_uart_tx)      // �����͵�����
   // );
 
-  // ͼ�������ʾ���ֱ���? 800x600@75Hz������ʱ��Ϊ 50MHz
+  // ͼ�������ʾ���ֱ���? 800x600@75Hz������ʱ��Ϊ 50MHz
   // logic [11:0] hdata;
   // assign video_red   = hdata < 266 ? 3'b111 : 0;  // ��ɫ����
   // assign video_green = hdata < 532 && hdata >= 266 ? 3'b111 : 0;  // ��ɫ����
@@ -332,18 +358,6 @@ module thinpad_top #(
     .pc_i(pc_addr),
     .pc_o(if_id_pc)
   );
-
-  typedef enum logic [7:0]{
-        OP_LUI,
-        OP_BEQ,
-        OP_LB,
-        OP_SB,
-        OP_SW,
-        OP_ADDI,
-        OP_ANDI,
-        OP_ADD,
-        OP_UNKNOWN
-    } OP_TYPE_T;
   
   //ID
   logic [4:0] id_rd;
@@ -352,8 +366,8 @@ module thinpad_top #(
   logic [31:0] id_imm;
   logic [7:0] id_op_type_out;
   logic [3:0] id_alu_op;
-  logic [1:0] id_alu_mux_a;
-  logic [1:0] id_alu_mux_b;
+  logic [2:0] id_alu_mux_a;
+  logic [2:0] id_alu_mux_b;
   logic id_mem_en;
   logic id_we;
   logic [3:0] id_sel;
@@ -431,8 +445,8 @@ module thinpad_top #(
   logic [DATA_WIDTH-1:0] id_exe_rs2_dat;
   logic [DATA_WIDTH-1:0] id_exe_imm;
   logic [3:0] id_exe_alu_op;
-  logic [1:0] id_exe_alu_mux_a;
-  logic [1:0] id_exe_alu_mux_b;
+  logic [2:0] id_exe_alu_mux_a;
+  logic [2:0] id_exe_alu_mux_b;
   logic id_exe_mem_en;
   logic id_exe_rf_wen;
   logic [3:0] id_exe_sel;
@@ -479,7 +493,7 @@ module thinpad_top #(
   );
   
   //EXE
-  logic [1:0] alu_mux_a_code;
+  logic [2:0] alu_mux_a_code;
   logic [DATA_WIDTH-1:0] alu_mux_a_forward;
   logic [DATA_WIDTH-1:0] alu_a;
   alu_mux_a alu_mux_a_u(
@@ -490,7 +504,7 @@ module thinpad_top #(
     .result(alu_a)
   );
 
-  logic [1:0] alu_mux_b_code;
+  logic [2:0] alu_mux_b_code;
   logic [DATA_WIDTH-1:0] alu_mux_b_forward;
   logic [DATA_WIDTH-1:0] alu_b;
   alu_mux_b alu_mux_b_u(
@@ -841,8 +855,8 @@ module thinpad_top #(
       .sram_be_n(ext_ram_be_n)
   );
 
-  // 串口控制器模�?
-  // NOTE: 如果修改系统时钟频率，也�?要修改此处的时钟频率参数
+  // 串口控制器模�?
+  // NOTE: 如果修改系统时钟频率，也�?要修改此处的时钟频率参数
   uart_controller #(
       .CLK_FREQ(10_000_000),
       .BAUD    (115200)

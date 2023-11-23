@@ -33,18 +33,6 @@ module Branch_comp #(
         output logic comp_result,
         output logic [DATA_WIDTH-1:0] new_pc
     );
-    
-    typedef enum logic [7:0]{
-        OP_LUI,
-        OP_BEQ,
-        OP_LB,
-        OP_SB,
-        OP_SW,
-        OP_ADDI,
-        OP_ANDI,
-        OP_ADD,
-        OP_UNKNOWN
-    } OP_TYPE_T;
 
     OP_TYPE_T op_type;
     assign op_type = OP_TYPE_T'(op_type_in);
@@ -54,6 +42,8 @@ module Branch_comp #(
     always_comb begin
         case (op_type)
             OP_BEQ: comp_result = (data_a == data_b);
+            OP_BNE: comp_result = (data_a != data_b);
+            OP_JAL, OP_JALR: comp_result = 1;
             default: comp_result = 0;
         endcase
     end

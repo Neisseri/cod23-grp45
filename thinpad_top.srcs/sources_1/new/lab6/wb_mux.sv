@@ -5,7 +5,7 @@
 // 
 // Create Date: 2023/11/19 14:18:49
 // Design Name: 
-// Module Name: alu_mux_a
+// Module Name: wb_mux
 // Project Name: 
 // Target Devices: 
 // Tool Versions: 

@@ -50,18 +50,6 @@ module ID(
         funct3 = instr[14:12];
         funct7 = instr[31:25];
     end
-    
-    typedef enum logic [7:0]{
-        OP_LUI,
-        OP_BEQ,
-        OP_LB,
-        OP_SB,
-        OP_SW,
-        OP_ADDI,
-        OP_ANDI,
-        OP_ADD,
-        OP_UNKNOWN
-    } OP_TYPE_T;
 
     OP_TYPE_T op_type;
     assign op_type_out = op_type;
@@ -74,25 +62,41 @@ module ID(
             7'b0110011: begin // R-type
                 case (funct)
                     10'b0000000_000: op_type = OP_ADD;
+                    10'b0000000_111: op_type = OP_AND;
+                    10'b0000000_110: op_type = OP_OR;
+                    10'b0000000_100: op_type = OP_XOR;
                     default: op_type = OP_UNKNOWN;
                 endcase
                 rd = instr[11:7];
                 rs1 = instr[19:15];
                 rs2 = instr[24:20];
             end 
-            7'b0010011: begin // I-type
+            7'b0010011: begin // I-type-Compute
                 case (funct3)
                     3'b000: op_type = OP_ADDI; 
                     3'b111: op_type = OP_ANDI;
+                    3'b110: op_type = OP_ORI;
+                    3'b001: op_type = OP_SLLI;
+                    3'b101: op_type = OP_SRLI;
                     default: op_type = OP_UNKNOWN;
                 endcase
                 rd = instr[11:7];
                 rs1 = instr[19:15];
                 rs2 = 0;
             end
-            7'b0000011: begin // I-type
+            7'b0000011: begin // I-type-Load
                 case (funct3)
                     3'b000: op_type = OP_LB; 
+                    3'b010: op_type = OP_LW;
+                    default: op_type = OP_UNKNOWN;
+                endcase
+                rd = instr[11:7];
+                rs1 = instr[19:15];
+                rs2 = 0;
+            end
+            7'b1100111: begin // JALR
+                case (funct3)
+                    3'b000: op_type = OP_JALR; 
                     default: op_type = OP_UNKNOWN;
                 endcase
                 rd = instr[11:7];
@@ -112,6 +116,7 @@ module ID(
             7'b1100011: begin // B-type
                 case (funct3)
                     3'b000: op_type = OP_BEQ; 
+                    3'b001: op_type = OP_BNE;
                     default: op_type = OP_UNKNOWN;
                 endcase
                 rd = 0;
@@ -120,6 +125,18 @@ module ID(
             end
             7'b0110111: begin // U-type
                 op_type = OP_LUI;
+                rd = instr[11:7];
+                rs1 = 0;
+                rs2 = 0;
+            end
+            7'b0010111: begin // AUIPC
+                op_type = OP_AUIPC;
+                rd = instr[11:7];
+                rs1 = 0;
+                rs2 = 0;
+            end
+            7'b1101111: begin // JAL
+                op_type = OP_JAL;
                 rd = instr[11:7];
                 rs1 = 0;
                 rs2 = 0;
@@ -139,19 +156,22 @@ module ID(
     // imm-gen
     always_comb begin
         case (op_type)
-            OP_LUI: begin
+            OP_LUI, OP_AUIPC: begin // U-type
                 imm = {instr[31:12], 12'b0};
             end
-            OP_BEQ: begin
+            OP_BEQ, OP_BNE: begin // B-type
                 imm = {{19{sign_bit}}, instr[31], instr[7], instr[30:25], instr[11:8], 1'b0};
             end
-            OP_LB, OP_ADDI, OP_ANDI: begin
+            OP_LB, OP_ADDI, OP_ANDI, OP_JALR, OP_LW, OP_ORI, OP_SLLI, OP_SRLI: begin  // I-type
                 imm = {{20{sign_bit}}, instr[31:20]};
             end
-            OP_SB, OP_SW: begin
+            OP_SB, OP_SW: begin // S-type
                 imm = {{20{sign_bit}}, instr[31:25], instr[11:7]};
             end
-            default: begin
+            OP_JAL: begin // J-type
+                imm = {{11{sign_bit}}, instr[31], instr[19:12], instr[20], instr[30:21], 1'b0};
+            end
+            default: begin  // R-type or unknown
                 imm = 0;
             end
         endcase
@@ -232,6 +252,126 @@ module ID(
             end
             OP_ADD: begin
                 alu_op = `ALU_ADD;
+                alu_mux_a = `ALU_MUX_DATA;
+                alu_mux_b = `ALU_MUX_DATA;
+                mem_en = 0;
+                we = 0;
+                sel = 4'b0000;
+                rf_wen = 1;
+                wb_if_mem = 0;
+            end
+            OP_AND: begin
+                alu_op = `ALU_AND;
+                alu_mux_a = `ALU_MUX_DATA;
+                alu_mux_b = `ALU_MUX_DATA;
+                mem_en = 0;
+                we = 0;
+                sel = 4'b0000;
+                rf_wen = 1;
+                wb_if_mem = 0;
+            end
+            OP_AUIPC: begin
+                alu_op = `ALU_ADD;
+                alu_mux_a = `ALU_MUX_PC_A;
+                alu_mux_b = `ALU_MUX_IMM_B;
+                mem_en = 0;
+                we = 0;
+                sel = 4'b0000;
+                rf_wen = 1;
+                wb_if_mem = 0;
+            end
+            OP_BNE: begin
+                alu_op = `ALU_ADD;
+                alu_mux_a = `ALU_MUX_PC_A;
+                alu_mux_b = `ALU_MUX_IMM_B;
+                mem_en = 0;
+                we = 0;
+                sel = 4'b0000;
+                rf_wen = 0;
+                wb_if_mem = 0;
+            end
+            OP_JAL: begin
+                alu_op = `ALU_ADD;
+                alu_mux_a = `ALU_MUX_PC_A;
+                alu_mux_b = `ALU_MUX_FOUR_B;
+                mem_en = 0;
+                we = 0;
+                sel = 4'b0000;
+                rf_wen = 1;
+                wb_if_mem = 0;
+            end
+            OP_JALR: begin
+                alu_op = `ALU_ADD;
+                alu_mux_a = `ALU_MUX_PC_A;
+                alu_mux_b = `ALU_MUX_FOUR_B;
+                mem_en = 0;
+                we = 0;
+                sel = 4'b0000;
+                rf_wen = 1;
+                wb_if_mem = 0;
+            end
+            OP_LW: begin
+                alu_op = `ALU_ADD;
+                alu_mux_a = `ALU_MUX_DATA;
+                alu_mux_b = `ALU_MUX_IMM_B;
+                mem_en = 1;
+                we = 0;
+                sel = 4'b1111;
+                rf_wen = 1;
+                wb_if_mem = 1;
+            end
+            OP_OR: begin
+                alu_op = `ALU_OR;
+                alu_mux_a = `ALU_MUX_DATA;
+                alu_mux_b = `ALU_MUX_DATA;
+                mem_en = 0;
+                we = 0;
+                sel = 4'b0000;
+                rf_wen = 1;
+                wb_if_mem = 0;
+            end
+            OP_ORI: begin
+                alu_op = `ALU_OR;
+                alu_mux_a = `ALU_MUX_DATA;
+                alu_mux_b = `ALU_MUX_IMM_B;
+                mem_en = 0;
+                we = 0;
+                sel = 4'b0000;
+                rf_wen = 1;
+                wb_if_mem = 0;
+            end
+            OP_ORI: begin
+                alu_op = `ALU_OR;
+                alu_mux_a = `ALU_MUX_DATA;
+                alu_mux_b = `ALU_MUX_IMM_B;
+                mem_en = 0;
+                we = 0;
+                sel = 4'b0000;
+                rf_wen = 1;
+                wb_if_mem = 0;
+            end
+            OP_SLLI: begin
+                alu_op = `ALU_LOGIC_LEFT;
+                alu_mux_a = `ALU_MUX_DATA;
+                alu_mux_b = `ALU_MUX_IMM_B;
+                mem_en = 0;
+                we = 0;
+                sel = 4'b0000;
+                rf_wen = 1;
+                wb_if_mem = 0;
+            end
+            OP_SRLI: begin
+                alu_op = `ALU_LOGIC_RIGHT;
+                alu_mux_a = `ALU_MUX_DATA;
+                alu_mux_b = `ALU_MUX_IMM_B;
+                mem_en = 0;
+                we = 0;
+                sel = 4'b0000;
+                rf_wen = 1;
+                wb_if_mem = 0;
+            end
+            OP_XOR: begin
+                alu_op = `ALU_XOR;
                 alu_mux_a = `ALU_MUX_DATA;
                 alu_mux_b = `ALU_MUX_DATA;
                 mem_en = 0;
