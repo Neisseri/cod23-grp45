@@ -12,6 +12,9 @@
     `define ALU_LOGIC_RIGHT 8
     `define ALU_ALG_RIGHT 9
     `define ALU_CIRCLE_LEFT 10
+    `define ALU_CTZ 11
+    `define ALU_ANDN 12
+    `define ALU_MINU 13
 
     // ALU_mux
     `define ALU_MUX_DATA 0

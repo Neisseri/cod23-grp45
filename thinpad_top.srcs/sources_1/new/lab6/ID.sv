@@ -73,6 +73,10 @@ module ID(
         OP_SRLI,
         OP_XOR,
 
+        OP_CTZ,
+        OP_ANDN,
+        OP_MINU,
+
         OP_NOP,
         OP_UNKNOWN
     } OP_TYPE_T;
@@ -91,6 +95,8 @@ module ID(
                     10'b0000000_111: op_type = OP_AND;
                     10'b0000000_110: op_type = OP_OR;
                     10'b0000000_100: op_type = OP_XOR;
+                    10'b0000101_110: op_type = OP_MINU;
+                    10'b0100000_111: op_type = OP_ANDN;
                     default: op_type = OP_UNKNOWN;
                 endcase
                 rd = instr[11:7];
@@ -110,6 +116,7 @@ module ID(
                     3'b110: op_type = OP_ORI;
                     3'b001: op_type = OP_SLLI;
                     3'b101: op_type = OP_SRLI;
+                    3'b001: op_type = OP_CTZ;
                     default: op_type = OP_UNKNOWN;
                 endcase
                 rd = instr[11:7];
@@ -203,7 +210,7 @@ module ID(
             OP_JAL: begin // J-type
                 imm = {{11{sign_bit}}, instr[31], instr[19:12], instr[20], instr[30:21], 1'b0};
             end
-            default: begin  // R-type or unknown
+            default: begin  // unknown or no need of imm
                 imm = 0;
             end
         endcase
@@ -394,6 +401,36 @@ module ID(
             end
             OP_XOR: begin
                 alu_op = `ALU_XOR;
+                alu_mux_a = `ALU_MUX_DATA;
+                alu_mux_b = `ALU_MUX_DATA;
+                mem_en = 0;
+                we = 0;
+                sel = 4'b0000;
+                rf_wen = 1;
+                wb_if_mem = 0;
+            end
+            OP_CTZ: begin
+                alu_op = `ALU_CTZ;
+                alu_mux_a = `ALU_MUX_DATA;
+                alu_mux_b = `ALU_MUX_DATA;
+                mem_en = 0;
+                we = 0;
+                sel = 4'b0000;
+                rf_wen = 1;
+                wb_if_mem = 0;
+            end
+            OP_ANDN: begin
+                alu_op = `ALU_ANDN;
+                alu_mux_a = `ALU_MUX_DATA;
+                alu_mux_b = `ALU_MUX_DATA;
+                mem_en = 0;
+                we = 0;
+                sel = 4'b0000;
+                rf_wen = 1;
+                wb_if_mem = 0;
+            end
+            OP_MINU: begin
+                alu_op = `ALU_MINU;
                 alu_mux_a = `ALU_MUX_DATA;
                 alu_mux_b = `ALU_MUX_DATA;
                 mem_en = 0;

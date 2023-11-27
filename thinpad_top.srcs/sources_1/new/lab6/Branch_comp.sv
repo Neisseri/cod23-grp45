@@ -56,6 +56,10 @@ module Branch_comp #(
         OP_SRLI,
         OP_XOR,
 
+        OP_CTZ,
+        OP_ANDN,
+        OP_MINU,
+
         OP_NOP,
         OP_UNKNOWN
     } OP_TYPE_T;
