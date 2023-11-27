@@ -73,6 +73,7 @@ module ID(
         OP_SRLI,
         OP_XOR,
 
+        OP_NOP,
         OP_UNKNOWN
     } OP_TYPE_T;
 
@@ -98,7 +99,13 @@ module ID(
             end 
             7'b0010011: begin // I-type-Compute
                 case (funct3)
-                    3'b000: op_type = OP_ADDI; 
+                    3'b000: begin
+                        if(instr == `NOP_INSTR)begin
+                            op_type = OP_NOP;
+                        end else begin
+                            op_type = OP_ADDI;
+                        end
+                    end
                     3'b111: op_type = OP_ANDI;
                     3'b110: op_type = OP_ORI;
                     3'b001: op_type = OP_SLLI;

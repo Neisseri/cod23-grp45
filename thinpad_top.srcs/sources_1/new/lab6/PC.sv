@@ -25,6 +25,7 @@ module PC#(
 )(
     input wire clk,
     input wire rst,
+    input wire stall,
     input wire [ADDR_WIDTH-1:0] next_pc,
     output reg [ADDR_WIDTH-1:0] addr
     );
@@ -33,7 +34,9 @@ module PC#(
         if(rst)begin
             addr <= 32'h7fff_fffc;
         end else begin
-            addr <= next_pc;
+            if(!stall)begin
+                addr <= next_pc;
+            end
         end
     end
 

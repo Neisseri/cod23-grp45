@@ -1,4 +1,5 @@
 `timescale 1ns / 1ps
+`include "../header/opcode.sv"
 //////////////////////////////////////////////////////////////////////////////////
 // Company: 
 // Engineer: 
@@ -60,7 +61,14 @@ module Data_memory #(
     
     assign wb_dat_o = data_in;
     assign wb_adr_o = addr;
-    assign wb_sel_o = sel;
+
+    always_comb begin
+        case (sel)
+            4'b0001: wb_sel_o = sel << (addr & 3); // LH wait to implement
+            default: wb_sel_o = sel;
+        endcase
+    end
+
     assign wb_cyc_o = (state == STATE_READ_SRAM_ACTION) || (state == STATE_WRITE_SRAM_ACTION);
     assign wb_stb_o = (state == STATE_READ_SRAM_ACTION) || (state == STATE_WRITE_SRAM_ACTION);
     assign master_ready_o = !wb_stb_o;
@@ -69,20 +77,19 @@ module Data_memory #(
     assign idle_stall = 0;
 
     reg [DATA_WIDTH-1:0] data_out_raw;
+    logic [DATA_WIDTH-1:0] data_out_shift;
 
-    //符号位拓�?
+    //符号位拓�??
     logic sign_bit;
     always_comb begin
         case (sel)
             4'b0001: begin
-                sign_bit = data_out_raw[7];
-                data_out = {{24{sign_bit}}, data_out_raw[7:0]};
-            end
-            4'b0011: begin
-                sign_bit = data_out_raw[15];
-                data_out = {{16{sign_bit}}, data_out_raw[15:0]};
+                data_out_shift = data_out_raw >> ((addr & 3) * 8);
+                sign_bit = data_out_shift[7];
+                data_out = {{24{sign_bit}}, data_out_shift[7:0]};
             end
             default: begin
+                data_out_shift = data_out_raw;
                 sign_bit = 0;
                 data_out = data_out_raw;
             end
@@ -156,8 +163,6 @@ module Instruction_memory #(
     );
 
     typedef enum logic [3:0] {
-    STATE_IDLE,
-    STATE_WRITE_SRAM_ACTION,
     STATE_READ_SRAM_ACTION,
     STATE_DONE
 } state_t;
@@ -167,8 +172,8 @@ module Instruction_memory #(
     assign wb_dat_o = data_in;
     assign wb_adr_o = addr;
     assign wb_sel_o = sel;
-    assign wb_cyc_o = (state == STATE_READ_SRAM_ACTION) || (state == STATE_WRITE_SRAM_ACTION);
-    assign wb_stb_o = (state == STATE_READ_SRAM_ACTION) || (state == STATE_WRITE_SRAM_ACTION);
+    assign wb_cyc_o = (state == STATE_READ_SRAM_ACTION);
+    assign wb_stb_o = (state == STATE_READ_SRAM_ACTION);
     assign master_ready_o = !wb_stb_o;
     assign wb_we_o = write_en;
 
@@ -176,24 +181,11 @@ module Instruction_memory #(
 
     always_ff @(posedge clk) begin
         if(rst)begin
-            data_out <= 0;
+            data_out <= `NOP_INSTR;
             state <= STATE_DONE;
         end else begin
             if(mem_en)begin
                 case (state)
-                    STATE_IDLE: begin
-                        if(write_en)begin
-                            state <= STATE_WRITE_SRAM_ACTION;
-                        end else begin
-                            state <= STATE_READ_SRAM_ACTION;
-                        end
-                    end
-                    STATE_WRITE_SRAM_ACTION: begin
-                        if(wb_ack_i) begin
-                            data_out <= wb_dat_i;
-                            state <= STATE_DONE;
-                        end
-                    end
                     STATE_READ_SRAM_ACTION: begin
                         if(wb_ack_i) begin
                             data_out <= wb_dat_i;
@@ -202,11 +194,7 @@ module Instruction_memory #(
                     end
                     STATE_DONE: begin
                         if(!pipeline_stall)begin
-                            if(write_en)begin
-                                state <= STATE_WRITE_SRAM_ACTION;
-                            end else begin
                                 state <= STATE_READ_SRAM_ACTION;
-                            end
                         end
                     end
                 endcase

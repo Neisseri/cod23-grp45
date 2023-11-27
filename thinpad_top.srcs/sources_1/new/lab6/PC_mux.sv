@@ -24,7 +24,6 @@ module PC_mux#(
     parameter ADDR_WIDTH = 32,
     parameter DATA_WIDTH = 32
 )(
-        input wire stall,
         input wire branch,
         input wire [ADDR_WIDTH-1:0] branch_addr,
         input wire [ADDR_WIDTH-1:0] cur_pc,
@@ -35,11 +34,7 @@ module PC_mux#(
             if(branch)begin
                 next_pc = branch_addr;
             end else begin
-                if(stall)begin
-                    next_pc = cur_pc;
-                end else begin
-                    next_pc = cur_pc + 4; //TODO: 分支预测逻辑
-                end
+                next_pc = cur_pc + 4; //TODO: 分支预测逻辑
             end
     end
 

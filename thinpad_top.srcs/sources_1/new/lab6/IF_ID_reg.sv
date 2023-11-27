@@ -40,7 +40,7 @@ module IF_ID_reg #(
     always_ff @(posedge clk)begin
         if(rst)begin
             instr_o <= `NOP_INSTR;
-            pc_o <= 0;
+            pc_o <= 32'h7fff_fffc;
         end else begin
             if(!stall)begin
                 if(bubble)begin
