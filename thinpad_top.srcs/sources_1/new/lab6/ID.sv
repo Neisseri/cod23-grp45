@@ -114,9 +114,14 @@ module ID(
                     end
                     3'b111: op_type = OP_ANDI;
                     3'b110: op_type = OP_ORI;
-                    3'b001: op_type = OP_SLLI;
+                    3'b001: begin
+                        if(funct7 == 7'b0110000)begin
+                            op_type = OP_CTZ;
+                        end else begin
+                            op_type = OP_SLLI;
+                        end
+                    end
                     3'b101: op_type = OP_SRLI;
-                    3'b001: op_type = OP_CTZ;
                     default: op_type = OP_UNKNOWN;
                 endcase
                 rd = instr[11:7];
