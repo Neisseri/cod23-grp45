@@ -38,7 +38,11 @@ module ID(
         output logic [3:0] sel,
 
         output logic rf_wen,
-        output logic wb_if_mem
+        output logic wb_if_mem,
+
+        output logic csr_we_o,
+        output logic csr_adr_o,
+
     );
 
     logic [2:0] funct3;
@@ -49,6 +53,7 @@ module ID(
         opcode = instr[6:0];
         funct3 = instr[14:12];
         funct7 = instr[31:25];
+        funct12 = instr[31:20]
     end
     
     typedef enum logic [7:0]{
@@ -88,6 +93,7 @@ module ID(
     assign funct = {funct7, funct3};
 
     always_comb begin
+        csr_adr_o = 0;
         case (opcode)
             7'b0110011: begin // R-type
                 case (funct)
@@ -184,6 +190,37 @@ module ID(
                 rd = instr[11:7];
                 rs1 = 0;
                 rs2 = 0;
+            end
+            7'b1110011: begin // SYSTEM(CSR)
+                op_type = OP_CSR;
+                csr_adr_o = instr[31:20];
+                rd = instr[11:7];
+                rs1 = instr[19:15];
+                rs2 = 0;
+                // case(funct3)
+                //     3'b011: begin // CSRRC
+
+                //     end
+                //     3'b010: begin // CSRRS
+
+                //     end
+                //     3'b001: begin // CSRRW
+                        
+                //     end
+                //     3'b000: begin // PRIV
+                //         case(funct12)
+                //             12'b000000000001: begin // EBREAK
+
+                //             end
+                //             12'b000000000000: begin // ECALL
+
+                //             end
+                //             12'b001100000010: begin // MRET
+
+                //             end
+                //         endcase
+                //     end
+                // endcase
             end
             default: begin
                 op_type = OP_UNKNOWN;
