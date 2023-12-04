@@ -106,6 +106,12 @@ module thinpad_top #(
     else reset_of_clk10M <= 1'b0;
   end
 
+  logic reset_of_clk50M;
+  always_ff @(posedge clk_50M or negedge locked) begin
+    if (~locked) reset_of_clk50M <= 1'b1;
+    else reset_of_clk50M <= 1'b0;
+  end
+
   always_ff @(posedge clk_10M or posedge reset_of_clk10M) begin
     if (reset_of_clk10M) begin
       // Your Code
@@ -162,8 +168,8 @@ module thinpad_top #(
   logic sys_clk;
   logic sys_rst;
 
-  assign sys_clk = clk_10M;
-  assign sys_rst = reset_of_clk10M;
+  assign sys_clk = clk_50M;
+  assign sys_rst = reset_of_clk50M;
 
   // ֱ�����ڽ��շ�����ʾ����ֱ�������յ��������ٷ��ͳ�ȥ
   // logic [7:0] ext_uart_rx;
