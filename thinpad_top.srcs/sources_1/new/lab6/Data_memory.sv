@@ -139,7 +139,8 @@ module Instruction_memory #(
     parameter DATA_WIDTH = 32,
     parameter CACHE_SIZE = 1024,  // 1024 instructions
     parameter CACHE_LINE_SIZE = 32, // 32 bytes per line
-    parameter CACHE_ASSOCIATIVITY = 4  // 缓存的相联度为 4
+    parameter CACHE_ASSOCIATIVITY = 4,  // CACHE_ASSOCIATIVITY ways
+    parameter CACHE_GROUP_SIZE = CACHE_SIZE / CACHE_ASSOCIATIVITY
 )(
     input wire clk,
     input wire rst,
@@ -167,14 +168,13 @@ module Instruction_memory #(
 );
 
     // instruction cache
-    reg [DATA_WIDTH-1:0] cache [CACHE_SIZE/CACHE_LINE_SIZE-1:0][CACHE_ASSOCIATIVITY-1:0];
-    // CACHE_SIZE/CACHE_LINE_SIZE groups
-    // CACHE_ASSOCIATIVITY rows in each group
-    reg [ADDR_WIDTH-1:0] cache_tag [CACHE_SIZE/CACHE_LINE_SIZE-1:0][CACHE_ASSOCIATIVITY-1:0];
+    reg [DATA_WIDTH-1:0] cache [CACHE_GROUP_SIZE-1:0][CACHE_ASSOCIATIVITY-1:0];
+    // CACHE_SIZE/CACHE_ASSOCIATIVITY groups (1024 / 4 = 256)
+    // CACHE_ASSOCIATIVITY rows in each group (4)
+    reg [ADDR_WIDTH-1:0] cache_tag [CACHE_GROUP_SIZE-1:0][CACHE_ASSOCIATIVITY-1:0];
     // tag for each cache row: index of memory block
-    reg [CACHE_ASSOCIATIVITY-1:0] cache_valid [CACHE_SIZE/CACHE_LINE_SIZE-1:0];
+    reg cache_valid [CACHE_GROUP_SIZE-1:0][CACHE_ASSOCIATIVITY-1:0];
     // validity for each cache row: if the data is valid
-
     
     typedef enum logic [3:0] {
         STATE_READ_SRAM_ACTION,
@@ -195,7 +195,7 @@ module Instruction_memory #(
 
     // cache hit sign
     reg cache_hit;
-    reg [CACHE_ASSOCIATIVITY-1:0] selected_way; // which way is selected
+    reg [$log2(CACHE_ASSOCIATIVITY)-1:0] selected_way; // which way is selected 
 
     always_comb begin
         // check if the cache hit
@@ -203,7 +203,7 @@ module Instruction_memory #(
         selected_way = 0;
         if (mem_en) begin
             for (int i = 0; i < CACHE_ASSOCIATIVITY; i++) begin
-                if (cache_valid[addr / CACHE_LINE_SIZE][i] && (cache_tag[addr / CACHE_LINE_SIZE][i] == addr[ADDR_WIDTH-1:ADDR_WIDTH-1-CACHE_LINE_SIZE+1])) begin
+                if (cache_valid[addr / CACHE_GROUP_SIZE][i] && (cache_tag[addr / CACHE_GROUP_SIZE][i] == addr)) begin
                     cache_hit = 1;
                     selected_way = i;
                 end
@@ -213,34 +213,47 @@ module Instruction_memory #(
 
     always_ff @(posedge clk) begin
         if (rst) begin
-            cache_tag <= '0;
-            cache_valid <= '0;
+            for (int i = 0; i < CACHE_GROUP_SIZE; i = i + 1) begin
+                for (int j = 0; j < CACHE_ASSOCIATIVITY; j = j + 1) begin
+                    cache[i][j] = 0;
+                end
+            end
+            for (int i = 0; i < CACHE_GROUP_SIZE; i = i + 1) begin
+                for (int j = 0; j < CACHE_ASSOCIATIVITY; j = j + 1) begin
+                    cache_tag[i][j] = 0;
+                end
+            end
+            for (int i = 0; i < CACHE_GROUP_SIZE; i = i + 1) begin
+                for (int j = 0; j < CACHE_ASSOCIATIVITY; j = j + 1) begin
+                    cache_valid[i][j] = 0;
+                end
+            end
         end else begin
             if (mem_en) begin
                 case (state)
-                
+
                     STATE_READ_SRAM_ACTION: begin
                         if (!cache_hit) begin
                             // cache miss
                             if (wb_ack_i) begin
                                 // update cache
-                                cache[addr / CACHE_LINE_SIZE][selected_way] <= wb_dat_i;
-                                cache_tag[addr / CACHE_LINE_SIZE][selected_way] <= addr[ADDR_WIDTH-1:ADDR_WIDTH-1-CACHE_LINE_SIZE+1];
-                                cache_valid[addr / CACHE_LINE_SIZE][selected_way] <= 1'b1;
+                                cache[addr / CACHE_GROUP_SIZE][selected_way] <= wb_dat_i;
+                                cache_tag[addr / CACHE_GROUP_SIZE][selected_way] <= addr;
+                                cache_valid[addr / CACHE_GROUP_SIZE][selected_way] <= 1'b1;
                                 // pass data
                                 data_out <= wb_dat_i;
                                 state <= STATE_DONE;
                             end
                         end else begin
                             // cache hit
-                            data_out <= cache[addr / CACHE_LINE_SIZE][selected_way];
+                            data_out <= cache[addr / CACHE_GROUP_SIZE][selected_way];
                             state <= STATE_DONE;
                         end
                     end
 
                     STATE_DONE: begin
                         if(!pipeline_stall)begin
-                                state <= STATE_READ_SRAM_ACTION;
+                            state <= STATE_READ_SRAM_ACTION;
                         end
                     end
 
