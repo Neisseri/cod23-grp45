@@ -137,10 +137,10 @@ endmodule
 module Instruction_memory #(
     parameter ADDR_WIDTH = 32,
     parameter DATA_WIDTH = 32,
-    parameter CACHE_SIZE = 1024,  // 1024 instructions
+    parameter CACHE_SIZE = 128,  // 256 instructions
     parameter CACHE_LINE_SIZE = 32, // 32 bytes per line
-    parameter CACHE_ASSOCIATIVITY = 4,  // CACHE_ASSOCIATIVITY ways
-    parameter CACHE_GROUP_SIZE = CACHE_SIZE / CACHE_ASSOCIATIVITY
+    parameter CACHE_ASSOCIATIVITY = 16,  // CACHE_ASSOCIATIVITY ways
+    parameter CACHE_GROUP_SIZE = CACHE_SIZE / CACHE_ASSOCIATIVITY // 256 / 8 = 32
 )(
     input wire clk,
     input wire rst,
