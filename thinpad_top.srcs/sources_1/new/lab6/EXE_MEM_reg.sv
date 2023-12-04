@@ -35,20 +35,30 @@ module EXE_MEM_reg #(
 
     // ID
     input wire [4:0] rd_i,
+    input wire [DATA_WIDTH-1:0] rs1_dat_i,
     input wire [DATA_WIDTH-1:0] rs2_dat_i,
     input wire mem_en_i,
     input wire rf_wen_i,
     input wire [3:0] sel_i,
     input wire we_i,
-    input wire wb_if_mem_i,
+    input wire [3:0] wb_if_mem_i,
+    input wire csr_we_i,
+    input wire [11:0] csr_adr_i,
+    input wire [3:0] csr_op_i,
+    input wire [3:0] env_op_i,
 
     output reg [4:0] rd_o,
+    output reg [DATA_WIDTH-1:0] rs1_dat_o,
     output reg [DATA_WIDTH-1:0] rs2_dat_o,
     output reg mem_en_o,
     output reg rf_wen_o,
     output reg [3:0] sel_o,
     output reg we_o,
-    output reg wb_if_mem_o,
+    output reg [3:0] wb_if_mem_o,
+    output reg csr_we_o,
+    output reg [11:0] csr_adr_o,
+    output reg [3:0] csr_op_o,
+    output reg [3:0] env_op_o,
 
     // EXE
     input wire [DATA_WIDTH-1:0] wdata_i,
@@ -65,6 +75,7 @@ module EXE_MEM_reg #(
         if(rst)begin
             instr_o <= `NOP_INSTR;
             rd_o <= 0;
+            rs1_dat_o <= 0;
             rs2_dat_o <= 0;
             mem_en_o <= 0;
             we_o <= 0;
@@ -72,6 +83,10 @@ module EXE_MEM_reg #(
             rf_wen_o <= 0;
             wdata_o <= 0;
             wb_if_mem_o <= 0;
+            csr_we_o <= 0;
+            csr_adr_o <= 0;
+            csr_op_o <= 0;
+            env_op_o <= 0;
             use_mem_dat_a_o <= 0;
             use_mem_dat_b_o <= 0;
         end else begin
@@ -79,6 +94,7 @@ module EXE_MEM_reg #(
                 if(bubble)begin
                     instr_o <= `NOP_INSTR;
                     rd_o <= 0;
+                    rs1_dat_o <= 0;
                     rs2_dat_o <= 0;
                     mem_en_o <= 0;
                     we_o <= 0;
@@ -86,11 +102,16 @@ module EXE_MEM_reg #(
                     rf_wen_o <= 0;
                     wdata_o <= 0;
                     wb_if_mem_o <= 0;
+                    csr_we_o <= 0;
+                    csr_adr_o <= 0;
+                    csr_op_o <= 0;
+                    env_op_o <= 0;
                     use_mem_dat_a_o <= 0;
                     use_mem_dat_b_o <= 0;
                 end else begin
                     instr_o <= instr_i;
                     rd_o <= rd_i;
+                    rs1_dat_o <= rs1_dat_i;
                     rs2_dat_o <= rs2_dat_i;
                     mem_en_o <= mem_en_i;
                     we_o <= we_i;
@@ -98,6 +119,10 @@ module EXE_MEM_reg #(
                     rf_wen_o <= rf_wen_i;
                     wdata_o <= wdata_i;
                     wb_if_mem_o <= wb_if_mem_i;
+                    csr_we_o <= csr_we_i;
+                    csr_adr_o <= csr_adr_i;
+                    csr_op_o <= csr_op_i;
+                    env_op_o <= env_op_i;
                     use_mem_dat_a_o <= use_mem_dat_a_i;
                     use_mem_dat_b_o <= use_mem_dat_b_i;
                 end

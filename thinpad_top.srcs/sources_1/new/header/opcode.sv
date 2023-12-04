@@ -23,3 +23,12 @@
     `define ALU_MUX_ZERO 2
     `define ALU_MUX_FORWARD 3
     `define ALU_MUX_FOUR_B 4 // for compute PC+4
+
+    // CSR
+    `define CSR_CSRRC 1
+    `define CSR_CSRRS 2
+    `define CSR_CSRRW 3
+    
+    // ENV
+    `define ENV_ECALL 1
+    `define ENV_EBREAK 2

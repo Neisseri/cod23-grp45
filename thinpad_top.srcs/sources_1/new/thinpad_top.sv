@@ -55,7 +55,7 @@ module thinpad_top #(
 
     // USB �������źţ��ο� SL811 оƬ�ֲ�
     output wire sl811_a0,
-    // inout  wire [7:0] sl811_d,     // USB �������������������??? dm9k_sd[7:0] ����
+    // inout  wire [7:0] sl811_d,     // USB �������������������??? dm9k_sd[7:0] ����
     output wire sl811_wr_n,
     output wire sl811_rd_n,
     output wire sl811_cs_n,
@@ -64,7 +64,7 @@ module thinpad_top #(
     input  wire sl811_intrq,
     input  wire sl811_drq_n,
 
-    // ����������źţ��ο�??? DM9000A оƬ�ֲ�
+    // ����������źţ��ο�??? DM9000A оƬ�ֲ�
     output wire dm9k_cmd,
     inout wire [15:0] dm9k_sd,
     output wire dm9k_iow_n,
@@ -73,13 +73,13 @@ module thinpad_top #(
     output wire dm9k_pwrst_n,
     input wire dm9k_int,
 
-    // ͼ������ź�???
+    // ͼ������ź�???
     output wire [2:0] video_red,    // ��ɫ���أ�3 λ
     output wire [2:0] video_green,  // ��ɫ���أ�3 λ
     output wire [1:0] video_blue,   // ��ɫ���أ�2 λ
     output wire       video_hsync,  // ��ͬ����ˮƽͬ�����ź�
     output wire       video_vsync,  // ��ͬ������ֱͬ�����ź�
-    output wire       video_clk,    // ����ʱ�����???
+    output wire       video_clk,    // ����ʱ�����???
     output wire       video_de      // ��������Ч�źţ���������������
 );
 
@@ -91,11 +91,11 @@ module thinpad_top #(
       // Clock in ports
       .clk_in1(clk_50M),  // �ⲿʱ������
       // Clock out ports
-      .clk_out1(clk_10M),  // ʱ�����??? 1��Ƶ���� IP ���ý���������
-      .clk_out2(clk_20M),  // ʱ�����??? 2��Ƶ���� IP ���ý���������
+      .clk_out1(clk_10M),  // ʱ�����??? 1��Ƶ���� IP ���ý���������
+      .clk_out2(clk_20M),  // ʱ�����??? 2��Ƶ���� IP ���ý���������
       // Status and control signals
       .reset(reset_btn),  // PLL ��λ����
-      .locked(locked)  // PLL ����ָʾ�����???"1"��ʾʱ���ȶ���
+      .locked(locked)  // PLL ����ָʾ�����???"1"��ʾʱ���ȶ���
                        // �󼶵�·��λ�ź�Ӧ���������ɣ����£�
   );
 
@@ -137,16 +137,16 @@ module thinpad_top #(
   // g=dpy0[7] // |     |
   //           // ---d---  p
 
-   //7 ���������������ʾ����??? number �� 16 ������ʾ�����������???
+   //7 ���������������ʾ����??? number �� 16 ������ʾ�����������???
 //   logic [7:0] number;
 //   SEG7_LUT segL (
 //       .oSEG1(dpy0),
 //       .iDIG (number[3:0])
-//   );  // dpy0 �ǵ�λ�����???
+//   );  // dpy0 �ǵ�λ�����???
 //   SEG7_LUT segH (
 //       .oSEG1(dpy1),
 //       .iDIG (number[7:4])
-//   );  // dpy1 �Ǹ�λ�����???
+//   );  // dpy1 �Ǹ�λ�����???
 
 //   logic [15:0] led_bits;
 //   assign leds = led_bits;
@@ -185,7 +185,7 @@ module thinpad_top #(
   //     .RxD_data      (ext_uart_rx)      // ���յ���һ�ֽ�����
   // );
 
-  // assign ext_uart_clear = ext_uart_ready; // �յ����ݵ�ͬʱ�������־����Ϊ������ȡ��??? ext_uart_buffer ��
+  // assign ext_uart_clear = ext_uart_ready; // �յ����ݵ�ͬʱ�������־����Ϊ������ȡ��??? ext_uart_buffer ��
   // always_ff @(posedge clk_50M) begin  // ���յ������� ext_uart_buffer
   //   if (ext_uart_ready) begin
   //     ext_uart_buffer <= ext_uart_rx;
@@ -209,13 +209,13 @@ module thinpad_top #(
   //     .Baud(9600)
   // ) ext_uart_t (
   //     .clk      (clk_50M),         // �ⲿʱ���ź�
-  //     .TxD      (txd),             // �����ź����???
+  //     .TxD      (txd),             // �����ź����???
   //     .TxD_busy (ext_uart_busy),   // ������æ״ָ̬ʾ
   //     .TxD_start(ext_uart_start),  // ��ʼ�����ź�
   //     .TxD_data (ext_uart_tx)      // �����͵�����
   // );
 
-  // ͼ�������ʾ���ֱ���??? 800x600@75Hz������ʱ��Ϊ 50MHz
+  // ͼ�������ʾ���ֱ���??? 800x600@75Hz������ʱ��Ϊ 50MHz
   // logic [11:0] hdata;
   // assign video_red   = hdata < 266 ? 3'b111 : 0;  // ��ɫ����
   // assign video_green = hdata < 532 && hdata >= 266 ? 3'b111 : 0;  // ��ɫ����
@@ -346,7 +346,11 @@ module thinpad_top #(
   logic id_we;
   logic [3:0] id_sel;
   logic id_rf_wen;
-  logic id_wb_if_mem;
+  logic [3:0] id_wb_if_mem;
+  logic id_csr_we;
+  logic [11:0] id_csr_adr;
+  logic [3:0] id_csr_op;
+  logic [3:0] id_env_op;
   ID ID_u(
     .instr(if_id_instr),
     .rd(id_rd),
@@ -361,7 +365,11 @@ module thinpad_top #(
     .we(id_we),
     .sel(id_sel),
     .rf_wen(id_rf_wen),
-    .wb_if_mem(id_wb_if_mem)
+    .wb_if_mem(id_wb_if_mem),
+    .csr_we_o(id_csr_we),
+    .csr_adr_o(id_csr_adr),
+    .csr_op_o(id_csr_op),
+    .env_op_o(id_env_op)
   );
 
   logic [DATA_WIDTH-1:0] rf_rdata_a;
@@ -425,7 +433,11 @@ module thinpad_top #(
   logic id_exe_rf_wen;
   logic [3:0] id_exe_sel;
   logic id_exe_we;
-  logic id_exe_wb_if_mem;
+  logic [3:0] id_exe_wb_if_mem;
+  logic id_exe_csr_we;
+  logic [11:0] id_exe_csr_adr;
+  logic [3:0] id_exe_csr_op;
+  logic [3:0] id_exe_env_op;
   ID_EXE_reg ID_EXE(
     .clk(sys_clk),
     .rst(sys_rst),
@@ -449,6 +461,10 @@ module thinpad_top #(
     .sel_i(id_sel),
     .we_i(id_we),
     .wb_if_mem_i(id_wb_if_mem),
+    .csr_we_i(id_csr_we),
+    .csr_adr_i(id_csr_adr),
+    .csr_op_i(id_csr_op),
+    .env_op_i(id_env_op),
 
     .rd_o(id_exe_rd),
     .rs1_o(id_exe_rs1),
@@ -463,7 +479,11 @@ module thinpad_top #(
     .rf_wen_o(id_exe_rf_wen),
     .sel_o(id_exe_sel),
     .we_o(id_exe_we),
-    .wb_if_mem_o(id_exe_wb_if_mem)
+    .wb_if_mem_o(id_exe_wb_if_mem),
+    .csr_we_o(id_exe_csr_we),
+    .csr_adr_o(id_exe_csr_adr),
+    .csr_op_o(id_exe_csr_op),
+    .env_op_o(id_exe_env_op)
   );
   
   //EXE
@@ -498,13 +518,18 @@ module thinpad_top #(
   
   logic [DATA_WIDTH-1:0] exe_mem_instr;
   logic [4:0] exe_mem_rd;
+  logic [DATA_WIDTH-1:0] exe_mem_rs1_dat;
   logic [DATA_WIDTH-1:0] exe_mem_rs2_dat;
   logic exe_mem_mem_en;
   logic exe_mem_rf_wen;
   logic [3:0] exe_mem_sel;
   logic exe_mem_we;
   logic [DATA_WIDTH-1:0] exe_mem_wdata;
-  logic exe_mem_wb_if_mem;
+  logic [3:0] exe_mem_wb_if_mem;
+  logic exe_mem_csr_we;
+  logic [11:0] exe_mem_csr_adr;
+  logic [3:0] exe_mem_csr_op;
+  logic [3:0] exe_mem_env_op;
   logic use_mem_dat_a_i;
   logic use_mem_dat_b_i;
   logic use_mem_dat_a_o;
@@ -517,14 +542,20 @@ module thinpad_top #(
     .instr_i(id_exe_instr),
     .instr_o(exe_mem_instr),
     .rd_i(id_exe_rd),
+    .rs1_dat_i(id_exe_rs1_dat),
     .rs2_dat_i(id_exe_rs2_dat),
     .mem_en_i(id_exe_mem_en),
     .rf_wen_i(id_exe_rf_wen),
     .sel_i(id_exe_sel),
     .we_i(id_exe_we),
     .wb_if_mem_i(id_exe_wb_if_mem),
+    .csr_we_i(id_exe_csr_we),
+    .csr_adr_i(id_exe_csr_adr),
+    .csr_op_i(id_exe_csr_op),
+    .env_op_i(id_exe_env_op),
 
     .rd_o(exe_mem_rd),
+    .rs1_dat_o(exe_mem_rs1_dat),
     .rs2_dat_o(exe_mem_rs2_dat),
     .mem_en_o(exe_mem_mem_en),
     .rf_wen_o(exe_mem_rf_wen),
@@ -533,6 +564,10 @@ module thinpad_top #(
     .wdata_i(alu_y),
     .wdata_o(exe_mem_wdata),
     .wb_if_mem_o(exe_mem_wb_if_mem),
+    .csr_we_o(exe_mem_csr_we),
+    .csr_adr_o(exe_mem_csr_adr),
+    .csr_op_o(exe_mem_csr_op),
+    .env_op_o(exe_mem_env_op),
 
     .use_mem_dat_a_i(use_mem_dat_a_i),
     .use_mem_dat_b_i(use_mem_dat_b_i),
@@ -573,10 +608,45 @@ module thinpad_top #(
     .pipeline_stall(pipeline_stall),
     .idle_stall(dm_idle_stall)
   );
+
+  logic [DATA_WIDTH-1:0] csr_dat;
+  logic [11:0] csr_adr;
+  logic [DATA_WIDTH-1:0] csr_wdat;
+  logic csr_we;
+  logic [DATA_WIDTH-1:0] mem_csr_dat;
+  CSR_controller CSR_controller_u(
+    .clk(sys_clk),
+    .rst(sys_rst),
+    .stall(mem_wb_stall),
+    .bubble(mem_wb_bubble),
+
+    .rs1_dat_i(exe_mem_rs1_dat),
+    .csr_adr_i(exe_mem_csr_adr),
+    .csr_op_i(exe_mem_csr_op),
+    .csr_we_i(exe_mem_csr_we),
+
+    .csr_o(mem_csr_dat),
+
+    .csr_i(csr_dat),
+    .csr_adr_o(csr_adr),
+    .csr_wdat_o(csr_wdat),
+    .csr_we_o(csr_we)
+  );
   
-  logic mem_wb_wb_if_mem;
+  CSR_reg CSR_reg_u(
+    .clk(sys_clk),
+    .rst(sys_rst),
+    .csr_adr_i(csr_adr),
+    .csr_wadr_i(csr_adr),
+    .csr_wdat_i(csr_wdat),
+    .csr_we_i(csr_we),
+    .csr_o(csr_dat)
+  );
+  
+  logic [3:0] mem_wb_wb_if_mem;
   logic [DATA_WIDTH-1:0] mem_wb_wdata;
   logic [DATA_WIDTH-1:0] mem_wb_mem_data;
+  logic [DATA_WIDTH-1:0] mem_wb_csr_dat;
   MEM_WB_reg MEM_WB(
     .clk(sys_clk),
     .rst(sys_rst),
@@ -592,7 +662,9 @@ module thinpad_top #(
     .wdata_i(exe_mem_wdata),
     .wdata_o(mem_wb_wdata),
     .mem_data_i(dm_data_out),
-    .mem_data_o(mem_wb_mem_data)
+    .mem_data_o(mem_wb_mem_data),
+    .mem_csr_dat_i(mem_csr_dat),
+    .mem_csr_dat_o(mem_wb_csr_dat)
   );
 
   //WB
@@ -600,6 +672,7 @@ module thinpad_top #(
     .if_mem(mem_wb_wb_if_mem),
     .alu_data(mem_wb_wdata),
     .mem_data(mem_wb_mem_data),
+    .csr_data(mem_wb_csr_dat),
     .result(wb_wdata)
   );
 
@@ -832,8 +905,8 @@ module thinpad_top #(
       .sram_be_n(ext_ram_be_n)
   );
 
-  // 串口控制器模�???
-  // NOTE: 如果修改系统时钟频率，也�???要修改此处的时钟频率参数
+  // 串口控制器模�???
+  // NOTE: 如果修改系统时钟频率，也�???要修改此处的时钟频率参数
   uart_controller #(
       .CLK_FREQ(10_000_000),
       .BAUD    (115200)
