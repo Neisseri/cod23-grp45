@@ -23,3 +23,11 @@
     `define ALU_MUX_ZERO 2
     `define ALU_MUX_FORWARD 3
     `define ALU_MUX_FOUR_B 4 // for compute PC+4
+
+    // TODO: ?
+    // DM mux
+    `define DM_MUX_WIDTH 2
+    `define DM_MUX_MEM `DM_MUX_WIDTH'd0
+    `define DM_MUX_ALU `DM_MUX_WIDTH'd1
+    `define DM_MUX_PC_INC `DM_MUX_WIDTH'd2
+    `define DM_MUX_ALU_JALR `DM_MUX_WIDTH'd3
