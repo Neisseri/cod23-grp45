@@ -195,7 +195,7 @@ module Instruction_memory #(
 
     // cache hit sign
     reg cache_hit;
-    reg [$log2(CACHE_ASSOCIATIVITY)-1:0] selected_way; // which way is selected 
+    reg [$clog2(CACHE_ASSOCIATIVITY)-1:0] selected_way; // which way is selected 
 
     always_comb begin
         // check if the cache hit
