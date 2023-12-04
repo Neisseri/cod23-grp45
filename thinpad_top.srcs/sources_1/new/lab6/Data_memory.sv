@@ -228,6 +228,8 @@ module Instruction_memory #(
                     cache_valid[i][j] = 0;
                 end
             end
+            data_out <= `NOP_INSTR;
+            state <= STATE_DONE;
         end else begin
             if (mem_en) begin
                 case (state)
