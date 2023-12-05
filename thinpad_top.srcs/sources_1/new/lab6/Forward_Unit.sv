@@ -26,7 +26,7 @@ module Forward_Unit #(
 )(
     // EXE hazard
     // inst1: ID EXE -> MEM        rd
-    //                   |
+    //            |
     // inst2:     ID -> EXE MEM    rs1, rs2
     input wire [4:0] id_exe_rs1, // inst2: ID -> EXE rs1
     input wire [4:0] id_exe_rs2, // inst2: ID -> EXE rs2
@@ -65,13 +65,68 @@ module Forward_Unit #(
     // branch hazard
     output logic branch_rs1,
     output logic branch_rs2
-    );
+);
+
+    logic exe_hazard_a;
+    logic exe_hazard_a;
+    logic mem_hazard_a;
+    logic mem_hazard_b;
+
+    // check EXE hazard
+    always_comb begin
+        if (exe_mem_rd == id_exe_rs1 && exe_mem_rd != 0 && exe_mem_rf_wen) begin // RAW
+            exe_hazard_a = 1;
+        end else begin
+            exe_hazard_a = 0;
+        end
+        if (exe_mem_rd == id_exe_rs2 && exe_mem_rd != 0 && exe_mem_rf_wen) begin // RAW
+            exe_hazard_b = 1;
+        end else begin
+            exe_hazard_b = 0;
+        end
+    end
+
+    // check MEM hazard
+    always_comb begin
+        if (id_exe_rd == if_id_rs1 && exe_is_load && use_mem_dat_a) begin // RAW
+            mem_hazard_a = 1;
+        end else begin
+            mem_hazard_a = 0;
+        end
+        if (id_exe_rd == if_id_rs2 && exe_is_load && use_mem_dat_b) begin // RAW
+            mem_hazard_b = 1;
+        end else begin
+            mem_hazard_b = 0;
+        end
+    end
+
+    // alu control signals
+    always_comb begin
+        // rs1
+        if (exe_hazard_a) begin // exe hazard
+            alu_mux_a = `ALU_MUX_FORWARD;
+            alu_a_forward = exe_mem_dat;
+        end else if (mem_hazard_a) begin // mem hazard
+            alu_mux_a = `ALU_MUX_FORWARD;
+            alu_a_forward = mem_wb_dat;
+        end else begin // no hazard
+            alu_mux_a = id_exe_alu_mux_a;
+            alu_a_forward = 0;
+        end
+        // rs2
+        if (exe_hazard_b) begin // exe hazard
+            alu_mux_b = `ALU_MUX_FORWARD;
+            alu_b_forward = exe_mem_dat;
+        end else if (mem_hazard_b) begin // mem hazard
+            alu_mux_b = `ALU_MUX_FORWARD;
+            alu_b_forward = mem_wb_dat;
+        end else begin // no hazard
+            alu_mux_b = id_exe_alu_mux_b;
+            alu_b_forward = 0;
+        end
+    end
 
     always_comb begin
-        alu_mux_a = id_exe_alu_mux_a;
-        alu_a_forward = 0;
-        alu_mux_b = id_exe_alu_mux_b;
-        alu_b_forward = 0;
 
         pass_use_mem_dat_a = 0;
         pass_use_mem_dat_b = 0;
@@ -95,34 +150,6 @@ module Forward_Unit #(
     //         branch_rs2 = 1;
     //     end else begin
     //         branch_rs2 = 0;
-    //     end
-    // end
-
-    // always_comb begin
-    //     if(use_mem_dat_a)begin
-    //         alu_mux_a = `ALU_MUX_FORWARD;
-    //         alu_a_forward = mem_wb_dat;
-    //     end else begin
-    //         if(exe_mem_rd == id_exe_rs1 && exe_mem_rd != 0 && exe_mem_rf_wen)begin
-    //             alu_mux_a = `ALU_MUX_FORWARD;
-    //             alu_a_forward = exe_mem_dat;
-    //         end else begin
-    //             alu_mux_a = id_exe_alu_mux_a;
-    //             alu_a_forward = 0;
-    //         end
-    //     end
-
-    //     if(use_mem_dat_b)begin
-    //         alu_mux_b = `ALU_MUX_FORWARD;
-    //         alu_b_forward = mem_wb_dat;
-    //     end else begin
-    //         if(exe_mem_rd == id_exe_rs2 && exe_mem_rd != 0 && exe_mem_rf_wen)begin
-    //             alu_mux_b = `ALU_MUX_FORWARD;
-    //             alu_b_forward = exe_mem_dat;
-    //         end else begin
-    //             alu_mux_b = id_exe_alu_mux_b;
-    //             alu_b_forward = 0;
-    //         end
     //     end
     // end
 
