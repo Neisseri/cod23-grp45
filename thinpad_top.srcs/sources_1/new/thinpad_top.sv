@@ -237,6 +237,7 @@ module thinpad_top #(
   logic id_flush_req;
   logic exe_stall_req;
   logic mem_exception;
+  logic time_interrupt;
 
   logic pc_stall;
   logic if_id_stall;
@@ -673,8 +674,9 @@ module thinpad_top #(
     .mem_exception_o(mem_exception),
     .priv_level_o(priv_level_wdat),
     .priv_level_we_o(priv_level_we),
-    .priv_level_i(priv_level_rdat)
+    .priv_level_i(priv_level_rdat),
 
+    .time_interrupt_i(time_interrupt)
   );
   
   CSR_reg CSR_reg_u(
@@ -846,8 +848,17 @@ module thinpad_top #(
   logic [31:0] wbs2_dat_i;
   logic [3:0] wbs2_sel_o;
   logic wbs2_we_o;
+  
+  logic wbs3_cyc_o;
+  logic wbs3_stb_o;
+  logic wbs3_ack_i;
+  logic [31:0] wbs3_adr_o;
+  logic [31:0] wbs3_dat_o;
+  logic [31:0] wbs3_dat_i;
+  logic [3:0] wbs3_sel_o;
+  logic wbs3_we_o;
 
-  wb_mux_3 wb_mux (
+  wb_mux_4 wb_mux (
       .clk(sys_clk),
       .rst(sys_rst),
 
@@ -909,7 +920,23 @@ module thinpad_top #(
       .wbs2_ack_i(wbs2_ack_i),
       .wbs2_err_i('0),
       .wbs2_rty_i('0),
-      .wbs2_cyc_o(wbs2_cyc_o)
+      .wbs2_cyc_o(wbs2_cyc_o),
+
+      // Slave interface 3 (to mtime controller)
+      // Address range: 0x0200_0000 ~ 0x0200_FFFF
+      .wbs3_addr    (32'h0200_0000),
+      .wbs3_addr_msk(32'hFFFF_0000),
+
+      .wbs3_adr_o(wbs3_adr_o),
+      .wbs3_dat_i(wbs3_dat_i),
+      .wbs3_dat_o(wbs3_dat_o),
+      .wbs3_we_o (wbs3_we_o),
+      .wbs3_sel_o(wbs3_sel_o),
+      .wbs3_stb_o(wbs3_stb_o),
+      .wbs3_ack_i(wbs3_ack_i),
+      .wbs3_err_i('0),
+      .wbs3_rty_i('0),
+      .wbs3_cyc_o(wbs3_cyc_o)
   );
 
   /* =========== Lab5 MUX end =========== */
@@ -988,6 +1015,22 @@ module thinpad_top #(
       // to UART pins
       .uart_txd_o(txd),
       .uart_rxd_i(rxd)
+  );
+
+  mtime_controller u_mtime_controller (
+      .clk_i(sys_clk),
+      .rst_i(sys_rst),
+
+      .wb_cyc_i(wbs3_cyc_o),
+      .wb_stb_i(wbs3_stb_o),
+      .wb_ack_o(wbs3_ack_i),
+      .wb_adr_i(wbs3_adr_o),
+      .wb_dat_i(wbs3_dat_o),
+      .wb_dat_o(wbs3_dat_i),
+      .wb_sel_i(wbs3_sel_o),
+      .wb_we_i (wbs3_we_o),
+
+      .time_interrupt_o(time_interrupt)
   );
 
   /* =========== Lab5 Slaves end =========== */

@@ -46,7 +46,7 @@ module tb;
   wire uart_tsre;  // ���ݷ�����ϱ��?
 
   // Windows ��Ҫע��·���ָ�����ת�壬���� "D:\\foo\\bar.bin"
-  parameter BASE_RAM_INIT_FILE = "C:\\rv-2023\\rv-2023\\asmcode\\test_env.bin"; // BaseRAM ��ʼ���ļ������޸�Ϊʵ�ʵľ���·��
+  parameter BASE_RAM_INIT_FILE = "C:\\rv-2023\\rv-2023\\supervisor-rv\\kernel\\kernel.bin"; // BaseRAM ��ʼ���ļ������޸�Ϊʵ�ʵľ���·��
   parameter EXT_RAM_INIT_FILE = "/tmp/eram.bin";  // ExtRAM ��ʼ���ļ������޸�Ϊʵ�ʵľ���·��
   parameter FLASH_INIT_FILE = "/tmp/kernel.elf";  // Flash ��ʼ���ļ������޸�Ϊʵ�ʵľ���·��
 
@@ -69,9 +69,20 @@ module tb;
     end
   
     // ģ�� PC ͨ��ֱ�����ڣ��� FPGA �����ַ�
-    uart.pc_send_byte(8'h32); // ASCII '2'
+    #5000000;
+    $display("sending G");
+    uart.pc_send_byte(8'h47); // ASCII 'G'
     #10000;
-    uart.pc_send_byte(8'h33); // ASCII '3'
+    #10000;
+    uart.pc_send_byte(8'hc0);
+    #10000;
+    uart.pc_send_byte(8'h10);
+    #10000;
+    uart.pc_send_byte(8'h00);
+    #10000;
+    uart.pc_send_byte(8'h80);
+    #10000;
+
   end
 
   // �������û����?

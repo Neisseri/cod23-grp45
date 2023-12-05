@@ -33,10 +33,10 @@ module PC_mux#(
     );
 
     always_comb begin
-            if(branch) begin
-                next_pc = branch_addr;
-            end else if (exception) begin
+            if(exception) begin
                 next_pc = next_exception;
+            end else if (branch) begin
+                next_pc = branch_addr;
             end else begin
                 next_pc = cur_pc + 4; //TODO: 分支预测逻辑
             end
