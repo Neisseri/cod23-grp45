@@ -32,6 +32,8 @@ module EXE_MEM_reg #(
     // IF
     input wire [DATA_WIDTH-1:0] instr_i,
     output reg [DATA_WIDTH-1:0] instr_o,
+    input wire [ADDR_WIDTH-1:0] pc_i,
+    output reg [ADDR_WIDTH-1:0] pc_o,
 
     // ID
     input wire [4:0] rd_i,
@@ -74,6 +76,7 @@ module EXE_MEM_reg #(
     always_ff @(posedge clk)begin
         if(rst)begin
             instr_o <= `NOP_INSTR;
+            pc_o <= 0;
             rd_o <= 0;
             rs1_dat_o <= 0;
             rs2_dat_o <= 0;
@@ -93,6 +96,7 @@ module EXE_MEM_reg #(
             if(!stall)begin
                 if(bubble)begin
                     instr_o <= `NOP_INSTR;
+                    pc_o <= 0;
                     rd_o <= 0;
                     rs1_dat_o <= 0;
                     rs2_dat_o <= 0;
@@ -110,6 +114,7 @@ module EXE_MEM_reg #(
                     use_mem_dat_b_o <= 0;
                 end else begin
                     instr_o <= instr_i;
+                    pc_o <= pc_i;
                     rd_o <= rd_i;
                     rs1_dat_o <= rs1_dat_i;
                     rs2_dat_o <= rs2_dat_i;

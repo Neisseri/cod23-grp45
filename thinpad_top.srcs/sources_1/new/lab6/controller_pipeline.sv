@@ -24,6 +24,7 @@ module controller_pipeline(
     input wire if_stall_req,
     input wire mem_stall_req,
     input wire id_flush_req,
+    input wire mem_flush_req,
     input wire exe_stall_req,
 
     output logic pc_stall,
@@ -90,6 +91,16 @@ module controller_pipeline(
                     id_exe_bubble = 0;
                     exe_mem_stall = 0;
                     exe_mem_bubble = 0;
+                    mem_wb_stall = 0;
+                    mem_wb_bubble = 0;
+                end else if (mem_flush_req) begin
+                    pc_stall = 0;
+                    if_id_stall = 0;
+                    if_id_bubble = 1;
+                    id_exe_stall = 0;
+                    id_exe_bubble = 1;
+                    exe_mem_stall = 0;
+                    exe_mem_bubble = 1;
                     mem_wb_stall = 0;
                     mem_wb_bubble = 0;
                 end else begin

@@ -236,6 +236,7 @@ module thinpad_top #(
   logic mem_stall_req;
   logic id_flush_req;
   logic exe_stall_req;
+  logic mem_exception;
 
   logic pc_stall;
   logic if_id_stall;
@@ -253,6 +254,7 @@ module thinpad_top #(
     .if_stall_req(if_stall_req),
     .mem_stall_req(mem_stall_req),
     .id_flush_req(id_flush_req),
+    .mem_flush_req(mem_exception),
     .exe_stall_req(exe_stall_req),
     .pc_stall(pc_stall),
     .if_id_stall(if_id_stall),
@@ -280,10 +282,13 @@ module thinpad_top #(
   );
   
   logic [ADDR_WIDTH-1:0] pc_branch_addr;
+  logic [ADDR_WIDTH-1:0] pc_next_exception;
   logic [ADDR_WIDTH-1:0] if_id_pc;
   PC_mux PC_mux_u(
     .branch(id_flush_req),
     .branch_addr(pc_branch_addr),
+    .exception(mem_exception),
+    .next_exception(pc_next_exception),
     .cur_pc(pc_addr),
     .next_pc(pc_next_pc)
   );
@@ -350,7 +355,6 @@ module thinpad_top #(
   logic id_csr_we;
   logic [11:0] id_csr_adr;
   logic [3:0] id_csr_op;
-  logic [3:0] id_env_op;
   ID ID_u(
     .instr(if_id_instr),
     .rd(id_rd),
@@ -368,8 +372,7 @@ module thinpad_top #(
     .wb_if_mem(id_wb_if_mem),
     .csr_we_o(id_csr_we),
     .csr_adr_o(id_csr_adr),
-    .csr_op_o(id_csr_op),
-    .env_op_o(id_env_op)
+    .csr_op_o(id_csr_op)
   );
 
   logic [DATA_WIDTH-1:0] rf_rdata_a;
@@ -464,7 +467,6 @@ module thinpad_top #(
     .csr_we_i(id_csr_we),
     .csr_adr_i(id_csr_adr),
     .csr_op_i(id_csr_op),
-    .env_op_i(id_env_op),
 
     .rd_o(id_exe_rd),
     .rs1_o(id_exe_rs1),
@@ -482,8 +484,7 @@ module thinpad_top #(
     .wb_if_mem_o(id_exe_wb_if_mem),
     .csr_we_o(id_exe_csr_we),
     .csr_adr_o(id_exe_csr_adr),
-    .csr_op_o(id_exe_csr_op),
-    .env_op_o(id_exe_env_op)
+    .csr_op_o(id_exe_csr_op)
   );
   
   //EXE
@@ -530,6 +531,7 @@ module thinpad_top #(
   logic [11:0] exe_mem_csr_adr;
   logic [3:0] exe_mem_csr_op;
   logic [3:0] exe_mem_env_op;
+  logic [ADDR_WIDTH-1:0] exe_mem_pc;
   logic use_mem_dat_a_i;
   logic use_mem_dat_b_i;
   logic use_mem_dat_a_o;
@@ -537,6 +539,8 @@ module thinpad_top #(
   EXE_MEM_reg EXE_MEM(
     .clk(sys_clk),
     .rst(sys_rst),
+    .pc_i(id_exe_pc),
+    .pc_o(exe_mem_pc),
     .stall(exe_mem_stall),
     .bubble(exe_mem_bubble),
     .instr_i(id_exe_instr),
@@ -614,6 +618,24 @@ module thinpad_top #(
   logic [DATA_WIDTH-1:0] csr_wdat;
   logic csr_we;
   logic [DATA_WIDTH-1:0] mem_csr_dat;
+
+  logic [DATA_WIDTH-1:0] csr_mstatus_wdat;
+  logic csr_mstatus_we;
+  logic [DATA_WIDTH-1:0] csr_mtvec_wdat;
+  logic csr_mtvec_we;
+  logic [DATA_WIDTH-1:0] csr_mepc_wdat;
+  logic csr_mepc_we;
+  logic [DATA_WIDTH-1:0] csr_mcause_wdat;
+  logic csr_mcause_we;
+
+  logic [DATA_WIDTH-1:0] csr_mstatus_rdat;
+  logic [DATA_WIDTH-1:0] csr_mtvec_rdat;
+  logic [DATA_WIDTH-1:0] csr_mepc_rdat;
+  logic [DATA_WIDTH-1:0] csr_mcause_rdat;
+
+  logic [1:0] priv_level_wdat;
+  logic priv_level_we;
+  logic [1:0] priv_level_rdat;
   CSR_controller CSR_controller_u(
     .clk(sys_clk),
     .rst(sys_rst),
@@ -630,7 +652,29 @@ module thinpad_top #(
     .csr_i(csr_dat),
     .csr_adr_o(csr_adr),
     .csr_wdat_o(csr_wdat),
-    .csr_we_o(csr_we)
+    .csr_we_o(csr_we),
+
+    .csr_mstatus_i(csr_mstatus_rdat),
+    .csr_mtvec_i(csr_mtvec_rdat),
+    .csr_mepc_i(csr_mepc_rdat),
+    .csr_mcause_i(csr_mcause_rdat),
+
+    .csr_mstatus_o(csr_mstatus_wdat),
+    .csr_mstatus_we_o(csr_mstatus_we),
+    .csr_mtvec_o(csr_mtvec_wdat),
+    .csr_mtvec_we_o(csr_mtvec_we),
+    .csr_mepc_o(csr_mepc_wdat),
+    .csr_mepc_we_o(csr_mepc_we),
+    .csr_mcause_o(csr_mcause_wdat),
+    .csr_mcause_we_o(csr_mcause_we),
+
+    .mem_pc_i(exe_mem_pc),
+    .pc_next_exception_o(pc_next_exception),
+    .mem_exception_o(mem_exception),
+    .priv_level_o(priv_level_wdat),
+    .priv_level_we_o(priv_level_we),
+    .priv_level_i(priv_level_rdat)
+
   );
   
   CSR_reg CSR_reg_u(
@@ -640,7 +684,25 @@ module thinpad_top #(
     .csr_wadr_i(csr_adr),
     .csr_wdat_i(csr_wdat),
     .csr_we_i(csr_we),
-    .csr_o(csr_dat)
+    .csr_o(csr_dat),
+
+    .csr_mstatus_i(csr_mstatus_wdat),
+    .csr_mstatus_we_i(csr_mstatus_we),
+    .csr_mtvec_i(csr_mtvec_wdat),
+    .csr_mtvec_we_i(csr_mtvec_we),
+    .csr_mepc_i(csr_mepc_wdat),
+    .csr_mepc_we_i(csr_mepc_we),
+    .csr_mcause_i(csr_mcause_wdat),
+    .csr_mcause_we_i(csr_mcause_we),
+
+    .csr_mstatus_o(csr_mstatus_rdat),
+    .csr_mtvec_o(csr_mtvec_rdat),
+    .csr_mepc_o(csr_mepc_rdat),
+    .csr_mcause_o(csr_mcause_rdat),
+
+    .priv_level_i(priv_level_wdat),
+    .priv_level_we_i(priv_level_we),
+    .priv_level_o(priv_level_rdat)
   );
   
   logic [3:0] mem_wb_wb_if_mem;

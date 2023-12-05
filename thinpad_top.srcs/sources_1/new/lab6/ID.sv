@@ -42,9 +42,7 @@ module ID(
 
         output logic csr_we_o,
         output logic [11:0] csr_adr_o,
-        output logic [3:0] csr_op_o,
-
-        output logic [3:0] env_op_o
+        output logic [3:0] csr_op_o
     );
 
     logic [2:0] funct3;
@@ -273,7 +271,6 @@ module ID(
     always_comb begin
         csr_we_o = 0;
         csr_op_o = 0;
-        env_op_o = 0;
         case (op_type)
             OP_LUI: begin
                 alu_op = `ALU_ADD;
@@ -538,9 +535,9 @@ module ID(
                 mem_en = 0;
                 we = 0;
                 sel = 4'b0000;
-                rf_wen = 1;
+                rf_wen = 0;
                 wb_if_mem = 0;
-                env_op_o = `ENV_ECALL;
+                csr_op_o = `ENV_ECALL;
             end
             OP_EBREAK: begin
                 alu_op = `ALU_ADD;
@@ -549,9 +546,20 @@ module ID(
                 mem_en = 0;
                 we = 0;
                 sel = 4'b0000;
-                rf_wen = 1;
+                rf_wen = 0;
                 wb_if_mem = 0;
-                env_op_o = `ENV_EBREAK;
+                csr_op_o = `ENV_EBREAK;
+            end
+            OP_MRET: begin
+                alu_op = `ALU_ADD;
+                alu_mux_a = `ALU_MUX_DATA;
+                alu_mux_b = `ALU_MUX_ZERO;
+                mem_en = 0;
+                we = 0;
+                sel = 4'b0000;
+                rf_wen = 0;
+                wb_if_mem = 0;
+                csr_op_o = `ENV_MRET;
             end
             default: begin // NOP: addi zero, zero, 0
                 alu_op = `ALU_ADD;
