@@ -26,11 +26,6 @@ module mtime_controller #(
     reg [DATA_WIDTH-1:0] mtimecmp_h;
     reg [DATA_WIDTH-1:0] mtimecmp_l;
 
-    reg [2*DATA_WIDTH-1:0] mtime;
-    reg [2*DATA_WIDTH-1:0] mtimecmp;
-    assign mtime = {mtime_h, mtime_l};
-    assign mtimecmp = {mtimecmp_h, mtimecmp_l};
-
   /*-- wishbone fsm --*/
   always_ff @(posedge clk_i) begin
     if (rst_i)
@@ -47,13 +42,13 @@ module mtime_controller #(
   logic [DATA_WIDTH-1:0] time_interval;
 
   always_comb begin
-    time_interrupt_o = (mtime >= mtimecmp);
+    time_interrupt_o = ({mtime_h, mtime_l} >= {mtimecmp_h, mtimecmp_l});
   end
 
   always_ff @(posedge clk_i) begin
     if (rst_i) begin
         time_interval <= 0;
-        mtime <= 0;
+        {mtime_h, mtime_l} <= 0;
     end else if(wb_stb_i && wb_we_i) begin
       case (wb_adr_i[31:0])
         32'h200BFF8: begin // mtime_l
@@ -120,14 +115,14 @@ module mtime_controller #(
             time_interval <= time_interval + 1;
         end else begin
             time_interval <= 0;
-            mtime <= mtime + 1;
+            {mtime_h, mtime_l} <= {mtime_h, mtime_l} + 1;
         end
     end else begin
         if (time_interval < `MTIME_INTERVAL) begin
             time_interval <= time_interval + 1;
         end else begin
             time_interval <= 0;
-            mtime <= mtime + 1;
+            {mtime_h, mtime_l} <= {mtime_h, mtime_l} + 1;
         end
     end
   end
