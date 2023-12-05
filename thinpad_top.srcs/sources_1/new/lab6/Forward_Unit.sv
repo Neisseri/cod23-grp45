@@ -28,35 +28,41 @@ module Forward_Unit #(
     // inst1: ID EXE -> MEM        rd
     //                   |
     // inst2:     ID -> EXE MEM    rs1, rs2
-    input wire [4:0] id_exe_rs1, // ID -> EXE rs1
-    input wire [4:0] id_exe_rs2, // ID -> EXE rs2
-    input wire [4:0] exe_mem_rd, // EXE -> MEM rd
-    input wire exe_mem_rf_wen, // inst1 write in rd
+    input wire [4:0] id_exe_rs1, // inst2: ID -> EXE rs1
+    input wire [4:0] id_exe_rs2, // inst2: ID -> EXE rs2
+    input wire [4:0] exe_mem_rd, // inst1: EXE -> MEM rd
+    input wire exe_mem_rf_wen,   // inst1: write in rd
 
     input wire [DATA_WIDTH-1:0] exe_mem_dat, // inst1 rd, i.e. the real data of inst2 rs1/rs2
 
     // MEM hazard
-    input wire [4:0] if_id_rs1,
-    input wire [4:0] if_id_rs2,
-    input wire [4:0] id_exe_rd,
-    input wire exe_is_load,
+    // inst1: ID EXE -> MEM             rd
+    //                   |
+    // inst3:     IF -> ID EXE MEM      rs1, rs2
+    input wire [4:0] if_id_rs1, // inst3: IF -> ID rs1
+    input wire [4:0] if_id_rs2, // inst3: IF -> ID rs2
+    input wire [4:0] id_exe_rd, // inst1: ID -> EXE rd (exe_mem_rd == id_exe_rd)
+    input wire exe_is_load,     // inst1: if MEM is after EXE stage
 
-    input wire use_mem_dat_a,
-    input wire use_mem_dat_b,
-    input wire [DATA_WIDTH-1:0] mem_wb_dat,
+    input wire use_mem_dat_a, // inst3: '0' imm, '1' read from memory
+    input wire use_mem_dat_b, // inst3: '0' imm, '1' read from memory
+    input wire [DATA_WIDTH-1:0] mem_wb_dat, // inst1: MEM -> WB data
 
-    input wire [2:0] id_exe_alu_mux_a,
-    input wire [2:0] id_exe_alu_mux_b,
+    input wire [2:0] id_exe_alu_mux_a, // inst3: ID -> EXE data type of alu input a 
+    input wire [2:0] id_exe_alu_mux_b, // inst3: ID -> EXE data type of alu input b
 
-    output logic [2:0] alu_mux_a,
-    output logic [2:0] alu_mux_b,
-    output logic [DATA_WIDTH-1:0] alu_a_forward,
-    output logic [DATA_WIDTH-1:0] alu_b_forward,
+    // output --------------------------------------------------------------------
+
+    output logic [2:0] alu_mux_a, // inst2/3: alu_a data type
+    output logic [2:0] alu_mux_b, // inst2/3: alu_b data type
+    output logic [DATA_WIDTH-1:0] alu_a_forward, // inst2/3: alu_a forward data
+    output logic [DATA_WIDTH-1:0] alu_b_forward, // inst2/3: alu_b forward data
 
     //output logic exe_stall_req,
-    output logic pass_use_mem_dat_a,
-    output logic pass_use_mem_dat_b,
+    output logic pass_use_mem_dat_a, // pass `use_mem_dat_a` to next stage
+    output logic pass_use_mem_dat_b, // pass `use_mem_dat_b` to next stage
 
+    // branch hazard
     output logic branch_rs1,
     output logic branch_rs2
     );
