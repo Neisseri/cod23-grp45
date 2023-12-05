@@ -55,6 +55,7 @@ module Branch_comp #(
         OP_SLLI,
         OP_SRLI,
         OP_XOR,
+        OP_SLTU,
 
         OP_CTZ,
         OP_ANDN,

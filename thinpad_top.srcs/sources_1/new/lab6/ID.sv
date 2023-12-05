@@ -78,6 +78,7 @@ module ID(
         OP_SLLI,
         OP_SRLI,
         OP_XOR,
+        OP_SLTU,
 
         OP_CTZ,
         OP_ANDN,
@@ -111,6 +112,7 @@ module ID(
                     10'b0000000_100: op_type = OP_XOR;
                     10'b0000101_110: op_type = OP_MINU;
                     10'b0100000_111: op_type = OP_ANDN;
+                    10'b0000000_011: op_type = OP_SLTU;
                     default: op_type = OP_UNKNOWN;
                 endcase
                 rd = instr[11:7];
@@ -344,6 +346,16 @@ module ID(
             end
             OP_ADD: begin
                 alu_op = `ALU_ADD;
+                alu_mux_a = `ALU_MUX_DATA;
+                alu_mux_b = `ALU_MUX_DATA;
+                mem_en = 0;
+                we = 0;
+                sel = 4'b0000;
+                rf_wen = 1;
+                wb_if_mem = 0;
+            end
+            OP_SLTU: begin
+                alu_op = `ALU_SLTU;
                 alu_mux_a = `ALU_MUX_DATA;
                 alu_mux_b = `ALU_MUX_DATA;
                 mem_en = 0;

@@ -15,6 +15,7 @@
     `define ALU_CTZ 11
     `define ALU_ANDN 12
     `define ALU_MINU 13
+    `define ALU_SLTU 14
 
     // ALU_mux
     `define ALU_MUX_DATA 0
