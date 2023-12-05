@@ -628,11 +628,17 @@ module thinpad_top #(
   logic csr_mepc_we;
   logic [DATA_WIDTH-1:0] csr_mcause_wdat;
   logic csr_mcause_we;
+  logic [DATA_WIDTH-1:0] csr_mip_wdat;
+  logic csr_mip_we;
+  logic [DATA_WIDTH-1:0] csr_mie_wdat;
+  logic csr_mie_we;
 
   logic [DATA_WIDTH-1:0] csr_mstatus_rdat;
   logic [DATA_WIDTH-1:0] csr_mtvec_rdat;
   logic [DATA_WIDTH-1:0] csr_mepc_rdat;
   logic [DATA_WIDTH-1:0] csr_mcause_rdat;
+  logic [DATA_WIDTH-1:0] csr_mip_rdat;
+  logic [DATA_WIDTH-1:0] csr_mie_rdat;
 
   logic [1:0] priv_level_wdat;
   logic priv_level_we;
@@ -659,6 +665,8 @@ module thinpad_top #(
     .csr_mtvec_i(csr_mtvec_rdat),
     .csr_mepc_i(csr_mepc_rdat),
     .csr_mcause_i(csr_mcause_rdat),
+    .csr_mip_i(csr_mip_rdat),
+    .csr_mie_i(csr_mie_rdat),
 
     .csr_mstatus_o(csr_mstatus_wdat),
     .csr_mstatus_we_o(csr_mstatus_we),
@@ -668,6 +676,10 @@ module thinpad_top #(
     .csr_mepc_we_o(csr_mepc_we),
     .csr_mcause_o(csr_mcause_wdat),
     .csr_mcause_we_o(csr_mcause_we),
+    .csr_mip_o(csr_mip_wdat),
+    .csr_mip_we_o(csr_mip_we),
+    .csr_mie_o(csr_mie_wdat),
+    .csr_mie_we_o(csr_mie_we),
 
     .mem_pc_i(exe_mem_pc),
     .pc_next_exception_o(pc_next_exception),
@@ -696,11 +708,17 @@ module thinpad_top #(
     .csr_mepc_we_i(csr_mepc_we),
     .csr_mcause_i(csr_mcause_wdat),
     .csr_mcause_we_i(csr_mcause_we),
+    .csr_mip_i(csr_mip_wdat),
+    .csr_mip_we_i(csr_mip_we),
+    .csr_mie_i(csr_mie_wdat),
+    .csr_mie_we_i(csr_mie_we),
 
     .csr_mstatus_o(csr_mstatus_rdat),
     .csr_mtvec_o(csr_mtvec_rdat),
     .csr_mepc_o(csr_mepc_rdat),
     .csr_mcause_o(csr_mcause_rdat),
+    .csr_mip_o(csr_mip_rdat),
+    .csr_mie_o(csr_mie_rdat),
 
     .priv_level_i(priv_level_wdat),
     .priv_level_we_i(priv_level_we),
