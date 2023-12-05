@@ -88,12 +88,12 @@ module Forward_Unit #(
 
     // check MEM hazard
     always_comb begin
-        if (id_exe_rd == if_id_rs1 && exe_is_load && use_mem_dat_a) begin // RAW
+        if (id_exe_rd == if_id_rs1 && id_exe_rd != 0 && exe_is_load && use_mem_dat_a) begin // RAW
             mem_hazard_a = 1;
         end else begin
             mem_hazard_a = 0;
         end
-        if (id_exe_rd == if_id_rs2 && exe_is_load && use_mem_dat_b) begin // RAW
+        if (id_exe_rd == if_id_rs2 && id_exe_rd != 0 && exe_is_load && use_mem_dat_b) begin // RAW
             mem_hazard_b = 1;
         end else begin
             mem_hazard_b = 0;
@@ -126,6 +126,8 @@ module Forward_Unit #(
         end
     end
 
+    // TODO: ----------------------------------------------------------------------------------------------------------
+
     always_comb begin
 
         pass_use_mem_dat_a = 0;
@@ -152,13 +154,6 @@ module Forward_Unit #(
     //         branch_rs2 = 0;
     //     end
     // end
-
-    // logic mem_hazard_a;
-    // logic mem_hazard_b;
-    // assign mem_hazard_a = exe_is_load && id_exe_rd != 0 && id_exe_rd == if_id_rs1;
-    // assign mem_hazard_b = exe_is_load && id_exe_rd != 0 && id_exe_rd == if_id_rs2;
-    // //assign mem_hazard_a = id_exe_rd != 0 && id_exe_rd == if_id_rs1;
-    // //assign mem_hazard_b = id_exe_rd != 0 && id_exe_rd == if_id_rs2;
 
     // always_comb begin
     //     if(mem_hazard_a || mem_hazard_b)begin
