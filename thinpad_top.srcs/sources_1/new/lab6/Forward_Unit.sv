@@ -149,14 +149,18 @@ module Forward_Unit #(
     end
 
     // alu control signals
+    // TODO: bug in this block
+    // 0'
     always_comb begin
         // rs1
         if (use_mem_dat_a) begin // mem hazard (3 or 4)
             alu_mux_a = `ALU_MUX_FORWARD;
-            alu_a_forward = mem_wb_dat;
+            //alu_a_forward = mem_wb_dat;
+            alu_a_forward = 0;
         end else if (hazard1_a || hazard2_a) begin // hazard 1 or 2
             alu_mux_a = `ALU_MUX_FORWARD;
-            alu_a_forward = exe_mem_dat;
+            //alu_a_forward = exe_mem_dat;
+            alu_a_forward = 0;
         end else begin // no hazard
             alu_mux_a = id_exe_alu_mux_a;
             alu_a_forward = 0;
@@ -164,10 +168,12 @@ module Forward_Unit #(
         // rs2
         if (use_mem_dat_b) begin // mem hazard (3 or 4)
             alu_mux_b = `ALU_MUX_FORWARD;
-            alu_b_forward = mem_wb_dat;
+            //alu_b_forward = mem_wb_dat;
+            alu_b_forward = 0;
         end else if (hazard1_b || hazard2_b) begin // hazard 1 or 2
             alu_mux_b = `ALU_MUX_FORWARD;
-            alu_b_forward = exe_mem_dat;
+            //alu_b_forward = exe_mem_dat;
+            alu_b_forward = 0;
         end else begin // no hazard
             alu_mux_b = id_exe_alu_mux_b;
             alu_b_forward = 0;
@@ -190,22 +196,13 @@ module Forward_Unit #(
         end
     end
 
-    // mem hazard stall
-    // always_comb begin
-    //     if (mem_hazard_a || mem_hazard_b) begin
-    //         exe_stall_req = 1;
-    //     end else begin
-    //         exe_stall_req = 0;
-    //     end
-    // end
-
     // test
     always_comb begin
         if (
-            id_exe_rf_wen && (if_id_rs1 == id_exe_rd || if_id_rs2 == id_exe_rd) && id_exe_rd != 0 || // hazard2 Lab 6: 50
-            exe_mem_rf_wen && (if_id_rs1 == exe_mem_rd || if_id_rs2 == exe_mem_rd) && exe_mem_rd != 0 || // Lab 6: 0
-            wb_rf_we && (if_id_rs1 == wb_rd || if_id_rs2 == wb_rd) && wb_rd != 0 || // Lab 6: 100
-            hazard3_a || hazard3_b || hazard4_a || hazard4_b
+            id_exe_rf_wen && (if_id_rs1 == id_exe_rd || if_id_rs2 == id_exe_rd) && id_exe_rd != 0 ||
+            exe_mem_rf_wen && (if_id_rs1 == exe_mem_rd || if_id_rs2 == exe_mem_rd) && exe_mem_rd != 0 ||
+            wb_rf_we && (if_id_rs1 == wb_rd || if_id_rs2 == wb_rd) && wb_rd != 0
+            //hazard3_a || hazard3_b || hazard4_a || hazard4_b
         ) begin
             exe_stall_req = 1;
         end else begin
@@ -215,6 +212,14 @@ module Forward_Unit #(
 
     // TODO: branch hazard
     always_comb begin
+        // -------------------------------------
+        // alu_mux_a = id_exe_alu_mux_a;
+        // alu_a_forward = 0;
+        // alu_mux_b = id_exe_alu_mux_b;
+        // alu_b_forward = 0;
+        // pass_use_mem_dat_a = 0;
+        // pass_use_mem_dat_b = 0;
+        // --------------------------------------
         branch_rs1 = 0;
         branch_rs2 = 0;
     end
