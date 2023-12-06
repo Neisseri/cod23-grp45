@@ -164,7 +164,7 @@ module Forward_Unit #(
     // test
     always_comb begin
         if (
-            //id_exe_rf_wen && (if_id_rs1 == id_exe_rd || if_id_rs2 == id_exe_rd) && id_exe_rd != 0 || 
+            //id_exe_rf_wen && (if_id_rs1 == id_exe_rd || if_id_rs2 == id_exe_rd) && id_exe_rd != 0 || // Lab 6: 50
             exe_mem_rf_wen && (if_id_rs1 == exe_mem_rd || if_id_rs2 == exe_mem_rd) && exe_mem_rd != 0 || 
             wb_rf_we && (if_id_rs1 == wb_rd || if_id_rs2 == wb_rd) && wb_rd != 0 ||
             mem_hazard_a || mem_hazard_b // mem hazard
