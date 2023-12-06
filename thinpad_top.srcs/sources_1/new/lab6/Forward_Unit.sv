@@ -50,6 +50,11 @@ module Forward_Unit #(
     input wire [4:0] id_exe_rd, // inst1: ID -> EXE rd (exe_mem_rd == id_exe_rd)
     input wire exe_is_load,     // inst1: load instruction
 
+    // add signals
+    input wire id_exe_rf_wen,
+    input wire wb_rf_we,
+    input wire [4:0] wb_rd,
+
     input wire use_mem_dat_a, // mark mem hazard a
     input wire use_mem_dat_b, // mark mem hazard b
     input wire [DATA_WIDTH-1:0] mem_wb_dat, // inst1: data of rd loaded form memory
@@ -148,8 +153,22 @@ module Forward_Unit #(
     end
 
     // mem hazard stall
+    // always_comb begin
+    //     if (mem_hazard_a || mem_hazard_b) begin
+    //         exe_stall_req = 1;
+    //     end else begin
+    //         exe_stall_req = 0;
+    //     end
+    // end
+
+    // test
     always_comb begin
-        if (mem_hazard_a || mem_hazard_b) begin
+        if (
+            //id_exe_rf_wen && (if_id_rs1 == id_exe_rd || if_id_rs2 == id_exe_rd) && id_exe_rd != 0 || 
+            exe_mem_rf_wen && (if_id_rs1 == exe_mem_rd || if_id_rs2 == exe_mem_rd) && exe_mem_rd != 0 || 
+            wb_rf_we && (if_id_rs1 == wb_rd || if_id_rs2 == wb_rd) && wb_rd != 0 ||
+            mem_hazard_a || mem_hazard_b // mem hazard
+        ) begin
             exe_stall_req = 1;
         end else begin
             exe_stall_req = 0;

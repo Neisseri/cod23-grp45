@@ -633,6 +633,12 @@ module thinpad_top #(
     .if_id_rs2(id_rs2),
     .id_exe_rd(id_exe_rd),
     .exe_is_load(exe_is_load),
+
+    // add signal
+    .id_exe_rf_wen(id_exe_rf_wen),
+    .wb_rf_we(wb_rf_we),
+    .wb_rd(wb_rd),
+
     .use_mem_dat_a(use_mem_dat_a_o),
     .use_mem_dat_b(use_mem_dat_b_o),
     .mem_wb_dat(mem_wb_wdata),
