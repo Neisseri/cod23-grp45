@@ -47,7 +47,10 @@ module Data_memory #(
     output logic [DATA_WIDTH-1:0] data_out,
 
     input wire pipeline_stall,
-    output logic idle_stall
+    output logic idle_stall,
+
+    output logic exception_occured_o,
+    output logic [DATA_WIDTH-1:0] exception_cause_o
     );
 
     typedef enum logic [3:0] {
@@ -98,6 +101,8 @@ module Data_memory #(
 
     always_ff @(posedge clk) begin
         if(rst)begin
+            exception_occured_o <= 0;
+            exception_cause_o <= 0;
             data_out_raw <= 0;
             state <= STATE_IDLE;
         end else begin
@@ -164,7 +169,10 @@ module Instruction_memory #(
     output reg [DATA_WIDTH-1:0] data_out,
 
     input wire pipeline_stall,
-    output logic idle_stall
+    output logic idle_stall,
+
+    output logic exception_occured_o,
+    output logic [DATA_WIDTH-1:0] exception_cause_o
 );
 
     // instruction cache
@@ -216,6 +224,8 @@ module Instruction_memory #(
 
     always_ff @(posedge clk) begin
         if (rst) begin
+            exception_occured_o <= 0;
+            exception_cause_o <= 0;
             for (int i = 0; i < CACHE_GROUP_SIZE; i = i + 1) begin
                 for (int j = 0; j < CACHE_ASSOCIATIVITY; j = j + 1) begin
                     cache[i][j] = 0;

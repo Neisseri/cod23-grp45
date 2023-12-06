@@ -50,7 +50,11 @@ module CSR_controller #(
     output reg priv_level_we_o,
     input wire [1:0] priv_level_i,
 
-    input wire time_interrupt_i
+    input wire time_interrupt_i,
+
+    input wire exception_occured_i,
+    input wire [DATA_WIDTH-1:0] exception_cause_i,
+    input wire [ADDR_WIDTH-1:0] exception_pc_i
     );
 
     reg exception_idle; // set 1 for idle after handling a exception
@@ -121,7 +125,27 @@ module CSR_controller #(
                 end else begin
                     csr_mtvec_we_o <= 0;
                     csr_mie_we_o <= 0;
-                    if (csr_mip_i[7] && csr_mie_i[7] && (priv_level_i == `PRIV_U_LEVEL || (priv_level_i == `PRIV_M_LEVEL && csr_mstatus_i[3]))) begin // time_interrupt
+                    if (exception_occured_i) begin
+                        csr_mcause_o <= exception_cause_i;
+                        csr_mcause_we_o <= 1;
+                        csr_mepc_o <= exception_pc_i;
+                        csr_mepc_we_o <= 1;
+                        csr_mstatus_o <= {
+                            csr_mstatus_i[31:13],
+                            `PRIV_U_LEVEL,
+                            csr_mstatus_i[10:8],
+                            csr_mstatus_i[3], // mpie <= mie
+                            csr_mstatus_i[6:4],
+                            1'b0, // mie <= 0
+                            csr_mstatus_i[2:0]
+                        };
+                        csr_mstatus_we_o <= 1;
+                        pc_next_exception_o <= csr_mtvec_i;
+                        mem_exception_o <= 1;
+                        exception_idle <= 1;
+                        priv_level_o <= `PRIV_M_LEVEL;
+                        priv_level_we_o <= 1;
+                    end else if (csr_mip_i[7] && csr_mie_i[7] && (priv_level_i == `PRIV_U_LEVEL || (priv_level_i == `PRIV_M_LEVEL && csr_mstatus_i[3]))) begin // time_interrupt
                         csr_mcause_o <= {1'b1, `USER_TIMER_INTERRUPT};
                         csr_mcause_we_o <= 1;
                         csr_mepc_o <= mem_pc_i;

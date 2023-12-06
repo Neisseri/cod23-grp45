@@ -71,7 +71,13 @@ module ID_EXE_reg #(
     output reg [3:0] wb_if_mem_o,
     output reg csr_we_o,
     output reg [11:0] csr_adr_o,
-    output reg [3:0] csr_op_o
+    output reg [3:0] csr_op_o,
+    
+    // exception
+    input wire exception_occured_i,
+    input wire [DATA_WIDTH-1:0] exception_cause_i,
+    output reg exception_occured_o,
+    output reg [DATA_WIDTH-1:0] exception_cause_o
     );
 
     always_ff @(posedge clk)begin
@@ -95,6 +101,8 @@ module ID_EXE_reg #(
             csr_we_o <= 0;
             csr_adr_o <= 0;
             csr_op_o <= 0;
+            exception_occured_o <= 0;
+            exception_cause_o <= 0;
         end else begin
             if(!stall)begin
                 if(bubble)begin
@@ -117,6 +125,8 @@ module ID_EXE_reg #(
                     csr_we_o <= 0;
                     csr_adr_o <= 0;
                     csr_op_o <= 0;
+                    exception_occured_o <= 0;
+                    exception_cause_o <= 0;
                 end else begin
                     instr_o <= instr_i;
                     pc_o <= pc_i;
@@ -137,6 +147,8 @@ module ID_EXE_reg #(
                     csr_we_o <= csr_we_i;
                     csr_adr_o <= csr_adr_i;
                     csr_op_o <= csr_op_i;
+                    exception_occured_o <= exception_occured_i;
+                    exception_cause_o <= exception_cause_i;
                 end
             end
         end
