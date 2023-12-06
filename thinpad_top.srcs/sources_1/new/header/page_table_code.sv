@@ -35,3 +35,24 @@ typedef struct packed {
     logic [8:0] asid,
     logic [`PPN1_LENGTH+`PPN0_LENGTH-1:0] ppn
 } satp_t;
+
+`define TLBT_LENGTH 5
+`define TLBI_LENGTH (32 - `TLBI_LENGTH - `PAGE_OFFSET)
+`define ASID_LENGTH 8
+
+typedef struct packed {
+    logic [`TLBI_LENGTH-1:0] TLBI,
+    logic [`TLBT_LENGTH-1:0] TLBT,
+    logic [`PAGE_OFFSET-1:0] offset
+} tlb_req_t;
+
+typedef struct packed {
+    logic [`TLBI_LENGTH-1:0] TLBI,
+    logic [`ASID_LENGTH-1:0] ASID, // not used temporary
+    page_entry_t page,
+    logic valid
+} tlb_entry_t;
+
+`define MMU_OWN 0
+`define TRANSLATE_OWN 1
+`define CACHE_OWN 2

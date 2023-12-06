@@ -11,27 +11,25 @@ module Translation #(
     input wire if_fetch_instruction,
     input wire if_user_mode,
 
-    // CPU to Translation
+    // TLB to Translation
     input wire [ADDR_WIDTH-1:0] query_addr,
-    input wire [DATA_WIDTH-1:0] query_data_i,
-    input wire query_mem_en,
-    input wire query_write_en,
-    input wire [DATA_WIDTH/8-1:0] query_sel,
+    input wire translation_en,
 
-    // Translation to CPU
+    // Translation to TLB
     output logic translation_ready,
-    output logic [DATA_WIDTH-1:0] query_data_o,
+    output reg [ADDR_WIDTH-1:0] query_addr_o,
 
-    // Memory to Translation
-    input wire mem_ready,
-    input wire [DATA_WIDTH-1:0] mem_data_i,
+    // Wishbone to Translation
+    input wire wb_ack_i,
+    input wire [DATA_WIDTH-1:0] wb_dat_i,
 
     // Translation to Memory
-    output reg [ADDR_WIDTH-1:0] phy_addr,
-    output reg mem_en,
-    output reg write_en,
-    output logic [DATA_WIDTH-1:0] mem_data_o,
-    output logic [DATA_WIDTH/8-1:0] mem_sel_o,
+    output logic wb_cyc_o,
+    output logic wb_stb_o,
+    output reg [ADDR_WIDTH-1:0] wb_adr_o,
+    output logic [DATA_WIDTH-1:0] wb_dat_o,
+    output logic [DATA_WIDTH/8-1:0] wb_sel_o,
+    output logic wb_we_o,
 
     // CSR to Translation
     input wire satp_t satp_i,
@@ -48,16 +46,17 @@ typedef enum logic {
     STATE_FETCH_TABLE_DONE,
     STATE_FIND_PAGE,
     STATE_FIND_LEAF,
-    STATE_READ_DATA,
     STATE_DONE
 } state_t;
 
     state_t state;
 
     always_comb begin
-        mem_data_o = query_data_i;
-        mem_sel_o = query_sel;
-        query_data_o = mem_data_i;
+        wb_dat_o = 0; // not write
+        wb_we_o = 0;
+        wb_sel_o = 4'b1111;
+        wb_cyc_o = (state == STATE_FETCH_TABLE) || (state == STATE_FIND_PAGE)
+        wb_stb_o = (state == STATE_FETCH_TABLE) || (state == STATE_FIND_PAGE)
         translation_ready = (state == STATE_IDLE) || (state == STATE_DONE);
     end
 
@@ -71,12 +70,11 @@ typedef enum logic {
     
     always_ff @(posedge clk) begin
         if(rst)begin
-            mem_en <= 0;
-            write_en <= 0;
             instruction_page_fault <= 0;
             load_page_fault <= 0;
             store_page_fault <= 0;
-            phy_addr <= 0;
+            query_addr_o <= 0;
+            wb_adr_o <= 0;
             cur_page <= 0;
             state <= STATE_IDLE;
         end else begin
@@ -85,94 +83,75 @@ typedef enum logic {
                     instruction_page_fault <= 0;
                     load_page_fault <= 0;
                     store_page_fault <= 0;
-                    if(query_mem_en)begin
-                        phy_addr <= page_base + (vir_addr.VPN1 << `PAGE_OFFSET);
-                        mem_en <= 1;
-                        write_en <= 0;
+                    if(translation_en)begin
+                        wb_adr_o <= page_base + (vir_addr.VPN1 << `PAGE_OFFSET);
                         cur_page <= 0;
                         state <= STATE_FETCH_TABLE;
                     end
                 end
                 STATE_FETCH_TABLE: begin
                     if(mem_ready)begin
-                        mem_en <= 0;
-                        write_en <= 0;
-                        cur_page <= mem_data_i;
+                        cur_page <= wb_dat_i;
                         state <= STATE_FETCH_TABLE_DONE;
                     end
                 end
                 STATE_FETCH_TABLE_DONE: begin
                     if(cur_page.V == 0 || (cur_page.R == 0 && cur_page.W == 1))begin
-                        phy_addr <= 0;
+                        query_addr_o <= 0;
                         if(if_fetch_instruction) instruction_page_fault <= 1;
                         else load_page_fault <= 1;
                         state <= STATE_DONE;
                     end else begin
                         if(cur_page.X == 0 && cur_page.R == 0)begin
-                            mem_en <= 1;
-                            write_en <= 0;
-                            phy_addr <= {cur_page.PPN1[`PPN1_LENGTH-3:0], cur_page.PPN0[`PPN0_LENGTH-1:0], {`PAGE_OFFSET{0}}} + (vir_addr.VPN0 << `PAGE_OFFSET);
+                            wb_adr_o <= {cur_page.PPN1[`PPN1_LENGTH-3:0], cur_page.PPN0[`PPN0_LENGTH-1:0], {`PAGE_OFFSET{0}}} + (vir_addr.VPN0 << `PAGE_OFFSET);
                             state <= STATE_FIND_PAGE;
                         end else begin
-                            mem_en <= 0;
-                            write_en <= 0;
-                            phy_addr <= 0;
+                            wb_adr_o <= 0;
                             state <= STATE_FIND_LEAF;
                         end
                     end
                 end
                 STATE_FIND_PAGE: begin
                     if(mem_ready)begin
-                        mem_en <= 0;
-                        write_en <= 0;
-                        cur_page <= mem_data_i;
+                        cur_page <= wb_dat_i;
                         state <= STATE_FIND_LEAF;
                     end
                 end
                 STATE_FIND_LEAF: begin
                     if(cur_page.V == 0 || (cur_page.R == 0 && cur_page.W == 1))begin
-                        phy_addr <= 0;
+                        query_addr_o <= 0;
                         if(if_fetch_instruction) instruction_page_fault <= 1;
                         else load_page_fault <= 1;
                         state <= STATE_DONE;
                     end else begin
                         if(cur_page.X == 0 && cur_page.R == 0)begin
-                            phy_addr <= 0;
+                            query_addr_o <= 0;
                             if(if_fetch_instruction) instruction_page_fault <= 1;
                             else load_page_fault <= 1;
                             state <= STATE_DONE;
                         end else begin
                             if(cur_page.U && !if_user_mode)begin
-                                phy_addr <= 0;
+                                query_addr_o <= 0;
                                 if(if_fetch_instruction) instruction_page_fault <= 1;
                                 else load_page_fault <= 1;
                                 state <= STATE_DONE;
                             end else if(!cur_page.X && if_fetch_instruction)begin
-                                phy_addr <= 0;
+                                query_addr_o <= 0;
                                 instruction_page_fault <= 1;
                                 state <= STATE_DONE;
                             end else if(!cur_page.W && query_write_en)begin
-                                phy_addr <= 0;
+                                query_addr_o <= 0;
                                 store_page_fault <= 1;
                                 state <= STATE_DONE;
                             end else if(!cur_page.R && !if_fetch_instruction)begin
-                                phy_addr <= 0;
+                                query_addr_o <= 0;
                                 load_page_fault <= 1;
                                 state <= STATE_DONE;
                             end else begin
-                                phy_addr <= {cur_page.PPN1[`PPN1_LENGTH-3:0], cur_page.PPN0[`PPN0_LENGTH-1:0], vir_addr.offset};
-                                mem_en <= query_mem_en;
-                                write_en <= query_write_en;
-                                state <= STATE_READ_DATA;
+                                query_addr_o <= {cur_page.PPN1[`PPN1_LENGTH-3:0], cur_page.PPN0[`PPN0_LENGTH-1:0], vir_addr.offset};
+                                state <= STATE_DONE;
                             end
                         end
-                    end
-                end
-                STATE_READ_DATA: begin
-                    if(mem_ready)begin
-                        mem_en <= 0;
-                        write_en <= 0;
-                        state <= STATE_DONE;
                     end
                 end
                 STATE_DONE: begin

@@ -51,11 +51,11 @@ module Data_memory #(
     );
 
     typedef enum logic [3:0] {
-    STATE_IDLE,
-    STATE_WRITE_SRAM_ACTION,
-    STATE_READ_SRAM_ACTION,
-    STATE_DONE
-} state_t;
+        STATE_IDLE,
+        STATE_WRITE_SRAM_ACTION,
+        STATE_READ_SRAM_ACTION,
+        STATE_DONE
+    } state_t;
 
     state_t state;
     
@@ -79,7 +79,7 @@ module Data_memory #(
     reg [DATA_WIDTH-1:0] data_out_raw;
     logic [DATA_WIDTH-1:0] data_out_shift;
 
-    //符号位拓�??
+    //符号位拓�??
     logic sign_bit;
     always_comb begin
         case (sel)
