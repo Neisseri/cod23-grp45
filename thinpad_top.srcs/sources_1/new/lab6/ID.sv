@@ -106,11 +106,6 @@ module ID(
     logic [9:0] funct;
     assign funct = {funct7, funct3};
 
-    always_comb begin // change here when id exception occurs
-        exception_occured_o = 0;
-        exception_cause_o = 0;
-    end
-
     always_comb begin
         csr_adr_o = 0;
         op_type = OP_UNKNOWN;
@@ -285,6 +280,8 @@ module ID(
         csr_we_o = 0;
         csr_op_o = 0;
         id_exception_o = 0;
+        exception_occured_o = 0;
+        exception_cause_o = 0;
         case (op_type)
             OP_LUI: begin
                 alu_op = `ALU_ADD;
