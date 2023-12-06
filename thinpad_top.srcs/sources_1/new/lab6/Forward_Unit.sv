@@ -26,29 +26,17 @@ module Forward_Unit #(
 )(
     // set register addrin ID, get register data in ID_EXE_reg
 
-    // EXE hazard
-    // inst1: IF ID EXE MEM WB         rd
-    //                       | 
-    // inst2:    IF ID  EXE MEM        rs1/rs2
-    // inst3:       IF  ID  EXE MEM    rs1/rs2
-    // inst4:           IF  ID  EXE    rs1/rs2
-    input wire [4:0] id_exe_rs1, // inst2/3/4: ID -> EXE rs1
-    input wire [4:0] id_exe_rs2, // inst2/3/4: ID -> EXE rs2
-    input wire [4:0] exe_mem_rd, // inst1: EXE -> MEM rd
-    input wire exe_mem_rf_wen,   // inst1: write data into rd
+    input wire [4:0] id_exe_rs1,
+    input wire [4:0] id_exe_rs2,
+    input wire [4:0] exe_mem_rd,
+    input wire exe_mem_rf_wen,
 
-    input wire [DATA_WIDTH-1:0] exe_mem_dat, // inst1 rd data
+    input wire [DATA_WIDTH-1:0] exe_mem_dat,
 
-    // MEM hazard
-    // inst1: IF ID EXE MEM WB         rd, load data in MEM, and write into rd in WB
-    //                   |
-    // inst2:    IF ID  EXE MEM        rs1/rs2, stall 1 cycle
-    // inst3:       IF  ID  EXE MEM    rs1/rs2, no stall
-    // inst4:           IF  ID  EXE    rs1/rs2, no stall
-    input wire [4:0] if_id_rs1, // inst2/3/4: IF -> ID rs1
-    input wire [4:0] if_id_rs2, // inst2/3/4: IF -> ID rs2
-    input wire [4:0] id_exe_rd, // inst1: ID -> EXE rd (exe_mem_rd == id_exe_rd)
-    input wire exe_is_load,     // inst1: load instruction
+    input wire [4:0] if_id_rs1,
+    input wire [4:0] if_id_rs2,
+    input wire [4:0] id_exe_rd,
+    input wire exe_is_load,
 
     // add signals
     input wire id_exe_rf_wen,
@@ -57,81 +45,129 @@ module Forward_Unit #(
 
     input wire use_mem_dat_a, // mark mem hazard a
     input wire use_mem_dat_b, // mark mem hazard b
-    input wire [DATA_WIDTH-1:0] mem_wb_dat, // inst1: data of rd loaded form memory
+    input wire [DATA_WIDTH-1:0] mem_wb_dat,
 
-    input wire [2:0] id_exe_alu_mux_a, // inst2/3/4: ID -> EXE data type of alu input a 
-    input wire [2:0] id_exe_alu_mux_b, // inst2/3/4: ID -> EXE data type of alu input b
+    input wire [2:0] id_exe_alu_mux_a,
+    input wire [2:0] id_exe_alu_mux_b,
 
     // output --------------------------------------------------------------------
 
-    output logic [2:0] alu_mux_a, // inst2/3/4: alu_a data type
-    output logic [2:0] alu_mux_b, // inst2/3/4: alu_b data type
-    output logic [DATA_WIDTH-1:0] alu_a_forward, // inst2/3/4: alu_a forward data
-    output logic [DATA_WIDTH-1:0] alu_b_forward, // inst2/3/4: alu_b forward data
+    output logic [2:0] alu_mux_a,
+    output logic [2:0] alu_mux_b,
+    output logic [DATA_WIDTH-1:0] alu_a_forward,
+    output logic [DATA_WIDTH-1:0] alu_b_forward,
 
     // mem hazard: need stall
     output logic exe_stall_req,
-    output logic pass_use_mem_dat_a, // rs1 mem hazard
-    output logic pass_use_mem_dat_b, // rs2 mem hazard
+    output logic pass_use_mem_dat_a, // mem hazard a
+    output logic pass_use_mem_dat_b, // mem hazard b
 
     // branch hazard
     output logic branch_rs1,
     output logic branch_rs2
 );
+    // hazard 1
+    // ints1: IF ID-EXE MEM WB
+    // inst2:    IF-ID  EXE MEM WB
 
-    logic exe_hazard_a;
-    logic exe_hazard_b;
-    logic mem_hazard_a;
-    logic mem_hazard_b;
+    // hazard 2
+    // inst1: IF ID EXE-MEM WB
+    // inst2:       IF -ID  EXE MEM WB
 
-    // check EXE hazard
+    // hazard 3 (mem hazard) = hazard1 && exe_is_load
+    // ints1: IF ID EXE-MEM WB
+    // inst2:    IF-ID  EXE MEM WB
+
+    // hazard 4 (mem hazard) = hazard2 && exe_is_load
+    // TODO: don't need stall?
+    // inst1: IF ID EXE-MEM WB
+    // inst2:       IF -ID  EXE MEM WB
+
+    logic hazard1_a;
+    logic hazard1_b;
+    logic hazard2_a;
+    logic hazard2_b;
+    logic hazard3_a;
+    logic hazard3_b;
+    logic hazard4_a;
+    logic hazard4_b;
+
+    // check hazard 1
+    // id_exe_rf_wen && (if_id_rs1 == id_exe_rd || if_id_rs2 == id_exe_rd) && id_exe_rd != 0
     always_comb begin
-        if (exe_mem_rd == id_exe_rs1 && exe_mem_rd != 0 && exe_mem_rf_wen) begin // RAW
-            exe_hazard_a = 1;
+        if (id_exe_rd == if_id_rs1 && id_exe_rd != 0 && id_exe_rf_wen) begin // rs1
+            hazard1_a = 1;
         end else begin
-            exe_hazard_a = 0;
+            hazard1_a = 0;
         end
-        if (exe_mem_rd == id_exe_rs2 && exe_mem_rd != 0 && exe_mem_rf_wen) begin // RAW
-            exe_hazard_b = 1;
+        if (id_exe_rd == if_id_rs2 && id_exe_rd != 0 && id_exe_rf_wen) begin // rs2
+            hazard1_b = 1;
         end else begin
-            exe_hazard_b = 0;
+            hazard1_b = 0;
         end
     end
 
-    // check MEM hazard
+    // check hazard 1
+    // exe_mem_rf_wen && (if_id_rs1 == exe_mem_rd || if_id_rs2 == exe_mem_rd) && exe_mem_rd != 0
     always_comb begin
-        if (id_exe_rd == if_id_rs1 && id_exe_rd != 0 && exe_is_load) begin
-            mem_hazard_a = 1;
+        if (exe_mem_rd == if_id_rs1 && exe_mem_rd != 0 && exe_mem_rf_wen) begin // rs1
+            hazard2_a = 1;
         end else begin
-            mem_hazard_a = 0;
+            hazard2_a = 0;
         end
-        if (id_exe_rd == if_id_rs2 && id_exe_rd != 0 && exe_is_load) begin
-            mem_hazard_b = 1;
+        if (exe_mem_rd == if_id_rs2 && exe_mem_rd != 0 && exe_mem_rf_wen) begin // rs2
+            hazard2_b = 1;
         end else begin
-            mem_hazard_b = 0;
+            hazard2_b = 0;
+        end
+    end
+
+    // check hazard 3 and 4
+    always_comb begin
+        // hazard 3
+        if (hazard1_a && exe_is_load) begin // rs1
+            hazard3_a = 1;
+        end else begin
+            hazard3_a = 0;
+        end
+        if (hazard1_b && exe_is_load) begin // rs2
+            hazard3_b = 1;
+        end else begin
+            hazard3_b = 0;
+        end
+        // hazard 4
+        if (hazard2_a && exe_is_load) begin // rs1
+            hazard4_a = 1;
+        end else begin
+            hazard4_a = 0;
+        end
+        if (hazard2_b && exe_is_load) begin // rs2
+            hazard4_b = 1;
+        end else begin
+            hazard4_b = 0;
         end
     end
 
     // alu control signals
     always_comb begin
         // rs1
-        if (exe_hazard_a) begin // exe hazard
-            alu_mux_a = `ALU_MUX_FORWARD;
-            alu_a_forward = exe_mem_dat;
-        end else if (use_mem_dat_a) begin // mem hazard
+        if (use_mem_dat_a) begin // mem hazard (3 or 4)
             alu_mux_a = `ALU_MUX_FORWARD;
             alu_a_forward = mem_wb_dat;
+        end else if (hazard1_a || hazard2_a) begin // hazard 1 or 2
+            alu_mux_a = `ALU_MUX_FORWARD;
+            alu_a_forward = exe_mem_dat;
         end else begin // no hazard
             alu_mux_a = id_exe_alu_mux_a;
             alu_a_forward = 0;
         end
         // rs2
-        if (exe_hazard_b) begin // exe hazard
-            alu_mux_b = `ALU_MUX_FORWARD;
-            alu_b_forward = exe_mem_dat;
-        end else if (use_mem_dat_b) begin // mem hazard
+        if (use_mem_dat_b) begin // mem hazard (3 or 4)
             alu_mux_b = `ALU_MUX_FORWARD;
             alu_b_forward = mem_wb_dat;
+        end else if (hazard1_b || hazard2_b) begin // hazard 1 or 2
+            alu_mux_b = `ALU_MUX_FORWARD;
+            alu_b_forward = exe_mem_dat;
         end else begin // no hazard
             alu_mux_b = id_exe_alu_mux_b;
             alu_b_forward = 0;
@@ -140,12 +176,14 @@ module Forward_Unit #(
 
     // mem hazard signal
     always_comb begin
-        if (mem_hazard_a) begin
+        // rs1
+        if (hazard3_a || hazard4_a) begin // hazard 3 or 4
             pass_use_mem_dat_a = 1;
         end else begin
             pass_use_mem_dat_a = 0;
         end
-        if (mem_hazard_b) begin
+        // rs2
+        if (hazard3_b || hazard4_b) begin // hazard 3 or 4
             pass_use_mem_dat_b = 1;
         end else begin
             pass_use_mem_dat_b = 0;
@@ -164,10 +202,10 @@ module Forward_Unit #(
     // test
     always_comb begin
         if (
-            //id_exe_rf_wen && (if_id_rs1 == id_exe_rd || if_id_rs2 == id_exe_rd) && id_exe_rd != 0 || // Lab 6: 50
-            exe_mem_rf_wen && (if_id_rs1 == exe_mem_rd || if_id_rs2 == exe_mem_rd) && exe_mem_rd != 0 || 
-            wb_rf_we && (if_id_rs1 == wb_rd || if_id_rs2 == wb_rd) && wb_rd != 0 ||
-            mem_hazard_a || mem_hazard_b // mem hazard
+            id_exe_rf_wen && (if_id_rs1 == id_exe_rd || if_id_rs2 == id_exe_rd) && id_exe_rd != 0 || // hazard2 Lab 6: 50
+            exe_mem_rf_wen && (if_id_rs1 == exe_mem_rd || if_id_rs2 == exe_mem_rd) && exe_mem_rd != 0 || // Lab 6: 0
+            wb_rf_we && (if_id_rs1 == wb_rd || if_id_rs2 == wb_rd) && wb_rd != 0 || // Lab 6: 100
+            hazard3_a || hazard3_b || hazard4_a || hazard4_b
         ) begin
             exe_stall_req = 1;
         end else begin
