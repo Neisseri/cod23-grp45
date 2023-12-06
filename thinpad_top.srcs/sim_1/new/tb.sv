@@ -74,14 +74,14 @@ module tb;
     uart.pc_send_byte(8'h47); // ASCII 'G'
     #10000;
     #10000;
-    uart.pc_send_byte(8'hc0);
+    uart.pc_send_byte(8'ha8);
     #10000;
     uart.pc_send_byte(8'h10);
     #10000;
     uart.pc_send_byte(8'h00);
     #10000;
     uart.pc_send_byte(8'h80);
-    #10000;
+    #10000; // 800010a8
 
   end
 

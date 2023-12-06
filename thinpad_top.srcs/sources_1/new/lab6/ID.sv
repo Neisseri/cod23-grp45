@@ -40,6 +40,8 @@ module ID(
         output logic rf_wen,
         output logic [3:0] wb_if_mem,
 
+        output logic id_exception_o,
+
         output logic csr_we_o,
         output logic [11:0] csr_adr_o,
         output logic [3:0] csr_op_o
@@ -273,6 +275,7 @@ module ID(
     always_comb begin
         csr_we_o = 0;
         csr_op_o = 0;
+        id_exception_o = 0;
         case (op_type)
             OP_LUI: begin
                 alu_op = `ALU_ADD;
@@ -549,6 +552,7 @@ module ID(
                 sel = 4'b0000;
                 rf_wen = 0;
                 wb_if_mem = 0;
+                id_exception_o = 1;
                 csr_op_o = `ENV_ECALL;
             end
             OP_EBREAK: begin
@@ -560,6 +564,7 @@ module ID(
                 sel = 4'b0000;
                 rf_wen = 0;
                 wb_if_mem = 0;
+                id_exception_o = 1;
                 csr_op_o = `ENV_EBREAK;
             end
             OP_MRET: begin
@@ -571,6 +576,7 @@ module ID(
                 sel = 4'b0000;
                 rf_wen = 0;
                 wb_if_mem = 0;
+                id_exception_o = 1;
                 csr_op_o = `ENV_MRET;
             end
             default: begin // NOP: addi zero, zero, 0

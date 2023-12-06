@@ -236,8 +236,12 @@ module thinpad_top #(
   logic mem_stall_req;
   logic id_flush_req;
   logic exe_stall_req;
+  logic id_exception;
+  logic id_branch_req;
   logic mem_exception;
   logic time_interrupt;
+
+  assign id_flush_req = id_exception | id_branch_req;
 
   logic pc_stall;
   logic if_id_stall;
@@ -286,7 +290,7 @@ module thinpad_top #(
   logic [ADDR_WIDTH-1:0] pc_next_exception;
   logic [ADDR_WIDTH-1:0] if_id_pc;
   PC_mux PC_mux_u(
-    .branch(id_flush_req),
+    .branch(id_branch_req),
     .branch_addr(pc_branch_addr),
     .exception(mem_exception),
     .next_exception(pc_next_exception),
@@ -371,6 +375,7 @@ module thinpad_top #(
     .sel(id_sel),
     .rf_wen(id_rf_wen),
     .wb_if_mem(id_wb_if_mem),
+    .id_exception_o(id_exception),
     .csr_we_o(id_csr_we),
     .csr_adr_o(id_csr_adr),
     .csr_op_o(id_csr_op)
@@ -418,7 +423,7 @@ module thinpad_top #(
     .data_b(branch_rs2_dat),
     .imm(id_imm),
     .pc(if_id_pc),
-    .comp_result(id_flush_req),
+    .comp_result(id_branch_req),
     .new_pc(pc_branch_addr)
   );
   
