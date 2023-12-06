@@ -59,27 +59,32 @@ module CSR_controller #(
         csr_adr_o = 0;
         csr_wdat_o = 0;
         csr_we_o = 0;
+        csr_o = 0;
         if (!exception_idle) begin
             case(csr_op_i)
                 `CSR_CSRRW: begin
                     csr_adr_o = csr_adr_i;
                     csr_wdat_o = rs1_dat_i;
                     csr_we_o = csr_we_i;
+                    csr_o = csr_i;
                 end
                 `CSR_CSRRS: begin
                     csr_adr_o = csr_adr_i;
                     csr_wdat_o = csr_i | rs1_dat_i;
                     csr_we_o = csr_we_i;
+                    csr_o = csr_i;
                 end
                 `CSR_CSRRC: begin
                     csr_adr_o = csr_adr_i;
                     csr_wdat_o = csr_i & ~rs1_dat_i;
                     csr_we_o = csr_we_i;
+                    csr_o = csr_i;
                 end
                 default: begin
                     csr_adr_o = 0;
                     csr_wdat_o = 0;
                     csr_we_o = 0;
+                    csr_o = 0;
                 end
             endcase
             if (time_interrupt_i) begin
@@ -102,7 +107,6 @@ module CSR_controller #(
             priv_level_we_o <= 0;
             mem_exception_o <= 0;
             exception_idle <= 0;
-            csr_o <= 0;
         end else begin
             if (!stall) begin
                 if (bubble || exception_idle) begin
@@ -114,11 +118,9 @@ module CSR_controller #(
                     csr_mie_we_o <= 0;
                     mem_exception_o <= 0;
                     exception_idle <= 0;
-                    csr_o <= 0;
                 end else begin
                     csr_mtvec_we_o <= 0;
                     csr_mie_we_o <= 0;
-                    csr_o <= csr_i;
                     if (csr_mip_i[7] && csr_mie_i[7] && (priv_level_i == `PRIV_U_LEVEL || (priv_level_i == `PRIV_M_LEVEL && csr_mstatus_i[3]))) begin // time_interrupt
                         csr_mcause_o <= {1'b1, `USER_TIMER_INTERRUPT};
                         csr_mcause_we_o <= 1;
