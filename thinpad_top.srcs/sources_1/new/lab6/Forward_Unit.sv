@@ -75,7 +75,7 @@ module Forward_Unit #(
 );
 
     logic exe_hazard_a;
-    logic exe_hazard_a;
+    logic exe_hazard_b;
     logic mem_hazard_a;
     logic mem_hazard_b;
 
@@ -95,12 +95,12 @@ module Forward_Unit #(
 
     // check MEM hazard
     always_comb begin
-        if (id_exe_rd == if_id_rs1 && id_exe_rd != 0 && exe_is_load) begin // RAW
+        if (id_exe_rd == if_id_rs1 && id_exe_rd != 0 && exe_is_load) begin
             mem_hazard_a = 1;
         end else begin
             mem_hazard_a = 0;
         end
-        if (id_exe_rd == if_id_rs2 && id_exe_rd != 0 && exe_is_load) begin // RAW
+        if (id_exe_rd == if_id_rs2 && id_exe_rd != 0 && exe_is_load) begin
             mem_hazard_b = 1;
         end else begin
             mem_hazard_b = 0;
