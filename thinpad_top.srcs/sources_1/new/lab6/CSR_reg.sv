@@ -26,6 +26,7 @@ module CSR_reg #(
     input wire [DATA_WIDTH-1:0] csr_mie_i,
     input wire csr_mie_we_i,
 
+    output reg [DATA_WIDTH-1:0] csr_satp_o,
     output reg [DATA_WIDTH-1:0] csr_mstatus_o,
     output reg [DATA_WIDTH-1:0] csr_mtvec_o,
     output reg [DATA_WIDTH-1:0] csr_mepc_o,
@@ -38,6 +39,7 @@ module CSR_reg #(
     output reg [1:0] priv_level_o
     );
     
+    reg [DATA_WIDTH-1:0] satp;
     reg [DATA_WIDTH-1:0] mstatus;
     reg [DATA_WIDTH-1:0] mtvec;
     reg [DATA_WIDTH-1:0] mscratch;
@@ -50,6 +52,7 @@ module CSR_reg #(
     always_comb begin
         case(csr_adr_i)
              // TODO: correct reset value
+            12'h180: csr_o = satp;
             12'h300: csr_o = mstatus;
             12'h304: csr_o = mie;
             12'h305: csr_o = mtvec;
@@ -59,6 +62,7 @@ module CSR_reg #(
             12'h344: csr_o = mip;
         endcase
 
+        csr_satp_o = satp;
         csr_mstatus_o = mstatus;
         csr_mtvec_o = mtvec;
         csr_mepc_o = mepc;
@@ -72,6 +76,7 @@ module CSR_reg #(
     always_ff @(posedge clk) begin
         if(rst) begin
             priv_level <= `PRIV_M_LEVEL;
+            satp <= 0;
             mstatus <= 0;
             mtvec <= 0;
             mscratch <= 0;
@@ -82,6 +87,7 @@ module CSR_reg #(
         end else begin
             if (csr_we_i) begin
                 case(csr_wadr_i)
+                    12'h180: satp <= csr_wdat_i;
                     12'h300: mstatus <= csr_wdat_i;
                     12'h304: mie <= csr_wdat_i;
                     12'h305: mtvec <= csr_wdat_i;

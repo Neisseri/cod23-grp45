@@ -28,7 +28,7 @@ module TLB #(
     output reg [DATA_WIDTH-1:0] query_data_o,
 
     // TLB to Translation
-    output logic tlb_query_addr,
+    output logic [ADDR_WIDTH-1:0] tlb_query_addr,
     output reg translation_en,
 
     // Translation to TLB
