@@ -58,9 +58,13 @@ module Forward_Unit #(
     output logic [DATA_WIDTH-1:0] alu_a_forward, // inst2/3: alu_a forward data
     output logic [DATA_WIDTH-1:0] alu_b_forward, // inst2/3: alu_b forward data
 
+    // load and exe hazard: write into rs1/rs2, need stall
+    // inst1: ID EXE -> MEM             rd load from memory
+    //                   |
+    // inst2:     ID -> EXE MEM         rs1, rs2
     //output logic exe_stall_req,
-    output logic pass_use_mem_dat_a, // pass `use_mem_dat_a` to next stage
-    output logic pass_use_mem_dat_b, // pass `use_mem_dat_b` to next stage
+    output logic pass_use_mem_dat_a, // pass data_a written in MEM to EXE
+    output logic pass_use_mem_dat_b, // pass data_b written in MEM to EXE
 
     // branch hazard
     output logic branch_rs1,
@@ -126,10 +130,7 @@ module Forward_Unit #(
         end
     end
 
-    // TODO: ----------------------------------------------------------------------------------------------------------
-
     always_comb begin
-
         pass_use_mem_dat_a = 0;
         pass_use_mem_dat_b = 0;
         branch_rs1 = 0;
