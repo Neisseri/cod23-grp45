@@ -38,17 +38,25 @@ module ID(
         output logic [3:0] sel,
 
         output logic rf_wen,
-        output logic wb_if_mem
+        output logic [3:0] wb_if_mem,
+
+        output logic id_exception_o,
+
+        output logic csr_we_o,
+        output logic [11:0] csr_adr_o,
+        output logic [3:0] csr_op_o
     );
 
     logic [2:0] funct3;
     logic [6:0] opcode;
     logic [6:0] funct7;
+    logic [11:0] funct12;
 
     always_comb begin
         opcode = instr[6:0];
         funct3 = instr[14:12];
         funct7 = instr[31:25];
+        funct12 = instr[31:20];
     end
     
     typedef enum logic [7:0]{
@@ -72,10 +80,18 @@ module ID(
         OP_SLLI,
         OP_SRLI,
         OP_XOR,
+        OP_SLTU,
 
         OP_CTZ,
         OP_ANDN,
         OP_MINU,
+
+        OP_CSRRC,
+        OP_CSRRS,
+        OP_CSRRW,
+        OP_EBREAK,
+        OP_ECALL,
+        OP_MRET,
 
         OP_NOP,
         OP_UNKNOWN
@@ -88,6 +104,7 @@ module ID(
     assign funct = {funct7, funct3};
 
     always_comb begin
+        csr_adr_o = 0;
         case (opcode)
             7'b0110011: begin // R-type
                 case (funct)
@@ -97,6 +114,7 @@ module ID(
                     10'b0000000_100: op_type = OP_XOR;
                     10'b0000101_110: op_type = OP_MINU;
                     10'b0100000_111: op_type = OP_ANDN;
+                    10'b0000000_011: op_type = OP_SLTU;
                     default: op_type = OP_UNKNOWN;
                 endcase
                 rd = instr[11:7];
@@ -185,6 +203,38 @@ module ID(
                 rs1 = 0;
                 rs2 = 0;
             end
+            7'b1110011: begin // SYSTEM(CSR)
+                case(funct3)
+                    3'b011: begin // CSRRC
+                        op_type = OP_CSRRC;
+                    end
+                    3'b010: begin // CSRRS
+                        op_type = OP_CSRRS;
+                    end
+                    3'b001: begin // CSRRW
+                        op_type = OP_CSRRW;
+                    end
+                    3'b000: begin // PRIV
+                        case(funct12)
+                            12'b000000000001: begin // EBREAK
+                                op_type = OP_EBREAK;
+                            end
+                            12'b000000000000: begin // ECALL
+                                op_type = OP_ECALL;
+                            end
+                            12'b001100000010: begin // MRET
+                                op_type = OP_MRET;
+                            end
+                            default: op_type = OP_UNKNOWN;
+                        endcase
+                    end
+                    default: op_type = OP_UNKNOWN;
+                endcase
+                rd = instr[11:7];
+                rs1 = instr[19:15];
+                rs2 = 0;
+                csr_adr_o = instr[31:20];
+            end
             default: begin
                 op_type = OP_UNKNOWN;
                 rd = 0;
@@ -223,6 +273,9 @@ module ID(
 
     //signal-gen
     always_comb begin
+        csr_we_o = 0;
+        csr_op_o = 0;
+        id_exception_o = 0;
         case (op_type)
             OP_LUI: begin
                 alu_op = `ALU_ADD;
@@ -296,6 +349,16 @@ module ID(
             end
             OP_ADD: begin
                 alu_op = `ALU_ADD;
+                alu_mux_a = `ALU_MUX_DATA;
+                alu_mux_b = `ALU_MUX_DATA;
+                mem_en = 0;
+                we = 0;
+                sel = 4'b0000;
+                rf_wen = 1;
+                wb_if_mem = 0;
+            end
+            OP_SLTU: begin
+                alu_op = `ALU_SLTU;
                 alu_mux_a = `ALU_MUX_DATA;
                 alu_mux_b = `ALU_MUX_DATA;
                 mem_en = 0;
@@ -443,6 +506,78 @@ module ID(
                 sel = 4'b0000;
                 rf_wen = 1;
                 wb_if_mem = 0;
+            end
+            OP_CSRRC: begin
+                alu_op = `ALU_ADD;
+                alu_mux_a = `ALU_MUX_DATA;
+                alu_mux_b = `ALU_MUX_IMM_B;
+                mem_en = 0;
+                we = 0;
+                sel = 4'b0000;
+                rf_wen = 1;
+                wb_if_mem = 2;
+                csr_we_o = 1;
+                csr_op_o = `CSR_CSRRC;
+            end
+            OP_CSRRW: begin
+                alu_op = `ALU_ADD;
+                alu_mux_a = `ALU_MUX_DATA;
+                alu_mux_b = `ALU_MUX_IMM_B;
+                mem_en = 0;
+                we = 0;
+                sel = 4'b0000;
+                rf_wen = 1;
+                wb_if_mem = 2;
+                csr_we_o = 1;
+                csr_op_o = `CSR_CSRRW;
+            end
+            OP_CSRRS: begin
+                alu_op = `ALU_ADD;
+                alu_mux_a = `ALU_MUX_DATA;
+                alu_mux_b = `ALU_MUX_IMM_B;
+                mem_en = 0;
+                we = 0;
+                sel = 4'b0000;
+                rf_wen = 1;
+                wb_if_mem = 2;
+                csr_we_o = 1;
+                csr_op_o = `CSR_CSRRS;
+            end
+            OP_ECALL: begin
+                alu_op = `ALU_ADD;
+                alu_mux_a = `ALU_MUX_DATA;
+                alu_mux_b = `ALU_MUX_IMM_B;
+                mem_en = 0;
+                we = 0;
+                sel = 4'b0000;
+                rf_wen = 0;
+                wb_if_mem = 0;
+                id_exception_o = 1;
+                csr_op_o = `ENV_ECALL;
+            end
+            OP_EBREAK: begin
+                alu_op = `ALU_ADD;
+                alu_mux_a = `ALU_MUX_DATA;
+                alu_mux_b = `ALU_MUX_IMM_B;
+                mem_en = 0;
+                we = 0;
+                sel = 4'b0000;
+                rf_wen = 0;
+                wb_if_mem = 0;
+                id_exception_o = 1;
+                csr_op_o = `ENV_EBREAK;
+            end
+            OP_MRET: begin
+                alu_op = `ALU_ADD;
+                alu_mux_a = `ALU_MUX_DATA;
+                alu_mux_b = `ALU_MUX_ZERO;
+                mem_en = 0;
+                we = 0;
+                sel = 4'b0000;
+                rf_wen = 0;
+                wb_if_mem = 0;
+                id_exception_o = 1;
+                csr_op_o = `ENV_MRET;
             end
             default: begin // NOP: addi zero, zero, 0
                 alu_op = `ALU_ADD;

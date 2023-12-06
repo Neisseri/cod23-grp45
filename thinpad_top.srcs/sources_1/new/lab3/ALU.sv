@@ -96,6 +96,12 @@ module ALU #(
             end else begin
                 alu_y = alu_b;
             end
+        end else if(alu_op == 14)begin
+            if(alu_a < alu_b)begin
+                alu_y = 1;
+            end else begin
+                alu_y = 0;
+            end
         end else begin
             alu_y = 0;
         end

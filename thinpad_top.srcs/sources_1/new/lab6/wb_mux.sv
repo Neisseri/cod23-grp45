@@ -24,9 +24,10 @@ module wb_mux #(
     parameter ADDR_WIDTH = 32,
     parameter DATA_WIDTH = 32
 ) (
-        input wire if_mem,
+        input wire [3:0] if_mem,
         input wire [DATA_WIDTH-1:0] alu_data,
         input wire [DATA_WIDTH-1:0] mem_data,
+        input wire [DATA_WIDTH-1:0] csr_data,
         output logic [DATA_WIDTH-1:0] result
     );
 
@@ -34,6 +35,7 @@ module wb_mux #(
         case (if_mem)
             0: result = alu_data;
             1: result = mem_data;
+            2: result = csr_data;
             default: result = alu_data;
         endcase
     end

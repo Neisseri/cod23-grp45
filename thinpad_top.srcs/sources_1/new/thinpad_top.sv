@@ -55,7 +55,7 @@ module thinpad_top #(
 
     // USB �������źţ��ο� SL811 оƬ�ֲ�
     output wire sl811_a0,
-    // inout  wire [7:0] sl811_d,     // USB �������������������??? dm9k_sd[7:0] ����
+    // inout  wire [7:0] sl811_d,     // USB �������������������??? dm9k_sd[7:0] ����
     output wire sl811_wr_n,
     output wire sl811_rd_n,
     output wire sl811_cs_n,
@@ -64,7 +64,7 @@ module thinpad_top #(
     input  wire sl811_intrq,
     input  wire sl811_drq_n,
 
-    // ����������źţ��ο�??? DM9000A оƬ�ֲ�
+    // ����������źţ��ο�??? DM9000A оƬ�ֲ�
     output wire dm9k_cmd,
     inout wire [15:0] dm9k_sd,
     output wire dm9k_iow_n,
@@ -73,13 +73,13 @@ module thinpad_top #(
     output wire dm9k_pwrst_n,
     input wire dm9k_int,
 
-    // ͼ������ź�???
+    // ͼ������ź�???
     output wire [2:0] video_red,    // ��ɫ���أ�3 λ
     output wire [2:0] video_green,  // ��ɫ���أ�3 λ
     output wire [1:0] video_blue,   // ��ɫ���أ�2 λ
     output wire       video_hsync,  // ��ͬ����ˮƽͬ�����ź�
     output wire       video_vsync,  // ��ͬ������ֱͬ�����ź�
-    output wire       video_clk,    // ����ʱ�����???
+    output wire       video_clk,    // ����ʱ�����???
     output wire       video_de      // ��������Ч�źţ���������������
 );
 
@@ -91,11 +91,11 @@ module thinpad_top #(
       // Clock in ports
       .clk_in1(clk_50M),  // �ⲿʱ������
       // Clock out ports
-      .clk_out1(clk_10M),  // ʱ�����??? 1��Ƶ���� IP ���ý���������
-      .clk_out2(clk_20M),  // ʱ�����??? 2��Ƶ���� IP ���ý���������
+      .clk_out1(clk_10M),  // ʱ�����??? 1��Ƶ���� IP ���ý���������
+      .clk_out2(clk_20M),  // ʱ�����??? 2��Ƶ���� IP ���ý���������
       // Status and control signals
       .reset(reset_btn),  // PLL ��λ����
-      .locked(locked)  // PLL ����ָʾ�����???"1"��ʾʱ���ȶ���
+      .locked(locked)  // PLL ����ָʾ�����???"1"��ʾʱ���ȶ���
                        // �󼶵�·��λ�ź�Ӧ���������ɣ����£�
   );
 
@@ -104,6 +104,12 @@ module thinpad_top #(
   always_ff @(posedge clk_10M or negedge locked) begin
     if (~locked) reset_of_clk10M <= 1'b1;
     else reset_of_clk10M <= 1'b0;
+  end
+
+  logic reset_of_clk50M;
+  always_ff @(posedge clk_50M or negedge locked) begin
+    if (~locked) reset_of_clk50M <= 1'b1;
+    else reset_of_clk50M <= 1'b0;
   end
 
   always_ff @(posedge clk_10M or posedge reset_of_clk10M) begin
@@ -137,16 +143,16 @@ module thinpad_top #(
   // g=dpy0[7] // |     |
   //           // ---d---  p
 
-   //7 ���������������ʾ����??? number �� 16 ������ʾ�����������???
+   //7 ���������������ʾ����??? number �� 16 ������ʾ�����������???
 //   logic [7:0] number;
 //   SEG7_LUT segL (
 //       .oSEG1(dpy0),
 //       .iDIG (number[3:0])
-//   );  // dpy0 �ǵ�λ�����???
+//   );  // dpy0 �ǵ�λ�����???
 //   SEG7_LUT segH (
 //       .oSEG1(dpy1),
 //       .iDIG (number[7:4])
-//   );  // dpy1 �Ǹ�λ�����???
+//   );  // dpy1 �Ǹ�λ�����???
 
 //   logic [15:0] led_bits;
 //   assign leds = led_bits;
@@ -162,8 +168,8 @@ module thinpad_top #(
   logic sys_clk;
   logic sys_rst;
 
-  assign sys_clk = clk_10M;
-  assign sys_rst = reset_of_clk10M;
+  assign sys_clk = clk_50M;
+  assign sys_rst = reset_of_clk50M;
 
   // ֱ�����ڽ��շ�����ʾ����ֱ�������յ��������ٷ��ͳ�ȥ
   // logic [7:0] ext_uart_rx;
@@ -185,7 +191,7 @@ module thinpad_top #(
   //     .RxD_data      (ext_uart_rx)      // ���յ���һ�ֽ�����
   // );
 
-  // assign ext_uart_clear = ext_uart_ready; // �յ����ݵ�ͬʱ�������־����Ϊ������ȡ��??? ext_uart_buffer ��
+  // assign ext_uart_clear = ext_uart_ready; // �յ����ݵ�ͬʱ�������־����Ϊ������ȡ��??? ext_uart_buffer ��
   // always_ff @(posedge clk_50M) begin  // ���յ������� ext_uart_buffer
   //   if (ext_uart_ready) begin
   //     ext_uart_buffer <= ext_uart_rx;
@@ -209,13 +215,13 @@ module thinpad_top #(
   //     .Baud(9600)
   // ) ext_uart_t (
   //     .clk      (clk_50M),         // �ⲿʱ���ź�
-  //     .TxD      (txd),             // �����ź����???
+  //     .TxD      (txd),             // �����ź����???
   //     .TxD_busy (ext_uart_busy),   // ������æ״ָ̬ʾ
   //     .TxD_start(ext_uart_start),  // ��ʼ�����ź�
   //     .TxD_data (ext_uart_tx)      // �����͵�����
   // );
 
-  // ͼ�������ʾ���ֱ���??? 800x600@75Hz������ʱ��Ϊ 50MHz
+  // ͼ�������ʾ���ֱ���??? 800x600@75Hz������ʱ��Ϊ 50MHz
   // logic [11:0] hdata;
   // assign video_red   = hdata < 266 ? 3'b111 : 0;  // ��ɫ����
   // assign video_green = hdata < 532 && hdata >= 266 ? 3'b111 : 0;  // ��ɫ����
@@ -236,6 +242,12 @@ module thinpad_top #(
   logic mem_stall_req;
   logic id_flush_req;
   logic exe_stall_req;
+  logic id_exception;
+  logic id_branch_req;
+  logic mem_exception;
+  logic time_interrupt;
+
+  assign id_flush_req = id_exception | id_branch_req;
 
   logic pc_stall;
   logic if_id_stall;
@@ -253,6 +265,7 @@ module thinpad_top #(
     .if_stall_req(if_stall_req),
     .mem_stall_req(mem_stall_req),
     .id_flush_req(id_flush_req),
+    .mem_flush_req(mem_exception),
     .exe_stall_req(exe_stall_req),
     .pc_stall(pc_stall),
     .if_id_stall(if_id_stall),
@@ -280,10 +293,13 @@ module thinpad_top #(
   );
   
   logic [ADDR_WIDTH-1:0] pc_branch_addr;
+  logic [ADDR_WIDTH-1:0] pc_next_exception;
   logic [ADDR_WIDTH-1:0] if_id_pc;
   PC_mux PC_mux_u(
-    .branch(id_flush_req),
+    .branch(id_branch_req),
     .branch_addr(pc_branch_addr),
+    .exception(mem_exception),
+    .next_exception(pc_next_exception),
     .cur_pc(pc_addr),
     .next_pc(pc_next_pc)
   );
@@ -346,7 +362,10 @@ module thinpad_top #(
   logic id_we;
   logic [3:0] id_sel;
   logic id_rf_wen;
-  logic id_wb_if_mem;
+  logic [3:0] id_wb_if_mem;
+  logic id_csr_we;
+  logic [11:0] id_csr_adr;
+  logic [3:0] id_csr_op;
   ID ID_u(
     .instr(if_id_instr),
     .rd(id_rd),
@@ -361,7 +380,11 @@ module thinpad_top #(
     .we(id_we),
     .sel(id_sel),
     .rf_wen(id_rf_wen),
-    .wb_if_mem(id_wb_if_mem)
+    .wb_if_mem(id_wb_if_mem),
+    .id_exception_o(id_exception),
+    .csr_we_o(id_csr_we),
+    .csr_adr_o(id_csr_adr),
+    .csr_op_o(id_csr_op)
   );
 
   logic [DATA_WIDTH-1:0] rf_rdata_a;
@@ -406,7 +429,7 @@ module thinpad_top #(
     .data_b(branch_rs2_dat),
     .imm(id_imm),
     .pc(if_id_pc),
-    .comp_result(id_flush_req),
+    .comp_result(id_branch_req),
     .new_pc(pc_branch_addr)
   );
   
@@ -425,7 +448,11 @@ module thinpad_top #(
   logic id_exe_rf_wen;
   logic [3:0] id_exe_sel;
   logic id_exe_we;
-  logic id_exe_wb_if_mem;
+  logic [3:0] id_exe_wb_if_mem;
+  logic id_exe_csr_we;
+  logic [11:0] id_exe_csr_adr;
+  logic [3:0] id_exe_csr_op;
+  logic [3:0] id_exe_env_op;
   ID_EXE_reg ID_EXE(
     .clk(sys_clk),
     .rst(sys_rst),
@@ -449,6 +476,9 @@ module thinpad_top #(
     .sel_i(id_sel),
     .we_i(id_we),
     .wb_if_mem_i(id_wb_if_mem),
+    .csr_we_i(id_csr_we),
+    .csr_adr_i(id_csr_adr),
+    .csr_op_i(id_csr_op),
 
     .rd_o(id_exe_rd),
     .rs1_o(id_exe_rs1),
@@ -463,7 +493,10 @@ module thinpad_top #(
     .rf_wen_o(id_exe_rf_wen),
     .sel_o(id_exe_sel),
     .we_o(id_exe_we),
-    .wb_if_mem_o(id_exe_wb_if_mem)
+    .wb_if_mem_o(id_exe_wb_if_mem),
+    .csr_we_o(id_exe_csr_we),
+    .csr_adr_o(id_exe_csr_adr),
+    .csr_op_o(id_exe_csr_op)
   );
   
   //EXE
@@ -498,13 +531,19 @@ module thinpad_top #(
   
   logic [DATA_WIDTH-1:0] exe_mem_instr;
   logic [4:0] exe_mem_rd;
+  logic [DATA_WIDTH-1:0] exe_mem_rs1_dat;
   logic [DATA_WIDTH-1:0] exe_mem_rs2_dat;
   logic exe_mem_mem_en;
   logic exe_mem_rf_wen;
   logic [3:0] exe_mem_sel;
   logic exe_mem_we;
   logic [DATA_WIDTH-1:0] exe_mem_wdata;
-  logic exe_mem_wb_if_mem;
+  logic [3:0] exe_mem_wb_if_mem;
+  logic exe_mem_csr_we;
+  logic [11:0] exe_mem_csr_adr;
+  logic [3:0] exe_mem_csr_op;
+  logic [3:0] exe_mem_env_op;
+  logic [ADDR_WIDTH-1:0] exe_mem_pc;
   logic use_mem_dat_a_i;
   logic use_mem_dat_b_i;
   logic use_mem_dat_a_o;
@@ -512,19 +551,27 @@ module thinpad_top #(
   EXE_MEM_reg EXE_MEM(
     .clk(sys_clk),
     .rst(sys_rst),
+    .pc_i(id_exe_pc),
+    .pc_o(exe_mem_pc),
     .stall(exe_mem_stall),
     .bubble(exe_mem_bubble),
     .instr_i(id_exe_instr),
     .instr_o(exe_mem_instr),
     .rd_i(id_exe_rd),
+    .rs1_dat_i(id_exe_rs1_dat),
     .rs2_dat_i(id_exe_rs2_dat),
     .mem_en_i(id_exe_mem_en),
     .rf_wen_i(id_exe_rf_wen),
     .sel_i(id_exe_sel),
     .we_i(id_exe_we),
     .wb_if_mem_i(id_exe_wb_if_mem),
+    .csr_we_i(id_exe_csr_we),
+    .csr_adr_i(id_exe_csr_adr),
+    .csr_op_i(id_exe_csr_op),
+    .env_op_i(id_exe_env_op),
 
     .rd_o(exe_mem_rd),
+    .rs1_dat_o(exe_mem_rs1_dat),
     .rs2_dat_o(exe_mem_rs2_dat),
     .mem_en_o(exe_mem_mem_en),
     .rf_wen_o(exe_mem_rf_wen),
@@ -533,6 +580,10 @@ module thinpad_top #(
     .wdata_i(alu_y),
     .wdata_o(exe_mem_wdata),
     .wb_if_mem_o(exe_mem_wb_if_mem),
+    .csr_we_o(exe_mem_csr_we),
+    .csr_adr_o(exe_mem_csr_adr),
+    .csr_op_o(exe_mem_csr_op),
+    .env_op_o(exe_mem_env_op),
 
     .use_mem_dat_a_i(use_mem_dat_a_i),
     .use_mem_dat_b_i(use_mem_dat_b_i),
@@ -573,10 +624,122 @@ module thinpad_top #(
     .pipeline_stall(pipeline_stall),
     .idle_stall(dm_idle_stall)
   );
+
+  logic [DATA_WIDTH-1:0] csr_dat;
+  logic [11:0] csr_adr;
+  logic [DATA_WIDTH-1:0] csr_wdat;
+  logic csr_we;
+  logic [DATA_WIDTH-1:0] mem_csr_dat;
+
+  logic [DATA_WIDTH-1:0] csr_mstatus_wdat;
+  logic csr_mstatus_we;
+  logic [DATA_WIDTH-1:0] csr_mtvec_wdat;
+  logic csr_mtvec_we;
+  logic [DATA_WIDTH-1:0] csr_mepc_wdat;
+  logic csr_mepc_we;
+  logic [DATA_WIDTH-1:0] csr_mcause_wdat;
+  logic csr_mcause_we;
+  logic [DATA_WIDTH-1:0] csr_mip_wdat;
+  logic csr_mip_we;
+  logic [DATA_WIDTH-1:0] csr_mie_wdat;
+  logic csr_mie_we;
+
+  logic [DATA_WIDTH-1:0] csr_mstatus_rdat;
+  logic [DATA_WIDTH-1:0] csr_mtvec_rdat;
+  logic [DATA_WIDTH-1:0] csr_mepc_rdat;
+  logic [DATA_WIDTH-1:0] csr_mcause_rdat;
+  logic [DATA_WIDTH-1:0] csr_mip_rdat;
+  logic [DATA_WIDTH-1:0] csr_mie_rdat;
+
+  logic [1:0] priv_level_wdat;
+  logic priv_level_we;
+  logic [1:0] priv_level_rdat;
+  CSR_controller CSR_controller_u(
+    .clk(sys_clk),
+    .rst(sys_rst),
+    .stall(mem_wb_stall),
+    .bubble(mem_wb_bubble),
+
+    .rs1_dat_i(exe_mem_rs1_dat),
+    .csr_adr_i(exe_mem_csr_adr),
+    .csr_op_i(exe_mem_csr_op),
+    .csr_we_i(exe_mem_csr_we),
+
+    .csr_o(mem_csr_dat),
+
+    .csr_i(csr_dat),
+    .csr_adr_o(csr_adr),
+    .csr_wdat_o(csr_wdat),
+    .csr_we_o(csr_we),
+
+    .csr_mstatus_i(csr_mstatus_rdat),
+    .csr_mtvec_i(csr_mtvec_rdat),
+    .csr_mepc_i(csr_mepc_rdat),
+    .csr_mcause_i(csr_mcause_rdat),
+    .csr_mip_i(csr_mip_rdat),
+    .csr_mie_i(csr_mie_rdat),
+
+    .csr_mstatus_o(csr_mstatus_wdat),
+    .csr_mstatus_we_o(csr_mstatus_we),
+    .csr_mtvec_o(csr_mtvec_wdat),
+    .csr_mtvec_we_o(csr_mtvec_we),
+    .csr_mepc_o(csr_mepc_wdat),
+    .csr_mepc_we_o(csr_mepc_we),
+    .csr_mcause_o(csr_mcause_wdat),
+    .csr_mcause_we_o(csr_mcause_we),
+    .csr_mip_o(csr_mip_wdat),
+    .csr_mip_we_o(csr_mip_we),
+    .csr_mie_o(csr_mie_wdat),
+    .csr_mie_we_o(csr_mie_we),
+
+    .mem_pc_i(exe_mem_pc),
+    .pc_next_exception_o(pc_next_exception),
+    .mem_exception_o(mem_exception),
+    .priv_level_o(priv_level_wdat),
+    .priv_level_we_o(priv_level_we),
+    .priv_level_i(priv_level_rdat),
+
+    .time_interrupt_i(time_interrupt)
+  );
   
-  logic mem_wb_wb_if_mem;
+  CSR_reg CSR_reg_u(
+    .clk(sys_clk),
+    .rst(sys_rst),
+    .csr_adr_i(csr_adr),
+    .csr_wadr_i(csr_adr),
+    .csr_wdat_i(csr_wdat),
+    .csr_we_i(csr_we),
+    .csr_o(csr_dat),
+
+    .csr_mstatus_i(csr_mstatus_wdat),
+    .csr_mstatus_we_i(csr_mstatus_we),
+    .csr_mtvec_i(csr_mtvec_wdat),
+    .csr_mtvec_we_i(csr_mtvec_we),
+    .csr_mepc_i(csr_mepc_wdat),
+    .csr_mepc_we_i(csr_mepc_we),
+    .csr_mcause_i(csr_mcause_wdat),
+    .csr_mcause_we_i(csr_mcause_we),
+    .csr_mip_i(csr_mip_wdat),
+    .csr_mip_we_i(csr_mip_we),
+    .csr_mie_i(csr_mie_wdat),
+    .csr_mie_we_i(csr_mie_we),
+
+    .csr_mstatus_o(csr_mstatus_rdat),
+    .csr_mtvec_o(csr_mtvec_rdat),
+    .csr_mepc_o(csr_mepc_rdat),
+    .csr_mcause_o(csr_mcause_rdat),
+    .csr_mip_o(csr_mip_rdat),
+    .csr_mie_o(csr_mie_rdat),
+
+    .priv_level_i(priv_level_wdat),
+    .priv_level_we_i(priv_level_we),
+    .priv_level_o(priv_level_rdat)
+  );
+  
+  logic [3:0] mem_wb_wb_if_mem;
   logic [DATA_WIDTH-1:0] mem_wb_wdata;
   logic [DATA_WIDTH-1:0] mem_wb_mem_data;
+  logic [DATA_WIDTH-1:0] mem_wb_csr_dat;
   MEM_WB_reg MEM_WB(
     .clk(sys_clk),
     .rst(sys_rst),
@@ -592,7 +755,9 @@ module thinpad_top #(
     .wdata_i(exe_mem_wdata),
     .wdata_o(mem_wb_wdata),
     .mem_data_i(dm_data_out),
-    .mem_data_o(mem_wb_mem_data)
+    .mem_data_o(mem_wb_mem_data),
+    .mem_csr_dat_i(mem_csr_dat),
+    .mem_csr_dat_o(mem_wb_csr_dat)
   );
 
   //WB
@@ -600,6 +765,7 @@ module thinpad_top #(
     .if_mem(mem_wb_wb_if_mem),
     .alu_data(mem_wb_wdata),
     .mem_data(mem_wb_mem_data),
+    .csr_data(mem_wb_csr_dat),
     .result(wb_wdata)
   );
 
@@ -711,8 +877,17 @@ module thinpad_top #(
   logic [31:0] wbs2_dat_i;
   logic [3:0] wbs2_sel_o;
   logic wbs2_we_o;
+  
+  logic wbs3_cyc_o;
+  logic wbs3_stb_o;
+  logic wbs3_ack_i;
+  logic [31:0] wbs3_adr_o;
+  logic [31:0] wbs3_dat_o;
+  logic [31:0] wbs3_dat_i;
+  logic [3:0] wbs3_sel_o;
+  logic wbs3_we_o;
 
-  wb_mux_3 wb_mux (
+  wb_mux_4 wb_mux (
       .clk(sys_clk),
       .rst(sys_rst),
 
@@ -774,7 +949,23 @@ module thinpad_top #(
       .wbs2_ack_i(wbs2_ack_i),
       .wbs2_err_i('0),
       .wbs2_rty_i('0),
-      .wbs2_cyc_o(wbs2_cyc_o)
+      .wbs2_cyc_o(wbs2_cyc_o),
+
+      // Slave interface 3 (to mtime controller)
+      // Address range: 0x0200_0000 ~ 0x0200_FFFF
+      .wbs3_addr    (32'h0200_0000),
+      .wbs3_addr_msk(32'hFFFF_0000),
+
+      .wbs3_adr_o(wbs3_adr_o),
+      .wbs3_dat_i(wbs3_dat_i),
+      .wbs3_dat_o(wbs3_dat_o),
+      .wbs3_we_o (wbs3_we_o),
+      .wbs3_sel_o(wbs3_sel_o),
+      .wbs3_stb_o(wbs3_stb_o),
+      .wbs3_ack_i(wbs3_ack_i),
+      .wbs3_err_i('0),
+      .wbs3_rty_i('0),
+      .wbs3_cyc_o(wbs3_cyc_o)
   );
 
   /* =========== Lab5 MUX end =========== */
@@ -832,10 +1023,10 @@ module thinpad_top #(
       .sram_be_n(ext_ram_be_n)
   );
 
-  // 串口控制器模�???
-  // NOTE: 如果修改系统时钟频率，也�???要修改此处的时钟频率参数
+  // 串口控制器模�???
+  // NOTE: 如果修改系统时钟频率，也�???要修改此处的时钟频率参数
   uart_controller #(
-      .CLK_FREQ(10_000_000),
+      .CLK_FREQ(50_000_000),
       .BAUD    (115200)
   ) uart_controller (
       .clk_i(sys_clk),
@@ -853,6 +1044,22 @@ module thinpad_top #(
       // to UART pins
       .uart_txd_o(txd),
       .uart_rxd_i(rxd)
+  );
+
+  mtime_controller u_mtime_controller (
+      .clk_i(sys_clk),
+      .rst_i(sys_rst),
+
+      .wb_cyc_i(wbs3_cyc_o),
+      .wb_stb_i(wbs3_stb_o),
+      .wb_ack_o(wbs3_ack_i),
+      .wb_adr_i(wbs3_adr_o),
+      .wb_dat_i(wbs3_dat_o),
+      .wb_dat_o(wbs3_dat_i),
+      .wb_sel_i(wbs3_sel_o),
+      .wb_we_i (wbs3_we_o),
+
+      .time_interrupt_o(time_interrupt)
   );
 
   /* =========== Lab5 Slaves end =========== */
