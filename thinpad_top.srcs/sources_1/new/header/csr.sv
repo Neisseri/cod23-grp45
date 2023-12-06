@@ -2,7 +2,7 @@
 `define PRIV_S_LEVEL 2'b01
 `define PRIV_M_LEVEL 2'b11
 
-`define MTIME_INTERVAL 0
+`define MTIME_INTERVAL 9
 
 
 `define USER_TIMER_INTERRUPT 31'd7
