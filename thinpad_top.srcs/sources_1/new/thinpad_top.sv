@@ -610,15 +610,15 @@ module thinpad_top #(
   );
 
   //tmp
-  always_comb begin
-    if(id_exe_rf_wen && (id_rs1 == id_exe_rd || id_rs2 == id_exe_rd) && id_exe_rd != 0
-    || exe_mem_rf_wen && (id_rs1 == exe_mem_rd || id_rs2 == exe_mem_rd) && exe_mem_rd != 0
-    || wb_rf_we && (id_rs1 == wb_rd || id_rs2 == wb_rd) && wb_rd != 0)begin
-      exe_stall_req = 1;
-    end else begin
-      exe_stall_req = 0;
-    end
-  end
+  // always_comb begin
+  //   if(id_exe_rf_wen && (id_rs1 == id_exe_rd || id_rs2 == id_exe_rd) && id_exe_rd != 0
+  //   || exe_mem_rf_wen && (id_rs1 == exe_mem_rd || id_rs2 == exe_mem_rd) && exe_mem_rd != 0
+  //   || wb_rf_we && (id_rs1 == wb_rd || id_rs2 == wb_rd) && wb_rd != 0)begin
+  //     exe_stall_req = 1;
+  //   end else begin
+  //     exe_stall_req = 0;
+  //   end
+  // end
 
   // Forward Unit
   logic exe_is_load;
@@ -642,7 +642,7 @@ module thinpad_top #(
     .alu_mux_b(alu_mux_b_code),
     .alu_a_forward(alu_mux_a_forward),
     .alu_b_forward(alu_mux_b_forward),
-    //.exe_stall_req(exe_stall_req),
+    .exe_stall_req(exe_stall_req),
     .pass_use_mem_dat_a(use_mem_dat_a_i),
     .pass_use_mem_dat_b(use_mem_dat_b_i),
     .branch_rs1(branch_rs1_hazard),
