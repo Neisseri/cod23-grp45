@@ -34,21 +34,33 @@ module IF_ID_reg #(
     input wire [DATA_WIDTH-1:0] instr_i,
     output reg [DATA_WIDTH-1:0] instr_o,
     input wire [ADDR_WIDTH-1:0] pc_i,
-    output reg [ADDR_WIDTH-1:0] pc_o
+    output reg [ADDR_WIDTH-1:0] pc_o,
+
+    // exception
+    input wire exception_occured_i,
+    input wire [DATA_WIDTH-1:0] exception_cause_i,
+    output reg exception_occured_o,
+    output reg [DATA_WIDTH-1:0] exception_cause_o
     );
 
     always_ff @(posedge clk)begin
         if(rst)begin
             instr_o <= `NOP_INSTR;
             pc_o <= 32'h7fff_fffc;
+            exception_occured_o <= 0;
+            exception_cause_o <= 0;
         end else begin
             if(!stall)begin
                 if(bubble)begin
                     instr_o <= `NOP_INSTR;
                     pc_o <= 0;
+                    exception_occured_o <= 0;
+                    exception_cause_o <= 0;
                 end else begin
                     instr_o <= instr_i;
                     pc_o <= pc_i;
+                    exception_occured_o <= exception_occured_i;
+                    exception_cause_o <= exception_cause_i;
                 end
             end
         end

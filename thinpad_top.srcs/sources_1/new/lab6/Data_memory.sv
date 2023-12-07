@@ -47,7 +47,7 @@ module Data_memory #(
     output logic [DATA_WIDTH-1:0] data_out,
 
     input wire pipeline_stall,
-    output logic idle_stall
+    output logic idle_stall,
     );
 
     typedef enum logic [3:0] {

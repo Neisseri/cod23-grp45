@@ -27,8 +27,16 @@ module ALU #(
     input wire [DATA_WIDTH-1:0] alu_a,
     input wire [DATA_WIDTH-1:0] alu_b,
     input wire [3:0] alu_op,
-    output logic [DATA_WIDTH-1:0] alu_y
+    output logic [DATA_WIDTH-1:0] alu_y,
+
+    output logic exception_occured_o,
+    output logic [DATA_WIDTH-1:0] exception_cause_o
 );
+
+    always_comb begin // change here when alu exception occurs
+        exception_occured_o = 0;
+        exception_cause_o = 0;
+    end
 
     always_comb begin
         if(alu_op == 1)begin

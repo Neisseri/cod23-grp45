@@ -38,6 +38,10 @@ module IF_MMU #(
     // Data memory to MMU
     input wire master_ready_o,
     input wire [DATA_WIDTH-1:0] data_out,
+
+    // report exception
+    output logic exception_occured_o,
+    output logic [DATA_WIDTH-1:0] exception_cause_o
 );
 
     logic [1:0] wishbone_owner;
@@ -154,6 +158,21 @@ module IF_MMU #(
         .load_page_fault(load_page_fault),
         .store_page_fault(store_page_fault)
     );
+
+    logic [30:0] exception_code;
+    always_comb begin
+        if(instruction_page_fault)begin
+            exception_code = 12;
+        end else if(load_page_fault)begin
+            exception_code = 13;
+        end else if(store_page_fault) begin
+            exception_code = 15;
+        end else begin
+            exception_code = 0;
+        end
+        exception_occured_o = instruction_page_fault | load_page_fault | store_page_fault;
+        exception_cause_o = {1'b0, exception_code};
+    end
 
     logic cache_cyc;
     logic cache_stb;
@@ -279,6 +298,10 @@ module MEM_MMU #(
     // Data memory to MMU
     input wire master_ready_o,
     input wire [DATA_WIDTH-1:0] data_out,
+
+    // report exception
+    output logic exception_occured_o,
+    output logic [DATA_WIDTH-1:0] exception_cause_o
 );
 
     logic [1:0] wishbone_owner;
@@ -388,6 +411,21 @@ module MEM_MMU #(
         .load_page_fault(load_page_fault),
         .store_page_fault(store_page_fault)
     );
+
+    logic [30:0] exception_code;
+    always_comb begin
+        if(instruction_page_fault)begin
+            exception_code = 12;
+        end else if(load_page_fault)begin
+            exception_code = 13;
+        end else if(store_page_fault) begin
+            exception_code = 15;
+        end else begin
+            exception_code = 0;
+        end
+        exception_occured_o = instruction_page_fault | load_page_fault | store_page_fault;
+        exception_cause_o = {1'b0, exception_code};
+    end
 
     // no cache, connect directly
     logic cache_cyc;

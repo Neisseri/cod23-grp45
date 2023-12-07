@@ -339,6 +339,8 @@ module thinpad_top #(
   logic [DATA_WIDTH/8-1:0] mmu_to_im_sel;
   logic im_to_mmu_master_ready;
   logic [DATA_WIDTH-1:0] im_to_mmu_data_out; 
+  logic im_exception_occured;
+  logic [DATA_WIDTH-1:0] im_exception_cause;
   IF_MMU if_mmu_u(
     .clk(sys_clk),
     .rst(sys_rst),
@@ -362,6 +364,9 @@ module thinpad_top #(
     .sel(mmu_to_im_sel),
     .master_ready_o(im_to_mmu_master_ready),
     .data_out(im_to_mmu_data_out)
+
+    .exception_occured_o(im_exception_occured),
+    .exception_cause_o(im_exception_cause)
   );
 
   logic im_wb_cyc_o;
@@ -391,10 +396,12 @@ module thinpad_top #(
     .sel(mmu_to_im_sel),
     .data_out(im_to_mmu_data_out),
     .pipeline_stall(pipeline_stall),
-    .idle_stall(im_idle_stall)
+    .idle_stall(im_idle_stall),
   );
   
   logic [DATA_WIDTH-1:0] if_id_instr;
+  logic if_id_exception_occured;
+  logic [DATA_WIDTH-1:0] if_id_exception_cause;
   IF_ID_reg IF_ID(
     .clk(sys_clk),
     .rst(sys_rst),
@@ -403,7 +410,12 @@ module thinpad_top #(
     .instr_i(im_data_out),
     .instr_o(if_id_instr),
     .pc_i(pc_addr),
-    .pc_o(if_id_pc)
+    .pc_o(if_id_pc),
+
+    .exception_occured_i(im_exception_occured),
+    .exception_cause_i(im_exception_cause),
+    .exception_occured_o(if_id_exception_occured),
+    .exception_cause_o(if_id_exception_cause)
   );
   
   //ID
@@ -422,6 +434,8 @@ module thinpad_top #(
   logic [3:0] id_wb_if_mem;
   logic id_csr_we;
   logic [11:0] id_csr_adr;
+  logic id_exception_occured;
+  logic [DATA_WIDTH-1:0] id_exception_cause;
   ID ID_u(
     .instr(if_id_instr),
     .rd(id_rd),
@@ -441,6 +455,9 @@ module thinpad_top #(
     .csr_we_o(id_csr_we),
     .csr_adr_o(id_csr_adr),
     .csr_op_o(id_csr_op),
+
+    .exception_occured_o(id_exception_occured),
+    .exception_cause_o(id_exception_cause),
     .satp_update_o(satp_update),
     .flush_tlb(id_flush_tlb)
   );
@@ -509,6 +526,19 @@ module thinpad_top #(
   logic [11:0] id_exe_csr_adr;
   logic [3:0] id_exe_csr_op;
   logic [3:0] id_exe_env_op;
+  logic id_exe_exception_occured;
+  logic [DATA_WIDTH-1:0] id_exe_exception_cause;
+  logic id_exe_exception_occured_change;
+  logic [DATA_WIDTH-1:0] id_exe_exception_cause_change;
+  always_comb begin
+    if (if_id_exception_occured) begin
+      id_exe_exception_occured_change = 1'b1;
+      id_exe_exception_cause_change = if_id_exception_cause;
+    end else begin
+      id_exe_exception_occured_change = id_exception_occured;
+      id_exe_exception_cause_change = id_exception_cause;
+    end
+  end
   logic id_exe_flush_tlb;
   ID_EXE_reg ID_EXE(
     .clk(sys_clk),
@@ -555,7 +585,12 @@ module thinpad_top #(
     .csr_we_o(id_exe_csr_we),
     .csr_adr_o(id_exe_csr_adr),
     .csr_op_o(id_exe_csr_op),
-    .flush_tlb_o(id_exe_flush_tlb)
+    .flush_tlb_o(id_exe_flush_tlb),
+
+    .exception_occured_i(id_exe_exception_occured_change),
+    .exception_cause_i(id_exe_exception_cause_change),
+    .exception_occured_o(id_exe_exception_occured),
+    .exception_cause_o(id_exe_exception_cause)
   );
   
   //EXE
@@ -581,11 +616,16 @@ module thinpad_top #(
     .result(alu_b)
   );
 
+  logic exe_exception_occured;
+  logic [DATA_WIDTH-1:0] exe_exception_cause;
+
   ALU alu_u(
     .alu_a(alu_a),
     .alu_b(alu_b),
     .alu_op(id_exe_alu_op),
-    .alu_y(alu_y)
+    .alu_y(alu_y),
+    .exception_occured_o(exe_exception_occured),
+    .exception_cause_o(exe_exception_cause)
   );
   
   logic [DATA_WIDTH-1:0] exe_mem_instr;
@@ -607,6 +647,19 @@ module thinpad_top #(
   logic use_mem_dat_b_i;
   logic use_mem_dat_a_o;
   logic use_mem_dat_b_o;
+  logic exe_mem_exception_occured;
+  logic [DATA_WIDTH-1:0] exe_mem_exception_cause;
+  logic exe_mem_exception_occured_change;
+  logic [DATA_WIDTH-1:0] exe_mem_exception_cause_change;
+  always_comb begin
+    if (id_exe_exception_occured) begin
+      exe_mem_exception_occured_change = 1'b1;
+      exe_mem_exception_cause_change = id_exe_exception_cause;
+    end else begin
+      exe_mem_exception_occured_change = exe_exception_occured;
+      exe_mem_exception_cause_change = exe_exception_cause;
+    end
+  end
   logic exe_mem_flush_tlb;
   EXE_MEM_reg EXE_MEM(
     .clk(sys_clk),
@@ -650,7 +703,12 @@ module thinpad_top #(
     .use_mem_dat_a_i(use_mem_dat_a_i),
     .use_mem_dat_b_i(use_mem_dat_b_i),
     .use_mem_dat_a_o(use_mem_dat_a_o),
-    .use_mem_dat_b_o(use_mem_dat_b_o)
+    .use_mem_dat_b_o(use_mem_dat_b_o),
+
+    .exception_occured_i(exe_mem_exception_occured_change),
+    .exception_cause_i(exe_mem_exception_cause_change),
+    .exception_occured_o(exe_mem_exception_occured),
+    .exception_cause_o(exe_mem_exception_cause)
   );
   
   //MEM
@@ -664,6 +722,8 @@ module thinpad_top #(
   logic [DATA_WIDTH/8-1:0] mmu_to_dm_sel;
   logic dm_to_mmu_master_ready;
   logic [DATA_WIDTH-1:0] dm_to_mmu_data_out; 
+  logic dm_exception_occured;
+  logic [DATA_WIDTH-1:0] dm_exception_cause;
   MEM_MMU mem_mmu_u (
     .clk(sys_clk),
     .rst(sys_rst),
@@ -686,6 +746,9 @@ module thinpad_top #(
     .sel(mmu_to_dm_sel),
     .master_ready_o(dm_to_mmu_master_ready),
     .data_out(dm_to_mmu_data_out)
+
+    .exception_occured_o(dm_exception_occured),
+    .exception_cause_o(dm_exception_cause)
   );
 
   logic dm_wb_cyc_o;
@@ -696,6 +759,14 @@ module thinpad_top #(
   logic [DATA_WIDTH-1:0] dm_wb_dat_i;
   logic [DATA_WIDTH/8-1:0] dm_wb_sel_o;
   logic dm_wb_we_o;
+  logic [ADDR_WIDTH-1:0] dm_exception_pc;
+  always_ff @ (posedge sys_clk) begin
+    if (sys_rst) begin
+      dm_exception_pc <= 0;
+    end else begin
+      dm_exception_pc <= exe_mem_pc;
+    end
+  end
   Data_memory DM_u(
     .clk(sys_clk),
     .rst(sys_rst),
@@ -717,6 +788,21 @@ module thinpad_top #(
     .pipeline_stall(pipeline_stall),
     .idle_stall(dm_idle_stall)
   );
+
+  logic exception_occured_real;
+  logic [DATA_WIDTH-1:0] exception_cause_real;
+  logic [ADDR_WIDTH-1:0] exception_pc_real;
+  always_comb begin
+    if (dm_exception_occured) begin
+      exception_occured_real = 1'b1;
+      exception_cause_real = dm_exception_cause;
+      exception_pc_real = dm_exception_pc;
+    end else begin
+      exception_occured_real = exe_mem_exception_occured;
+      exception_cause_real = exe_mem_exception_cause;
+      exception_pc_real = exe_mem_pc;
+    end
+  end
 
   logic [DATA_WIDTH-1:0] csr_dat;
   logic [11:0] csr_adr;
@@ -792,7 +878,11 @@ module thinpad_top #(
     .priv_level_we_o(priv_level_we),
     .priv_level_i(priv_level_rdat),
 
-    .time_interrupt_i(time_interrupt)
+    .time_interrupt_i(time_interrupt),
+
+    .exception_occured_i(exception_occured_real),
+    .exception_cause_i(exception_cause_real),
+    .exception_pc_i(exception_pc_real)
   );
   
   CSR_reg CSR_reg_u(

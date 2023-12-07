@@ -45,6 +45,9 @@ module ID(
         output logic csr_we_o,
         output logic [11:0] csr_adr_o,
         output logic [3:0] csr_op_o,
+
+        output logic exception_occured_o,
+        output logic [31:0] exception_cause_o,
         output logic satp_update_o,
 
         output logic flush_tlb
@@ -110,6 +113,7 @@ module ID(
 
     always_comb begin
         csr_adr_o = 0;
+        op_type = OP_UNKNOWN;
         case (opcode)
             7'b0110011: begin // R-type
                 case (funct)
@@ -305,6 +309,8 @@ module ID(
         csr_we_o = 0;
         csr_op_o = 0;
         id_exception_o = 0;
+        exception_occured_o = 0;
+        exception_cause_o = 0;
         case (op_type)
             OP_LUI: begin
                 alu_op = `ALU_ADD;
@@ -608,6 +614,28 @@ module ID(
                 id_exception_o = 1;
                 csr_op_o = `ENV_MRET;
             end
+            OP_NOP: begin
+                alu_op = `ALU_ADD;
+                alu_mux_a = `ALU_MUX_DATA;
+                alu_mux_b = `ALU_MUX_IMM_B;
+                mem_en = 0;
+                we = 0;
+                sel = 4'b0000;
+                rf_wen = 1;
+                wb_if_mem = 0;
+            end
+            OP_UNKNOWN: begin
+                alu_op = `ALU_ADD;
+                alu_mux_a = `ALU_MUX_DATA;
+                alu_mux_b = `ALU_MUX_IMM_B;
+                mem_en = 0;
+                we = 0;
+                sel = 4'b0000;
+                rf_wen = 1;
+                wb_if_mem = 0;
+                exception_occured_o = 1;
+                exception_cause_o = 2;
+            end
             default: begin // NOP: addi zero, zero, 0
                 alu_op = `ALU_ADD;
                 alu_mux_a = `ALU_MUX_DATA;
@@ -617,6 +645,8 @@ module ID(
                 sel = 4'b0000;
                 rf_wen = 1;
                 wb_if_mem = 0;
+                exception_occured_o = 1;
+                exception_cause_o = 2;
             end
         endcase
     end

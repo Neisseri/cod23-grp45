@@ -26,7 +26,6 @@ module CSR_reg #(
     input wire [DATA_WIDTH-1:0] csr_mie_i,
     input wire csr_mie_we_i,
 
-    output reg [DATA_WIDTH-1:0] csr_satp_o,
     output reg [DATA_WIDTH-1:0] csr_mstatus_o,
     output reg [DATA_WIDTH-1:0] csr_mtvec_o,
     output reg [DATA_WIDTH-1:0] csr_mepc_o,
