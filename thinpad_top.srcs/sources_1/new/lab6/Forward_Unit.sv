@@ -31,7 +31,7 @@ module Forward_Unit #(
     input wire [4:0] exe_mem_rd,
     input wire exe_mem_rf_wen,
 
-    input wire [DATA_WIDTH-1:0] exe_mem_dat,
+    input wire [DATA_WIDTH-1:0] exe_mem_dat, // hazard 1
 
     input wire [4:0] if_id_rs1,
     input wire [4:0] if_id_rs2,
@@ -39,13 +39,16 @@ module Forward_Unit #(
     input wire exe_is_load,
 
     // add signals
+    input wire mem_is_load,
     input wire id_exe_rf_wen,
     input wire wb_rf_we,
-    input wire [4:0] wb_rd,
+    input wire [4:0] mem_wb_rd,
+    input wire wb_is_load,
+    input wire [DATA_WIDTH-1:0] wb_dat, // hazard 3
 
     input wire use_mem_dat_a, // mark mem hazard a
     input wire use_mem_dat_b, // mark mem hazard b
-    input wire [DATA_WIDTH-1:0] mem_wb_dat,
+    input wire [DATA_WIDTH-1:0] mem_wb_dat, // hazard 2
 
     input wire [2:0] id_exe_alu_mux_a,
     input wire [2:0] id_exe_alu_mux_b,
@@ -66,23 +69,6 @@ module Forward_Unit #(
     output logic branch_rs1,
     output logic branch_rs2
 );
-    // hazard 1
-    // ints1: IF ID-EXE MEM WB
-    // inst2:    IF-ID  EXE MEM WB
-
-    // hazard 2
-    // inst1: IF ID EXE-MEM WB
-    // inst2:       IF -ID  EXE MEM WB
-
-    // hazard 3 (mem hazard) = hazard1 && exe_is_load
-    // ints1: IF ID EXE-MEM WB
-    // inst2:    IF-ID  EXE MEM WB
-
-    // hazard 4 (mem hazard) = hazard2 && exe_is_load
-    // TODO: don't need stall?
-    // inst1: IF ID EXE-MEM WB
-    // inst2:       IF -ID  EXE MEM WB
-
     logic hazard1_a;
     logic hazard1_b;
     logic hazard2_a;
@@ -91,105 +77,173 @@ module Forward_Unit #(
     logic hazard3_b;
     logic hazard4_a;
     logic hazard4_b;
+    logic hazard5_a;
+    logic hazard5_b;
+    logic hazard6_a;
+    logic hazard6_b;
 
-    // check hazard 1
-    // id_exe_rf_wen && (if_id_rs1 == id_exe_rd || if_id_rs2 == id_exe_rd) && id_exe_rd != 0
+    // hazard 1
+    // ints1: IF ID-EXE MEM WB
+    // inst2:    IF-ID  EXE MEM WB
+
+    // hazard 2
+    // inst1: IF ID EXE-MEM WB
+    // inst2:       IF -ID  EXE MEM WB
+
+    // hazard 3
+    // inst1: IF ID EXE MEM-WB
+    // inst2:           IF -ID EXE MEM WB
+
+    // hazard 4 (mem hazard) = hazard 1 && exe_is_load
+    // ints1: IF ID EXE-MEM WB
+    // inst2:    IF-ID  EXE MEM WB
+
+    // hazard 5 (mem hazard) = hazard 2 && mem_is_load
+    // inst1: IF ID EXE-MEM WB
+    // inst2:       IF -ID  EXE MEM WB
+
+    // hazard 6 (mem hazard) = hazard 3 && WB_is_load
+    // inst1: IF ID EXE MEM-WB
+    // inst2:           IF -ID EXE MEM WB
+
+    // hazard 1
     always_comb begin
-        if (id_exe_rd == if_id_rs1 && id_exe_rd != 0 && id_exe_rf_wen) begin // rs1
+        if (exe_mem_rd == id_exe_rs1 && exe_mem_rd != 0 && exe_mem_rf_wen) begin // rs1
             hazard1_a = 1;
         end else begin
             hazard1_a = 0;
         end
-        if (id_exe_rd == if_id_rs2 && id_exe_rd != 0 && id_exe_rf_wen) begin // rs2
+        if (exe_mem_rd == id_exe_rs2 && exe_mem_rd != 0 && exe_mem_rf_wen) begin // rs2
             hazard1_b = 1;
         end else begin
             hazard1_b = 0;
         end
     end
 
-    // check hazard 1
-    // exe_mem_rf_wen && (if_id_rs1 == exe_mem_rd || if_id_rs2 == exe_mem_rd) && exe_mem_rd != 0
+    // hazard 2
     always_comb begin
-        if (exe_mem_rd == if_id_rs1 && exe_mem_rd != 0 && exe_mem_rf_wen) begin // rs1
+        if (mem_wb_rd == id_exe_rs1 && mem_wb_rd != 0 && wb_rf_we) begin // rs1
             hazard2_a = 1;
         end else begin
             hazard2_a = 0;
         end
-        if (exe_mem_rd == if_id_rs2 && exe_mem_rd != 0 && exe_mem_rf_wen) begin // rs2
+        if (mem_wb_rd == id_exe_rs2 && mem_wb_rd != 0 && wb_rf_we) begin // rs2
             hazard2_b = 1;
         end else begin
             hazard2_b = 0;
         end
     end
 
-    // check hazard 3 and 4
+    // hazard 3
     always_comb begin
-        // hazard 3
-        if (hazard1_a && exe_is_load) begin // rs1
+        if (mem_wb_rd == if_id_rs1 && mem_wb_rd != 0 && wb_rf_we) begin // rs1
             hazard3_a = 1;
         end else begin
             hazard3_a = 0;
         end
-        if (hazard1_b && exe_is_load) begin // rs2
+        if (mem_wb_rd == if_id_rs2 && mem_wb_rd != 0 && wb_rf_we) begin // rs2
             hazard3_b = 1;
         end else begin
             hazard3_b = 0;
         end
+    end
+
+    // hazard 4 5 6
+    always_comb begin
         // hazard 4
-        if (hazard2_a && exe_is_load) begin // rs1
+        if (hazard1_a && exe_is_load) begin // rs1
             hazard4_a = 1;
         end else begin
             hazard4_a = 0;
         end
-        if (hazard2_b && exe_is_load) begin // rs2
+        if (hazard1_b && exe_is_load) begin // rs2
             hazard4_b = 1;
         end else begin
             hazard4_b = 0;
         end
+        // hazard 5
+        if (hazard2_a && mem_is_load) begin // rs1
+            hazard5_a = 1;
+        end else begin
+            hazard5_a = 0;
+        end
+        if (hazard2_b && mem_is_load) begin // rs2
+            hazard5_b = 1;
+        end else begin
+            hazard5_b = 0;
+        end
+        // hazard 6
+        if (hazard3_a && wb_is_load) begin // rs1
+            hazard6_a = 1;
+        end else begin
+            hazard6_a = 0;
+        end
+        if (hazard3_b && wb_is_load) begin // rs2
+            hazard6_b = 1;
+        end else begin
+            hazard6_b = 0;
+        end
     end
 
     // alu control signals
-    // TODO: bug in this block
-    // 0'
+    // TODO: 目前只考虑了非 mem hazard 的部分，mam hazerd 采用暂停解决，测试发现 forward 传输数据错误（如下）
     always_comb begin
         // rs1
-        if (use_mem_dat_a) begin // mem hazard (3 or 4)
-            alu_mux_a = `ALU_MUX_FORWARD;
-            //alu_a_forward = mem_wb_dat;
+        if (use_mem_dat_a) begin // hazard 4 5 6
+            // TODO: hazard 4 5 6 different
+            alu_mux_a = id_exe_alu_mux_a;
             alu_a_forward = 0;
-        end else if (hazard1_a || hazard2_a) begin // hazard 1 or 2
+        end else if (hazard1_a) begin // hazard 1
             alu_mux_a = `ALU_MUX_FORWARD;
-            //alu_a_forward = exe_mem_dat;
+            alu_a_forward = exe_mem_dat;
+        end else if (hazard2_a) begin // hazard 2
+            alu_mux_a = `ALU_MUX_FORWARD;
+            alu_a_forward = mem_wb_dat;
+        end else if (hazard3_a) begin // hazard 3
+            // alu_mux_a = `ALU_MUX_FORWARD;
+            // alu_a_forward = wb_dat;
+            alu_mux_a = id_exe_alu_mux_a;
             alu_a_forward = 0;
         end else begin // no hazard
             alu_mux_a = id_exe_alu_mux_a;
             alu_a_forward = 0;
         end
         // rs2
-        if (use_mem_dat_b) begin // mem hazard (3 or 4)
-            alu_mux_b = `ALU_MUX_FORWARD;
-            //alu_b_forward = mem_wb_dat;
+        if (use_mem_dat_b) begin // hazard 4 5 6
+            // TODO: hazard 3 and 4 different
+            alu_mux_b = id_exe_alu_mux_b;
             alu_b_forward = 0;
-        end else if (hazard1_b || hazard2_b) begin // hazard 1 or 2
+        end else if (hazard1_b) begin // hazard 1
             alu_mux_b = `ALU_MUX_FORWARD;
-            //alu_b_forward = exe_mem_dat;
+            alu_b_forward = exe_mem_dat;
+        end else if (hazard2_b) begin // hazard 2
+            alu_mux_b = `ALU_MUX_FORWARD;
+            alu_b_forward = mem_wb_dat;
+        end else if (hazard3_b) begin // hazard 3
+            // alu_mux_b = `ALU_MUX_FORWARD;
+            // alu_b_forward = wb_dat;
+            alu_mux_b = id_exe_alu_mux_b;
             alu_b_forward = 0;
         end else begin // no hazard
             alu_mux_b = id_exe_alu_mux_b;
             alu_b_forward = 0;
         end
+        // alu_mux_a = id_exe_alu_mux_a;
+        // alu_a_forward = 0;
+        // alu_mux_b = id_exe_alu_mux_b;
+        // alu_b_forward = 0;
     end
 
     // mem hazard signal
     always_comb begin
         // rs1
-        if (hazard3_a || hazard4_a) begin // hazard 3 or 4
+        if (hazard4_a || hazard5_a || hazard6_a) begin // hazard 4 5 6
             pass_use_mem_dat_a = 1;
         end else begin
             pass_use_mem_dat_a = 0;
         end
         // rs2
-        if (hazard3_b || hazard4_b) begin // hazard 3 or 4
+        if (hazard4_b || hazard5_b || hazard6_b) begin // hazard 4 5 6
             pass_use_mem_dat_b = 1;
         end else begin
             pass_use_mem_dat_b = 0;
@@ -199,10 +253,12 @@ module Forward_Unit #(
     // test
     always_comb begin
         if (
-            id_exe_rf_wen && (if_id_rs1 == id_exe_rd || if_id_rs2 == id_exe_rd) && id_exe_rd != 0 ||
-            exe_mem_rf_wen && (if_id_rs1 == exe_mem_rd || if_id_rs2 == exe_mem_rd) && exe_mem_rd != 0 ||
-            wb_rf_we && (if_id_rs1 == wb_rd || if_id_rs2 == wb_rd) && wb_rd != 0
-            //hazard3_a || hazard3_b || hazard4_a || hazard4_b
+            // id_exe_rf_wen && (if_id_rs1 == id_exe_rd || if_id_rs2 == id_exe_rd) && id_exe_rd != 0 || // ID -> EXE
+            // exe_mem_rf_wen && (if_id_rs1 == exe_mem_rd || if_id_rs2 == exe_mem_rd) && exe_mem_rd != 0 || // EXE -> MEM
+            // wb_rf_we && (if_id_rs1 == mem_wb_rd || if_id_rs2 == mem_wb_rd) && mem_wb_rd != 0 // MEM -> WB
+            //hazard1_a || hazard1_b || hazard2_a || hazard2_b || hazard3_a || hazard3_b ||
+            hazard3_a || hazard3_b ||
+            hazard4_a || hazard4_b || hazard5_a || hazard5_b || hazard6_a || hazard6_b 
         ) begin
             exe_stall_req = 1;
         end else begin

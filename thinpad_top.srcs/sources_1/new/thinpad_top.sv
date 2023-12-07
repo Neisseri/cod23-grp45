@@ -623,6 +623,11 @@ module thinpad_top #(
   // Forward Unit
   logic exe_is_load;
   assign exe_is_load = id_exe_mem_en && id_exe_rf_wen;
+  logic mem_is_load;
+  assign mem_is_load = exe_mem_mem_en && exe_mem_rf_wen;
+  logic wb_is_load;
+  assign wb_is_load = mem_wb_wb_if_mem && wb_rf_we;
+
   Forward_Unit FU_u(
     .id_exe_rs1(id_exe_rs1),
     .id_exe_rs2(id_exe_rs2),
@@ -635,9 +640,12 @@ module thinpad_top #(
     .exe_is_load(exe_is_load),
 
     // add signal
+    .mem_is_load(mem_is_load),
     .id_exe_rf_wen(id_exe_rf_wen),
     .wb_rf_we(wb_rf_we),
-    .wb_rd(wb_rd),
+    .mem_wb_rd(wb_rd),
+    .wb_is_load(wb_is_load),
+    .wb_dat(wb_wdata),
 
     .use_mem_dat_a(use_mem_dat_a_o),
     .use_mem_dat_b(use_mem_dat_b_o),
