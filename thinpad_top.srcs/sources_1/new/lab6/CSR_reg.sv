@@ -26,6 +26,7 @@ module CSR_reg #(
     input wire [DATA_WIDTH-1:0] csr_mie_i,
     input wire csr_mie_we_i,
 
+    output reg [DATA_WIDTH-1:0] csr_satp_o,
     output reg [DATA_WIDTH-1:0] csr_mstatus_o,
     output reg [DATA_WIDTH-1:0] csr_mtvec_o,
     output reg [DATA_WIDTH-1:0] csr_mepc_o,
@@ -59,6 +60,7 @@ module CSR_reg #(
             12'h341: csr_o = mepc;
             12'h342: csr_o = mcause;
             12'h344: csr_o = mip;
+            default: csr_o = 0;
         endcase
 
         csr_satp_o = satp;

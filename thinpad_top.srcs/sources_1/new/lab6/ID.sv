@@ -225,7 +225,7 @@ module ID(
                     end
                     3'b000: begin // PRIV
                         case (funct7)
-                            0001001: op_type = OP_SFENCE_VMA; 
+                            7'b0001001: op_type = OP_SFENCE_VMA; 
                             default: begin
                                 case(funct12)
                                     12'b000000000001: begin // EBREAK

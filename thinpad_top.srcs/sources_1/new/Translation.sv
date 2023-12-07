@@ -1,5 +1,5 @@
 `timescale 1ns / 1ps
-`include "../header/page_table_code.sv"
+`include "header/page_table_code.sv"
 
 module Translation #(
     parameter ADDR_WIDTH = 32,
@@ -14,6 +14,7 @@ module Translation #(
     // TLB to Translation
     input wire [ADDR_WIDTH-1:0] query_addr,
     input wire translation_en,
+    input wire query_write_en,
 
     // Translation to TLB
     output logic translation_ready,
@@ -40,7 +41,7 @@ module Translation #(
     output reg store_page_fault
 );
 
-typedef enum logic { 
+typedef enum logic [2:0] { 
     STATE_IDLE,
     STATE_FETCH_TABLE,
     STATE_FETCH_TABLE_DONE,
@@ -55,15 +56,15 @@ typedef enum logic {
         wb_dat_o = 0; // not write
         wb_we_o = 0;
         wb_sel_o = 4'b1111;
-        wb_cyc_o = (state == STATE_FETCH_TABLE) || (state == STATE_FIND_PAGE)
-        wb_stb_o = (state == STATE_FETCH_TABLE) || (state == STATE_FIND_PAGE)
+        wb_cyc_o = (state == STATE_FETCH_TABLE) || (state == STATE_FIND_PAGE);
+        wb_stb_o = (state == STATE_FETCH_TABLE) || (state == STATE_FIND_PAGE);
         translation_ready = (state == STATE_IDLE) || (state == STATE_DONE);
     end
 
     page_entry_t cur_page;
 
     logic [ADDR_WIDTH-1:0] page_base;
-    assign page_base = {satp_i.ppn[`PPN1_LENGTH+`PPN0_LENGTH-3:0], {`PAGE_OFFSET{0}}}; // 第一层页表基址
+    assign page_base = {satp_i.ppn[`PPN1_LENGTH+`PPN0_LENGTH-3:0], {`PAGE_OFFSET{1'b0}}}; // 第一层页表基�??
 
     virtual_address_t vir_addr;
     assign vir_addr = query_addr;
@@ -90,7 +91,7 @@ typedef enum logic {
                     end
                 end
                 STATE_FETCH_TABLE: begin
-                    if(mem_ready)begin
+                    if(wb_ack_i)begin
                         cur_page <= wb_dat_i;
                         state <= STATE_FETCH_TABLE_DONE;
                     end
@@ -112,7 +113,7 @@ typedef enum logic {
                     end
                 end
                 STATE_FIND_PAGE: begin
-                    if(mem_ready)begin
+                    if(wb_ack_i)begin
                         cur_page <= wb_dat_i;
                         state <= STATE_FIND_LEAF;
                     end

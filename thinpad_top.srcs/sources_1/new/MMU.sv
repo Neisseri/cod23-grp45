@@ -1,6 +1,6 @@
 `timescale 1ns / 1ps
-`include "../header/page_table_code.sv"
-`include "../header/csr.sv"
+`include "header/page_table_code.sv"
+`include "header/csr.sv"
 
 module IF_MMU #(
     parameter ADDR_WIDTH = 32,
@@ -54,7 +54,7 @@ module IF_MMU #(
                 wishbone_owner = tlb_wishbone_owner;
                 tlb_en = 1;
             end else begin
-                wishbone_owner = ·`MMU_OWN;
+                wishbone_owner = `MMU_OWN;
                 tlb_en = 0;
             end
         end else begin
@@ -88,6 +88,8 @@ module IF_MMU #(
         end
     end
 
+    logic to_trans_query_write_en;
+
     TLB tlb_u(
         .clk(clk),
         .rst(rst),
@@ -108,6 +110,7 @@ module IF_MMU #(
 
         .tlb_query_addr(tlb_query_addr),
         .translation_en(translation_en),
+        .to_trans_query_write_en(to_trans_query_write_en),
 
         .translation_ready(translation_ready),
         .translation_error(translation_error),
@@ -119,7 +122,7 @@ module IF_MMU #(
         .cache_mem_data_o(cache_mem_data_o),
         .cache_mem_sel_o(cache_mem_sel_o),
         .cache_ready(cache_ready),
-        .cache_error(0),
+        .cache_error(1'b0),
         .cache_result(cache_result)
     );
 
@@ -136,6 +139,7 @@ module IF_MMU #(
     logic instruction_page_fault;
     logic load_page_fault;
     logic store_page_fault;
+    assign translation_error = instruction_page_fault | load_page_fault | store_page_fault;
     Translation translation_u(
         .clk(clk),
         .rst(rst),
@@ -143,6 +147,7 @@ module IF_MMU #(
         .if_user_mode(if_user_mode),
         .query_addr(tlb_query_addr),
         .translation_en(translation_en),
+        .query_write_en(to_trans_query_write_en),
         .translation_ready(translation_ready),
         .query_addr_o(translation_result),
         .wb_ack_i(trans_ack),
@@ -314,7 +319,7 @@ module MEM_MMU #(
                 wishbone_owner = tlb_wishbone_owner;
                 tlb_en = 1;
             end else begin
-                wishbone_owner = ·`MMU_OWN;
+                wishbone_owner = `MMU_OWN;
                 tlb_en = 0;
             end
         end else begin
@@ -341,6 +346,8 @@ module MEM_MMU #(
 
     satp_t satp;
     assign satp = satp_i;
+
+    logic to_trans_query_write_en;
     TLB tlb_u(
         .clk(clk),
         .rst(rst),
@@ -361,6 +368,7 @@ module MEM_MMU #(
 
         .tlb_query_addr(tlb_query_addr),
         .translation_en(translation_en),
+        .to_trans_query_write_en(to_trans_query_write_en),
 
         .translation_ready(translation_ready),
         .translation_error(translation_error),
@@ -372,7 +380,7 @@ module MEM_MMU #(
         .cache_mem_data_o(cache_mem_data_o),
         .cache_mem_sel_o(cache_mem_sel_o),
         .cache_ready(cache_ready),
-        .cache_error(0),
+        .cache_error(1'b0),
         .cache_result(cache_result)
     );
 
@@ -389,6 +397,7 @@ module MEM_MMU #(
     logic instruction_page_fault;
     logic load_page_fault;
     logic store_page_fault;
+    assign translation_error = instruction_page_fault | load_page_fault | store_page_fault;
     Translation translation_u(
         .clk(clk),
         .rst(rst),
@@ -396,6 +405,7 @@ module MEM_MMU #(
         .if_user_mode(if_user_mode),
         .query_addr(tlb_query_addr),
         .translation_en(translation_en),
+        .query_write_en(to_trans_query_write_en),
         .translation_ready(translation_ready),
         .query_addr_o(translation_result),
         .wb_ack_i(trans_ack),
@@ -443,6 +453,8 @@ module MEM_MMU #(
         cache_sel = cache_mem_sel_o;
         cache_we = cache_write_en;
         cache_dat_o = cache_mem_data_o;
+        cache_ready = cache_ack;
+        cache_result = cache_dat_i;
     end
 
     // arbeiter

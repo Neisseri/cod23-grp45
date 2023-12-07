@@ -1,5 +1,5 @@
 `timescale 1ns / 1ps
-`include "../header/page_table_code.sv"
+`include "header/page_table_code.sv"
 
 module TLB #(
     parameter ADDR_WIDTH = 32,
@@ -30,6 +30,7 @@ module TLB #(
     // TLB to Translation
     output logic [ADDR_WIDTH-1:0] tlb_query_addr,
     output reg translation_en,
+    output logic to_trans_query_write_en,
 
     // Translation to TLB
     input wire translation_ready,
@@ -65,7 +66,7 @@ module TLB #(
 
     always_comb begin
         tlb_query_addr = query_addr;
-
+        to_trans_query_write_en = query_write_en;
         cache_write_en = query_write_en;
         cache_mem_data_o = query_data_i;
         cache_mem_sel_o = query_sel;
@@ -83,7 +84,7 @@ module TLB #(
     tlb_entry_t tlb_visit_entry;
     always_comb begin
         tlb_visit_entry = tlb_table[tlb_req.TLBT];
-        tlb_hit = tlb_en && !flush_tlb && tlb_visit_entry.TLBI = tlb_req.TLBI && tlb_visit_entry.valid;
+        tlb_hit = tlb_en && !flush_tlb && tlb_visit_entry.TLBI == tlb_req.TLBI && tlb_visit_entry.valid;
         if(tlb_hit)begin
             phy_addr = {tlb_visit_entry.page.PPN1, tlb_visit_entry.page.PPN0, tlb_req.offset};
         end else begin
@@ -147,7 +148,6 @@ module TLB #(
                 STATE_DONE: begin
                     state <= STATE_IDLE;
                 end
-                default: 
             endcase
         end
     end

@@ -47,7 +47,7 @@ module Data_memory #(
     output logic [DATA_WIDTH-1:0] data_out,
 
     input wire pipeline_stall,
-    output logic idle_stall,
+    output logic idle_stall
     );
 
     typedef enum logic [3:0] {
@@ -79,7 +79,7 @@ module Data_memory #(
     reg [DATA_WIDTH-1:0] data_out_raw;
     logic [DATA_WIDTH-1:0] data_out_shift;
 
-    //符号位拓�??
+    //符号位拓�???
     logic sign_bit;
     always_comb begin
         case (sel)

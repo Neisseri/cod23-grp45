@@ -19,7 +19,7 @@ module CSR_controller #(
     output reg [DATA_WIDTH-1:0] csr_o,
 
     input wire [DATA_WIDTH-1:0] csr_i,
-    output reg [DATA_WIDTH-1:0] csr_adr_o,
+    output reg [11:0] csr_adr_o,
     output reg [DATA_WIDTH-1:0] csr_wdat_o,
     output reg csr_we_o,
 
@@ -30,18 +30,18 @@ module CSR_controller #(
     input wire [DATA_WIDTH-1:0] csr_mip_i,
     input wire [DATA_WIDTH-1:0] csr_mie_i,
 
-    output reg [DATA_WIDTH-1:0] csr_mstatus_o,
-    output reg csr_mstatus_we_o,
-    output reg [DATA_WIDTH-1:0] csr_mtvec_o,
-    output reg csr_mtvec_we_o,
-    output reg [DATA_WIDTH-1:0] csr_mepc_o,
-    output reg csr_mepc_we_o,
-    output reg [DATA_WIDTH-1:0] csr_mcause_o,
-    output reg csr_mcause_we_o,
-    output reg [DATA_WIDTH-1:0] csr_mip_o,
-    output reg csr_mip_we_o,
-    output reg [DATA_WIDTH-1:0] csr_mie_o,
-    output reg csr_mie_we_o,
+    output logic [DATA_WIDTH-1:0] csr_mstatus_o,
+    output logic csr_mstatus_we_o,
+    output logic [DATA_WIDTH-1:0] csr_mtvec_o,
+    output logic csr_mtvec_we_o,
+    output logic [DATA_WIDTH-1:0] csr_mepc_o,
+    output logic csr_mepc_we_o,
+    output logic [DATA_WIDTH-1:0] csr_mcause_o,
+    output logic csr_mcause_we_o,
+    output logic [DATA_WIDTH-1:0] csr_mip_o,
+    output logic csr_mip_we_o,
+    output logic [DATA_WIDTH-1:0] csr_mie_o,
+    output logic csr_mie_we_o,
 
     input wire [ADDR_WIDTH-1:0] mem_pc_i,
     output reg [ADDR_WIDTH-1:0] pc_next_exception_o,
@@ -64,6 +64,8 @@ module CSR_controller #(
         csr_wdat_o = 0;
         csr_we_o = 0;
         csr_o = 0;
+        csr_mip_o = 0;
+        csr_mip_we_o = 0;
         if (!exception_idle) begin
             case(csr_op_i)
                 `CSR_CSRRW: begin
