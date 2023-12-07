@@ -375,17 +375,36 @@ module thinpad_top #(
   logic [DATA_WIDTH-1:0] wb_wdata;
   logic [4:0] wb_rd;
   logic wb_rf_we;
+  logic [DATA_WIDTH-1:0] rf_rdata_a_tmp;
+  logic [DATA_WIDTH-1:0] rf_rdata_b_tmp;
   register_file RF_u(
     .clk(sys_clk),
     .reset(sys_rst),
     .rf_raddr_a(id_rs1),
-    .rf_rdata_a(rf_rdata_a),
+    .rf_rdata_a(rf_rdata_a_tmp),
     .rf_raddr_b(id_rs2),
-    .rf_rdata_b(rf_rdata_b),
+    .rf_rdata_b(rf_rdata_b_tmp),
     .rf_waddr(wb_rd),
     .rf_wdata(wb_wdata),
     .rf_we(wb_rf_we)
   );
+
+  logic rs1_forward;
+  logic rs2_forward;
+  logic [DATA_WIDTH-1:0] rs1_forward_dat;
+  logic [DATA_WIDTH-1:0] rs2_forward_dat;
+  always_comb begin
+    if (rs1_forward) begin
+      rf_rdata_a = rs1_forward_dat;
+    end else begin
+      rf_rdata_a = rf_rdata_a_tmp;
+    end
+    if (rs2_forward) begin
+      rf_rdata_b = rs2_forward_dat;
+    end else begin
+      rf_rdata_b = rf_rdata_b_tmp;
+    end
+  end
   
   logic branch_rs1_hazard;
   logic branch_rs2_hazard;
@@ -637,15 +656,21 @@ module thinpad_top #(
     .if_id_rs1(id_rs1),
     .if_id_rs2(id_rs2),
     .id_exe_rd(id_exe_rd),
-    .exe_is_load(exe_is_load),
+    .id_exe_is_load(exe_is_load),
 
     // add signal
-    .mem_is_load(mem_is_load),
+    .exe_mem_is_load(mem_is_load),
     .id_exe_rf_wen(id_exe_rf_wen),
     .wb_rf_we(wb_rf_we),
     .mem_wb_rd(wb_rd),
-    .wb_is_load(wb_is_load),
+    .mem_wb_is_load(wb_is_load),
     .wb_dat(wb_wdata),
+
+    // hazard 3 signals
+    .rs1_forward_o(rs1_forward),
+    .rs2_forward_o(rs2_forward),
+    .rs1_forward_dat_o(rs1_forward_dat),
+    .rs2_forward_dat_o(rs2_forward_dat),
 
     .use_mem_dat_a(use_mem_dat_a_o),
     .use_mem_dat_b(use_mem_dat_b_o),
