@@ -54,6 +54,7 @@ module ID_EXE_reg #(
     input wire csr_we_i,
     input wire [11:0] csr_adr_i,
     input wire [3:0] csr_op_i,
+    input wire flush_tlb_i,
 
     output reg [4:0] rd_o,
     output reg [4:0] rs1_o,
@@ -71,7 +72,8 @@ module ID_EXE_reg #(
     output reg [3:0] wb_if_mem_o,
     output reg csr_we_o,
     output reg [11:0] csr_adr_o,
-    output reg [3:0] csr_op_o
+    output reg [3:0] csr_op_o,
+    output reg flush_tlb_o
     );
 
     always_ff @(posedge clk)begin
@@ -95,6 +97,7 @@ module ID_EXE_reg #(
             csr_we_o <= 0;
             csr_adr_o <= 0;
             csr_op_o <= 0;
+            flush_tlb_o <= 0;
         end else begin
             if(!stall)begin
                 if(bubble)begin
@@ -117,6 +120,7 @@ module ID_EXE_reg #(
                     csr_we_o <= 0;
                     csr_adr_o <= 0;
                     csr_op_o <= 0;
+                    flush_tlb_o <= 0;
                 end else begin
                     instr_o <= instr_i;
                     pc_o <= pc_i;
@@ -137,6 +141,7 @@ module ID_EXE_reg #(
                     csr_we_o <= csr_we_i;
                     csr_adr_o <= csr_adr_i;
                     csr_op_o <= csr_op_i;
+                    flush_tlb_o <= flush_tlb_i;
                 end
             end
         end

@@ -80,10 +80,10 @@ typedef enum logic {
         end else begin
             case (state)
                 STATE_IDLE: begin
-                    instruction_page_fault <= 0;
-                    load_page_fault <= 0;
-                    store_page_fault <= 0;
                     if(translation_en)begin
+                        instruction_page_fault <= 0;
+                        load_page_fault <= 0;
+                        store_page_fault <= 0;
                         wb_adr_o <= page_base + (vir_addr.VPN1 << `PAGE_OFFSET);
                         cur_page <= 0;
                         state <= STATE_FETCH_TABLE;

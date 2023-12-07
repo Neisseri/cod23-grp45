@@ -44,7 +44,10 @@ module ID(
 
         output logic csr_we_o,
         output logic [11:0] csr_adr_o,
-        output logic [3:0] csr_op_o
+        output logic [3:0] csr_op_o,
+        output logic satp_update_o,
+
+        output logic flush_tlb
     );
 
     logic [2:0] funct3;
@@ -92,6 +95,8 @@ module ID(
         OP_EBREAK,
         OP_ECALL,
         OP_MRET,
+
+        OP_SFENCE_VMA,
 
         OP_NOP,
         OP_UNKNOWN
@@ -203,7 +208,7 @@ module ID(
                 rs1 = 0;
                 rs2 = 0;
             end
-            7'b1110011: begin // SYSTEM(CSR)
+            7'b1110011: begin // SYSTEM
                 case(funct3)
                     3'b011: begin // CSRRC
                         op_type = OP_CSRRC;
@@ -215,17 +220,22 @@ module ID(
                         op_type = OP_CSRRW;
                     end
                     3'b000: begin // PRIV
-                        case(funct12)
-                            12'b000000000001: begin // EBREAK
-                                op_type = OP_EBREAK;
+                        case (funct7)
+                            0001001: op_type = OP_SFENCE_VMA; 
+                            default: begin
+                                case(funct12)
+                                    12'b000000000001: begin // EBREAK
+                                        op_type = OP_EBREAK;
+                                    end
+                                    12'b000000000000: begin // ECALL
+                                        op_type = OP_ECALL;
+                                    end
+                                    12'b001100000010: begin // MRET
+                                        op_type = OP_MRET;
+                                    end
+                                    default: op_type = OP_UNKNOWN;
+                                endcase
                             end
-                            12'b000000000000: begin // ECALL
-                                op_type = OP_ECALL;
-                            end
-                            12'b001100000010: begin // MRET
-                                op_type = OP_MRET;
-                            end
-                            default: op_type = OP_UNKNOWN;
                         endcase
                     end
                     default: op_type = OP_UNKNOWN;
@@ -241,6 +251,13 @@ module ID(
                 rs1 = 0;
                 rs2 = 0;
             end
+        endcase
+    end
+
+    always_comb begin
+        case (op_type)
+            OP_SFENCE_VMA: flush_tlb = 1; 
+            default: flush_tlb = 0;
         endcase
     end
 
@@ -269,6 +286,18 @@ module ID(
                 imm = 0;
             end
         endcase
+    end
+
+    always_comb begin
+        if(op_type == OP_CSRRW || op_type == OP_CSRRC || op_type == OP_CSRRS)begin
+            if(csr_adr_o == 12'h180)begin
+                satp_update_o = 1;
+            end else begin
+                satp_update_o = 0;
+            end
+        end else begin
+            satp_update_o = 0;
+        end
     end
 
     //signal-gen

@@ -304,6 +304,66 @@ module thinpad_top #(
     .next_pc(pc_next_pc)
   );
 
+  logic [3:0] id_csr_op;
+  logic [DATA_WIDTH-1:0] new_satp;
+  logic [DATA_WIDTH-1:0] csr_satp;
+  logic [DATA_WIDTH-1:0] rf_rdata_a;
+  logic [DATA_WIDTH-1:0] rf_rdata_b;
+  always_comb begin
+    case (id_csr_op)
+      OP_CSRRC: new_satp = csr_satp & ~rf_raddr_a;
+      OP_CSRRW: new_satp = rf_raddr_a;
+      OP_CSRRS: new_satp = csr_satp | rf_raddr_a;
+      default: new_satp = 0;
+    endcase
+  end
+
+  reg [DATA_WIDTH-1:0] new_satp_reg;
+  always_ff @(posedge sys_clk) begin
+    if(sys_rst)begin
+      new_satp_reg <= 0;
+    end else begin
+      new_satp_reg <= new_satp;
+    end
+  end
+
+  logic satp_update;
+  logic id_flush_tlb;
+  logic im_master_ready_o;
+  assign if_stall_req = ~im_master_ready_o;
+  logic [DATA_WIDTH-1:0] im_data_out;
+  logic mmu_to_im_mem_en;
+  logic mmu_to_im_write_en;
+  logic [ADDR_WIDTH-1:0] mmu_to_im_addr;
+  logic [DATA_WIDTH-1:0] mmu_to_im_data_in;
+  logic [DATA_WIDTH/8-1:0] mmu_to_im_sel;
+  logic im_to_mmu_master_ready;
+  logic [DATA_WIDTH-1:0] im_to_mmu_data_out; 
+  IF_MMU if_mmu_u(
+    .clk(sys_clk),
+    .rst(sys_rst),
+    .update_satp_i(new_satp),
+    .new_satp_reg_i(new_satp_reg),
+    .satp_update_i(satp_update),
+    .flush_tlb(id_flush_tlb),
+    .if_fetch_instruction(1),
+    .priv_level_i(priv_level_rdat),
+    .mmu_mem_en(1'b1),
+    .mmu_write_en(1'b0),
+    .mmu_addr(pc_addr),
+    .mmu_data_in(0),
+    .mmu_sel(4'b1111),
+    .mmu_ready_o(im_master_ready_o),
+    .mmu_data_out(im_data_out),
+    .mem_en(mmu_to_im_mem_en),
+    .write_en(mmu_to_im_write_en),
+    .addr(mmu_to_im_addr),
+    .data_in(mmu_to_im_data_in),
+    .sel(mmu_to_im_sel),
+    .master_ready_o(im_to_mmu_master_ready),
+    .data_out(im_to_mmu_data_out)
+  );
+
   logic im_wb_cyc_o;
   logic im_wb_stb_o;
   logic im_wb_ack_i;
@@ -312,9 +372,6 @@ module thinpad_top #(
   logic [DATA_WIDTH-1:0] im_wb_dat_i;
   logic [DATA_WIDTH/8-1:0] im_wb_sel_o;
   logic im_wb_we_o;
-  logic im_master_ready_o;
-  assign if_stall_req = ~im_master_ready_o;
-  logic [DATA_WIDTH-1:0] im_data_out;
   Instruction_memory IM(
     .clk(sys_clk),
     .rst(sys_rst),
@@ -326,13 +383,13 @@ module thinpad_top #(
     .wb_dat_i(im_wb_dat_i),
     .wb_sel_o(im_wb_sel_o),
     .wb_we_o(im_wb_we_o),
-    .master_ready_o(im_master_ready_o),
-    .mem_en(1'b1),
-    .write_en(1'b0),
-    .addr(pc_addr),
-    .data_in(0),
-    .sel(4'b1111),
-    .data_out(im_data_out),
+    .master_ready_o(im_to_mmu_master_ready),
+    .mem_en(mmu_to_im_mem_en),
+    .write_en(mmu_to_im_write_en),
+    .addr(mmu_to_im_addr),
+    .data_in(mmu_to_im_data_in),
+    .sel(mmu_to_im_sel),
+    .data_out(im_to_mmu_data_out),
     .pipeline_stall(pipeline_stall),
     .idle_stall(im_idle_stall)
   );
@@ -365,7 +422,6 @@ module thinpad_top #(
   logic [3:0] id_wb_if_mem;
   logic id_csr_we;
   logic [11:0] id_csr_adr;
-  logic [3:0] id_csr_op;
   ID ID_u(
     .instr(if_id_instr),
     .rd(id_rd),
@@ -384,11 +440,11 @@ module thinpad_top #(
     .id_exception_o(id_exception),
     .csr_we_o(id_csr_we),
     .csr_adr_o(id_csr_adr),
-    .csr_op_o(id_csr_op)
+    .csr_op_o(id_csr_op),
+    .satp_update_o(satp_update),
+    .flush_tlb(id_flush_tlb)
   );
 
-  logic [DATA_WIDTH-1:0] rf_rdata_a;
-  logic [DATA_WIDTH-1:0] rf_rdata_b;
   logic [DATA_WIDTH-1:0] wb_wdata;
   logic [4:0] wb_rd;
   logic wb_rf_we;
@@ -453,6 +509,7 @@ module thinpad_top #(
   logic [11:0] id_exe_csr_adr;
   logic [3:0] id_exe_csr_op;
   logic [3:0] id_exe_env_op;
+  logic id_exe_flush_tlb;
   ID_EXE_reg ID_EXE(
     .clk(sys_clk),
     .rst(sys_rst),
@@ -479,6 +536,7 @@ module thinpad_top #(
     .csr_we_i(id_csr_we),
     .csr_adr_i(id_csr_adr),
     .csr_op_i(id_csr_op),
+    .flush_tlb_i(id_flush_tlb),
 
     .rd_o(id_exe_rd),
     .rs1_o(id_exe_rs1),
@@ -496,7 +554,8 @@ module thinpad_top #(
     .wb_if_mem_o(id_exe_wb_if_mem),
     .csr_we_o(id_exe_csr_we),
     .csr_adr_o(id_exe_csr_adr),
-    .csr_op_o(id_exe_csr_op)
+    .csr_op_o(id_exe_csr_op),
+    .flush_tlb_o(id_exe_flush_tlb)
   );
   
   //EXE
@@ -548,6 +607,7 @@ module thinpad_top #(
   logic use_mem_dat_b_i;
   logic use_mem_dat_a_o;
   logic use_mem_dat_b_o;
+  logic exe_mem_flush_tlb;
   EXE_MEM_reg EXE_MEM(
     .clk(sys_clk),
     .rst(sys_rst),
@@ -569,6 +629,7 @@ module thinpad_top #(
     .csr_adr_i(id_exe_csr_adr),
     .csr_op_i(id_exe_csr_op),
     .env_op_i(id_exe_env_op),
+    .flush_tlb_i(id_exe_flush_tlb),
 
     .rd_o(exe_mem_rd),
     .rs1_dat_o(exe_mem_rs1_dat),
@@ -584,6 +645,7 @@ module thinpad_top #(
     .csr_adr_o(exe_mem_csr_adr),
     .csr_op_o(exe_mem_csr_op),
     .env_op_o(exe_mem_env_op),
+    .flush_tlb_o(exe_mem_flush_tlb),
 
     .use_mem_dat_a_i(use_mem_dat_a_i),
     .use_mem_dat_b_i(use_mem_dat_b_i),
@@ -592,6 +654,40 @@ module thinpad_top #(
   );
   
   //MEM
+  logic dm_master_ready_o;
+  assign mem_stall_req = ~dm_master_ready_o;
+  logic [DATA_WIDTH-1:0] dm_data_out;
+  logic mmu_to_dm_mem_en;
+  logic mmu_to_dm_write_en;
+  logic [ADDR_WIDTH-1:0] mmu_to_dm_addr;
+  logic [DATA_WIDTH-1:0] mmu_to_dm_data_in;
+  logic [DATA_WIDTH/8-1:0] mmu_to_dm_sel;
+  logic dm_to_mmu_master_ready;
+  logic [DATA_WIDTH-1:0] dm_to_mmu_data_out; 
+  MEM_MMU mem_mmu_u (
+    .clk(sys_clk),
+    .rst(sys_rst),
+    .satp_i(csr_satp_o),
+    .flush_tlb(exe_mem_flush_tlb),
+    .if_fetch_instruction(0),
+    .priv_level_i(priv_level_rdat),
+    .mmu_mem_en(exe_mem_mem_en),
+    .mmu_write_en(exe_mem_we),
+    .mmu_addr(exe_mem_wdata),
+    .mmu_data_in(exe_mem_rs2_dat),
+    .mmu_sel(exe_mem_sel),
+    .mmu_ready_o(dm_master_ready_o),
+    .mmu_data_out(dm_data_out),
+
+    .mem_en(mmu_to_dm_mem_en),
+    .write_en(mmu_to_dm_write_en),
+    .addr(mmu_to_dm_addr),
+    .data_in(mmu_to_dm_data_in),
+    .sel(mmu_to_dm_sel),
+    .master_ready_o(dm_to_mmu_master_ready),
+    .data_out(dm_to_mmu_data_out)
+  );
+
   logic dm_wb_cyc_o;
   logic dm_wb_stb_o;
   logic dm_wb_ack_i;
@@ -600,9 +696,6 @@ module thinpad_top #(
   logic [DATA_WIDTH-1:0] dm_wb_dat_i;
   logic [DATA_WIDTH/8-1:0] dm_wb_sel_o;
   logic dm_wb_we_o;
-  logic dm_master_ready_o;
-  assign mem_stall_req = ~dm_master_ready_o;
-  logic [DATA_WIDTH-1:0] dm_data_out;
   Data_memory DM_u(
     .clk(sys_clk),
     .rst(sys_rst),
@@ -614,13 +707,13 @@ module thinpad_top #(
     .wb_dat_i(dm_wb_dat_i),
     .wb_sel_o(dm_wb_sel_o),
     .wb_we_o(dm_wb_we_o),
-    .master_ready_o(dm_master_ready_o),
-    .mem_en(exe_mem_mem_en),
-    .write_en(exe_mem_we),
-    .addr(exe_mem_wdata),
-    .data_in(exe_mem_rs2_dat),
-    .sel(exe_mem_sel),
-    .data_out(dm_data_out),
+    .master_ready_o(dm_to_mmu_master_ready),
+    .mem_en(mmu_to_dm_mem_en),
+    .write_en(mmu_to_dm_write_en),
+    .addr(mmu_to_dm_addr),
+    .data_in(mmu_to_dm_data_in),
+    .sel(mmu_to_dm_sel),
+    .data_out(dm_to_mmu_data_out),
     .pipeline_stall(pipeline_stall),
     .idle_stall(dm_idle_stall)
   );
@@ -724,6 +817,7 @@ module thinpad_top #(
     .csr_mie_i(csr_mie_wdat),
     .csr_mie_we_i(csr_mie_we),
 
+    .csr_satp_o(csr_satp),
     .csr_mstatus_o(csr_mstatus_rdat),
     .csr_mtvec_o(csr_mtvec_rdat),
     .csr_mepc_o(csr_mepc_rdat),

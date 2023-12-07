@@ -48,6 +48,7 @@ module EXE_MEM_reg #(
     input wire [11:0] csr_adr_i,
     input wire [3:0] csr_op_i,
     input wire [3:0] env_op_i,
+    input wire flush_tlb_i,
 
     output reg [4:0] rd_o,
     output reg [DATA_WIDTH-1:0] rs1_dat_o,
@@ -61,6 +62,7 @@ module EXE_MEM_reg #(
     output reg [11:0] csr_adr_o,
     output reg [3:0] csr_op_o,
     output reg [3:0] env_op_o,
+    output reg flush_tlb_o,
 
     // EXE
     input wire [DATA_WIDTH-1:0] wdata_i,
@@ -92,6 +94,7 @@ module EXE_MEM_reg #(
             env_op_o <= 0;
             use_mem_dat_a_o <= 0;
             use_mem_dat_b_o <= 0;
+            flush_tlb_o <= 0;
         end else begin
             if(!stall)begin
                 if(bubble)begin
@@ -112,6 +115,7 @@ module EXE_MEM_reg #(
                     env_op_o <= 0;
                     use_mem_dat_a_o <= 0;
                     use_mem_dat_b_o <= 0;
+                    flush_tlb_o <= 0;
                 end else begin
                     instr_o <= instr_i;
                     pc_o <= pc_i;
@@ -130,6 +134,7 @@ module EXE_MEM_reg #(
                     env_op_o <= env_op_i;
                     use_mem_dat_a_o <= use_mem_dat_a_i;
                     use_mem_dat_b_o <= use_mem_dat_b_i;
+                    flush_tlb_o <= flush_tlb_i;
                 end
             end
         end

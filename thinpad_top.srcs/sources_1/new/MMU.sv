@@ -1,5 +1,6 @@
 `timescale 1ns / 1ps
 `include "../header/page_table_code.sv"
+`include "../header/csr.sv"
 
 module IF_MMU #(
     parameter ADDR_WIDTH = 32,
@@ -8,7 +9,9 @@ module IF_MMU #(
     input wire clk,
     input wire rst,
 
-    input wire [DATA_WIDTH-1:0] satp_i,
+    input wire [DATA_WIDTH-1:0] update_satp_i,
+    input wire [DATA_WIDTH-1:0] new_satp_reg_i,
+    input wire satp_update_i,
     input wire flush_tlb,
 
     input wire if_fetch_instruction, //identify IF or MEM
@@ -43,8 +46,13 @@ module IF_MMU #(
     always_comb begin
         // judge wishbone_owner
         if(mmu_addr <= 32'h807f_ffff && mmu_addr >= 32'h8000_0000)begin // SRAM
-            wishbone_owner = tlb_wishbone_owner;
-            tlb_en = 1;
+            if(priv_level_i != `PRIV_M_LEVEL)begin
+                wishbone_owner = tlb_wishbone_owner;
+                tlb_en = 1;
+            end else begin
+                wishbone_owner = ·`MMU_OWN;
+                tlb_en = 0;
+            end
         end else begin
             wishbone_owner = `MMU_OWN;
             tlb_en = 0;
@@ -65,11 +73,17 @@ module IF_MMU #(
     logic [DATA_WIDTH-1:0] cache_mem_data_o;
     logic [DATA_WIDTH/8-1:0] cache_mem_sel_o;
     logic cache_ready;
-    logic cache_error;
     logic [DATA_WIDTH-1:0] cache_result;
 
     satp_t satp;
-    assign satp = satp_i;
+    always_comb begin
+        if(satp_update_i)begin
+            satp = update_satp_i;
+        end else begin
+            satp = new_satp_reg_i;
+        end
+    end
+
     TLB tlb_u(
         .clk(clk),
         .rst(rst),
@@ -101,12 +115,12 @@ module IF_MMU #(
         .cache_mem_data_o(cache_mem_data_o),
         .cache_mem_sel_o(cache_mem_sel_o),
         .cache_ready(cache_ready),
-        .cache_error(cache_error),
+        .cache_error(0),
         .cache_result(cache_result)
     );
 
     logic if_user_mode;
-    assign if_user_mode = (priv_level_i == 2'b00);
+    assign if_user_mode = (priv_level_i == `PRIV_U_LEVEL);
     logic trans_ack;
     logic [DATA_WIDTH-1:0] trans_dat_i;
     logic trans_cyc;
@@ -141,10 +155,33 @@ module IF_MMU #(
         .store_page_fault(store_page_fault)
     );
 
-    // arbeiter
-    assign mmu_ready_o = master_ready_o;
-    assign mmu_data_out = data_out;
+    logic cache_cyc;
+    logic cache_stb;
+    logic [ADDR_WIDTH-1:0] cache_adr;
+    logic [DATA_WIDTH/8-1:0] cache_sel;
+    logic cache_we;
+    logic cache_ack;
+    logic [DATA_WIDTH-1:0] cache_dat_i;
+    instruction_cache instr_cache(
+        .clk(clk),
+        .rst(rst),
+        
+        .wb_cyc_o(cache_cyc),
+        .wb_stb_o(cache_stb),
+        .wb_adr_o(cache_adr),
+        .wb_sel_o(cache_sel),
+        .wb_we_o(cache_we),
+        .wb_ack_i(cache_ack),
+        .wb_dat_i(cache_dat_i),
 
+        .master_ready_o(cache_ready),
+        .mem_en(cache_mem_en),
+        .addr(phy_addr),
+        .sel(cache_mem_sel_o),
+        .data_out(cache_result)
+    );
+
+    // arbeiter
     always_comb begin
         case (wishbone_owner)
             `MMU_OWN: begin
@@ -153,6 +190,13 @@ module IF_MMU #(
                 addr = mmu_addr;
                 data_in = mmu_data_in;
                 sel = mmu_sel;
+
+                mmu_ready_o = master_ready_o;
+                mmu_data_out = data_out;
+                trans_ack = 0;
+                trans_dat_i = 0;
+                cache_ack = 0;
+                cache_dat_i = 0;
             end
             `TRANSLATE_OWN: begin
                 mem_en = trans_stb;
@@ -160,9 +204,27 @@ module IF_MMU #(
                 addr = trans_adr_o;
                 data_in = trans_dat_o;
                 sel = trans_sel_o;
+
+                mmu_ready_o = 0;
+                mmu_data_out = 0;
+                trans_ack = master_ready_o;
+                trans_dat_i = data_out;
+                cache_ack = 0;
+                cache_dat_i = 0;
             end
             `CACHE_OWN: begin
-                
+                mem_en = cache_stb;
+                write_en = 0; // read only
+                addr = cache_adr;
+                data_in = 0;
+                sel = cache_sel;
+
+                mmu_ready_o = 0;
+                mmu_data_out = 0;
+                trans_ack = 0;
+                trans_dat_i = 0;
+                cache_ack = master_ready_o;
+                cache_dat_i = data_out;
             end
             default: begin
                 mem_en = mmu_mem_en;
@@ -170,13 +232,20 @@ module IF_MMU #(
                 addr = mmu_addr;
                 data_in = mmu_data_in;
                 sel = mmu_sel;
+
+                mmu_ready_o = master_ready_o;
+                mmu_data_out = data_out;
+                trans_ack = 0;
+                trans_dat_i = 0;
+                cache_ack = 0;
+                cache_dat_i = 0;
             end
         endcase
     end
     
 endmodule
 
-module MEM_MMU #( // not cache temporary
+module MEM_MMU #(
     parameter ADDR_WIDTH = 32,
     parameter DATA_WIDTH = 32
 ) (
@@ -218,15 +287,20 @@ module MEM_MMU #( // not cache temporary
     always_comb begin
         // judge wishbone_owner
         if(mmu_addr <= 32'h807f_ffff && mmu_addr >= 32'h8000_0000)begin // SRAM
-            wishbone_owner = tlb_wishbone_owner;
-            tlb_en = 1;
+            if(priv_level_i != `PRIV_M_LEVEL)begin
+                wishbone_owner = tlb_wishbone_owner;
+                tlb_en = 1;
+            end else begin
+                wishbone_owner = ·`MMU_OWN;
+                tlb_en = 0;
+            end
         end else begin
             wishbone_owner = `MMU_OWN;
             tlb_en = 0;
         end
     end
 
-    // include TLB, Translation, Cache, arbeiter
+    // include TLB, Translation, arbeiter
     logic tlb_ready;
     logic [DATA_WIDTH-1:0] query_data_o;
     logic [ADDR_WIDTH-1:0] tlb_query_addr;
@@ -240,7 +314,6 @@ module MEM_MMU #( // not cache temporary
     logic [DATA_WIDTH-1:0] cache_mem_data_o;
     logic [DATA_WIDTH/8-1:0] cache_mem_sel_o;
     logic cache_ready;
-    logic cache_error;
     logic [DATA_WIDTH-1:0] cache_result;
 
     satp_t satp;
@@ -276,12 +349,12 @@ module MEM_MMU #( // not cache temporary
         .cache_mem_data_o(cache_mem_data_o),
         .cache_mem_sel_o(cache_mem_sel_o),
         .cache_ready(cache_ready),
-        .cache_error(cache_error),
+        .cache_error(0),
         .cache_result(cache_result)
     );
 
     logic if_user_mode;
-    assign if_user_mode = (priv_level_i == 2'b00);
+    assign if_user_mode = (priv_level_i == `PRIV_U_LEVEL);
     logic trans_ack;
     logic [DATA_WIDTH-1:0] trans_dat_i;
     logic trans_cyc;
@@ -316,15 +389,25 @@ module MEM_MMU #( // not cache temporary
         .store_page_fault(store_page_fault)
     );
 
-    // no cache
+    // no cache, connect directly
+    logic cache_cyc;
+    logic cache_stb;
+    logic [ADDR_WIDTH-1:0] cache_adr;
+    logic [DATA_WIDTH/8-1:0] cache_sel;
+    logic cache_we;
+    logic [ADDR_WIDTH-1:0] cache_dat_o;
+    logic cache_ack;
+    logic [DATA_WIDTH-1:0] cache_dat_i;
     always_comb begin
-        
+        cache_cyc = cache_mem_en;
+        cache_stb = cache_mem_en;
+        cache_adr = phy_addr;
+        cache_sel = cache_mem_sel_o;
+        cache_we = cache_write_en;
+        cache_dat_o = cache_mem_data_o;
     end
 
     // arbeiter
-    assign mmu_ready_o = master_ready_o;
-    assign mmu_data_out = data_out;
-
     always_comb begin
         case (wishbone_owner)
             `MMU_OWN: begin
@@ -333,6 +416,13 @@ module MEM_MMU #( // not cache temporary
                 addr = mmu_addr;
                 data_in = mmu_data_in;
                 sel = mmu_sel;
+
+                mmu_ready_o = master_ready_o;
+                mmu_data_out = data_out;
+                trans_ack = 0;
+                trans_dat_i = 0;
+                cache_ack = 0;
+                cache_dat_i = 0;
             end
             `TRANSLATE_OWN: begin
                 mem_en = trans_stb;
@@ -340,9 +430,27 @@ module MEM_MMU #( // not cache temporary
                 addr = trans_adr_o;
                 data_in = trans_dat_o;
                 sel = trans_sel_o;
+
+                mmu_ready_o = 0;
+                mmu_data_out = 0;
+                trans_ack = master_ready_o;
+                trans_dat_i = data_out;
+                cache_ack = 0;
+                cache_dat_i = 0;
             end
             `CACHE_OWN: begin
-                mem_en = 
+                mem_en = cache_stb;
+                write_en = cache_we; // read only
+                addr = cache_adr;
+                data_in = cache_dat_o;
+                sel = cache_sel;
+
+                mmu_ready_o = 0;
+                mmu_data_out = 0;
+                trans_ack = 0;
+                trans_dat_i = 0;
+                cache_ack = master_ready_o;
+                cache_dat_i = data_out;
             end
             default: begin
                 mem_en = mmu_mem_en;
@@ -350,6 +458,13 @@ module MEM_MMU #( // not cache temporary
                 addr = mmu_addr;
                 data_in = mmu_data_in;
                 sel = mmu_sel;
+
+                mmu_ready_o = master_ready_o;
+                mmu_data_out = data_out;
+                trans_ack = 0;
+                trans_dat_i = 0;
+                cache_ack = 0;
+                cache_dat_i = 0;
             end
         endcase
     end

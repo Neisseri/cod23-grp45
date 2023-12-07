@@ -34,7 +34,7 @@ module Branch_comp #(
         output logic [DATA_WIDTH-1:0] new_pc
     );
     
-    typedef enum logic [7:0]{
+typedef enum logic [7:0]{
         OP_LUI,
         OP_BEQ,
         OP_LB,
@@ -60,6 +60,15 @@ module Branch_comp #(
         OP_CTZ,
         OP_ANDN,
         OP_MINU,
+
+        OP_CSRRC,
+        OP_CSRRS,
+        OP_CSRRW,
+        OP_EBREAK,
+        OP_ECALL,
+        OP_MRET,
+
+        OP_SFENCE_VMA,
 
         OP_NOP,
         OP_UNKNOWN

@@ -83,7 +83,7 @@ module TLB #(
     tlb_entry_t tlb_visit_entry;
     always_comb begin
         tlb_visit_entry = tlb_table[tlb_req.TLBT];
-        tlb_hit = tlb_en && tlb_visit_entry.TLBI = tlb_req.TLBI && tlb_visit_entry.valid;
+        tlb_hit = tlb_en && !flush_tlb && tlb_visit_entry.TLBI = tlb_req.TLBI && tlb_visit_entry.valid;
         if(tlb_hit)begin
             phy_addr = {tlb_visit_entry.page.PPN1, tlb_visit_entry.page.PPN0, tlb_req.offset};
         end else begin
@@ -94,7 +94,7 @@ module TLB #(
     assign tlb_ready = (state == STATE_IDLE) || (state == STATE_DONE);
 
     always_ff @(posedge clk) begin
-        if(rst || flush_tlb)begin
+        if(rst)begin
             for(integer i = 0;i < TLB_LENGTH;i = i + 1)begin
                 tlb_table[i] <= 0;
             end
@@ -104,6 +104,11 @@ module TLB #(
         end else begin
             case (state)
                 STATE_IDLE: begin
+                    if(flush_tlb)begin
+                        for(integer i = 0;i < TLB_LENGTH;i = i + 1)begin
+                            tlb_table[i] <= 0;
+                        end
+                    end
                     if(tlb_en)begin
                         if(tlb_hit)begin
                             cache_mem_en <= 1;
