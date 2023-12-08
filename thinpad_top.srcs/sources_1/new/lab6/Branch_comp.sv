@@ -35,34 +35,71 @@ module Branch_comp #(
     );
     
     typedef enum logic [7:0]{
+        // RV32I Base Instruction Set
         OP_LUI,
-        OP_BEQ,
-        OP_LB,
-        OP_SB,
-        OP_SW,
-        OP_ADDI,
-        OP_ANDI,
-        OP_ADD,
-
-        OP_AND,
         OP_AUIPC,
-        OP_BNE,
         OP_JAL,
         OP_JALR,
+        OP_BEQ,
+        OP_BNE,
+        OP_BLT, // TODO
+        OP_BGE, // TODO
+        OP_BLTU, // TODO
+        OP_BGEU, // TODO
+        OP_LB,
+        OP_LH, // TODO
         OP_LW,
-        OP_OR,
+        OP_LBU, // TODO
+        OP_LHU, // TODO
+        OP_SB,
+        OP_SH, // TODO
+        OP_SW,
+        OP_ADDI,
+        OP_SLTI, // TODO
+        OP_SLTIU, // TODO
+        OP_XORI, // TODO
         OP_ORI,
+        OP_ANDI,
         OP_SLLI,
         OP_SRLI,
-        OP_XOR,
+        OP_SRAI, // TODO
+        OP_ADD,
+        OP_SUB, // TODO
+        OP_SLL, // TODO
+        OP_SLT, // TODO
         OP_SLTU,
+        OP_XOR,
+        OP_SRL, // TODO
+        OP_SRA, // TODO
+        OP_OR,
+        OP_AND,
+        // no FENCE
+        OP_ECALL,
+        OP_EBREAK,
+        
+        // Zicsr csr instructions
+        OP_CSRRW,
+        OP_CSRRS,
+        OP_CSRRC,
+        OP_CSRRWI, // TODO
+        OP_CSRRSI, // TODO
+        OP_CSRRCI, // TODO
 
+        //Zicntr instructions
+        OP_RDTIME, // TODO
+        OP_RDTIMEH, // TODO
+
+        // priv instructions
+        OP_MRET,
+        OP_SRET, // TODO
+
+        // our group's additional instructions
         OP_CTZ,
         OP_ANDN,
         OP_MINU,
 
-        OP_NOP,
-        OP_UNKNOWN
+        OP_NOP, // NOP
+        OP_UNKNOWN // instruction not supported(exception)
     } OP_TYPE_T;
 
     OP_TYPE_T op_type;
