@@ -46,6 +46,7 @@ module Forward_Unit #(
     input wire mem_wb_is_load,
     input wire [DATA_WIDTH-1:0] wb_dat,
     input wire [DATA_WIDTH-1:0] id_exe_dat,
+    input wire [DATA_WIDTH-1:0] mem_dat,
 
     // hazard 3
     output logic rs1_forward_o,
@@ -189,11 +190,11 @@ module Forward_Unit #(
         alu_a_forward = 0;
         if (hazard5_a) begin // hazard 5
             rs1_forward_o = 1;
-            rs1_forward_dat_o = mem_wb_dat;
+            rs1_forward_dat_o = mem_dat;
         end else if (hazard6_a) begin // hazard 6
             rs1_forward_o = 1;
             rs1_forward_dat_o = wb_dat;
-        end if (hazard1_a) begin // hazard 1
+        end else if (hazard1_a) begin // hazard 1
             rs1_forward_o = 1;
             rs1_forward_dat_o = id_exe_dat;
         end else if (hazard2_a) begin // hazard 2
@@ -210,7 +211,7 @@ module Forward_Unit #(
         alu_b_forward = 0;
         if (hazard5_b) begin // hazard 5
             rs2_forward_o = 1;
-            rs2_forward_dat_o = mem_wb_dat;
+            rs2_forward_dat_o = mem_dat;
         end else if (hazard6_b) begin // hazard 6
             rs2_forward_o = 1;
             rs2_forward_dat_o = wb_dat;
