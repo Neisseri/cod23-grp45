@@ -192,7 +192,6 @@ module Forward_Unit #(
     end
 
     // alu control signals
-    // TODO: 目前只考虑了非 mem hazard 的部分，mam hazerd 采用暂停解决，测试发现 forward 传输数据错误（如下）
     always_comb begin
         // rs1
         rs1_forward_o = 0;
