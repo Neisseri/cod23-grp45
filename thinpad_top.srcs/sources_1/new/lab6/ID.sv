@@ -281,6 +281,35 @@ module ID(
     logic sign_bit;
     assign sign_bit = instr[31];
 
+    logic valid_csr_adr;
+    // csr adr check
+    always_comb begin
+        case(csr_adr_o)
+            12'h100: valid_csr_adr = 1;
+            12'h104: valid_csr_adr = 1;
+            12'h105: valid_csr_adr = 1;
+            12'h140: valid_csr_adr = 1;
+            12'h141: valid_csr_adr = 1;
+            12'h142: valid_csr_adr = 1;
+            12'h143: valid_csr_adr = 1;
+            12'h144: valid_csr_adr = 1;
+            12'h180: valid_csr_adr = 1;
+
+            12'h300: valid_csr_adr = 1;
+            12'h302: valid_csr_adr = 1;
+            12'h303: valid_csr_adr = 1;
+            12'h304: valid_csr_adr = 1;
+            12'h305: valid_csr_adr = 1;
+            12'h340: valid_csr_adr = 1;
+            12'h341: valid_csr_adr = 1;
+            12'h342: valid_csr_adr = 1;
+            12'h343: valid_csr_adr = 1;
+            12'h344: valid_csr_adr = 1;
+            12'hf14: valid_csr_adr = 1;
+            default: valid_csr_adr = 0;
+        endcase
+    end
+
     // imm-gen
     always_comb begin
         case (op_type)
@@ -550,7 +579,7 @@ module ID(
                 mem_en = 0;
                 we = 0;
                 sel = 4'b0000;
-                rf_wen = 1;
+                rf_wen = valid_csr_adr;
                 wb_if_mem = 2;
                 csr_we_o = 1;
                 csr_op_o = `CSR_CSRRC;
@@ -562,7 +591,7 @@ module ID(
                 mem_en = 0;
                 we = 0;
                 sel = 4'b0000;
-                rf_wen = 1;
+                rf_wen = valid_csr_adr;
                 wb_if_mem = 2;
                 csr_we_o = 1;
                 csr_op_o = `CSR_CSRRW;
@@ -574,7 +603,7 @@ module ID(
                 mem_en = 0;
                 we = 0;
                 sel = 4'b0000;
-                rf_wen = 1;
+                rf_wen = valid_csr_adr;
                 wb_if_mem = 2;
                 csr_we_o = 1;
                 csr_op_o = `CSR_CSRRS;
