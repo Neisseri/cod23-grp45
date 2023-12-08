@@ -845,8 +845,8 @@ module thinpad_top #(
   CSR_controller CSR_controller_u(
     .clk(sys_clk),
     .rst(sys_rst),
-    .stall(mem_wb_stall),
-    .bubble(mem_wb_bubble),
+    .stall(exe_mem_stall),
+    .bubble(exe_mem_bubble),
 
     .rs1_dat_i(exe_mem_rs1_dat),
     .csr_adr_i(exe_mem_csr_adr),

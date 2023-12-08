@@ -66,7 +66,7 @@ module CSR_controller #(
         csr_o = 0;
         csr_mip_o = 0;
         csr_mip_we_o = 0;
-        if (!exception_idle) begin
+        if (!exception_idle && !stall) begin
             case(csr_op_i)
                 `CSR_CSRRW: begin
                     csr_adr_o = csr_adr_i;
