@@ -667,6 +667,7 @@ module thinpad_top #(
     .wb_dat(wb_wdata),
     .id_exe_dat(alu_y),
     .mem_dat(dm_data_out),
+    .mem_wb_mem_dat(mem_wb_mem_data),
 
     // hazard 3 signals
     .rs1_forward_o(rs1_forward),
