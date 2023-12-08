@@ -13,6 +13,7 @@ module IF_MMU #(
     input wire [DATA_WIDTH-1:0] new_satp_reg_i,
     input wire satp_update_i,
     input wire flush_tlb,
+    input wire mem_exception_i,
 
     input wire if_fetch_instruction, //identify IF or MEM
     input wire [1:0] priv_level_i, // identify user mode
@@ -34,6 +35,7 @@ module IF_MMU #(
     output logic [ADDR_WIDTH-1:0] addr,
     output logic [DATA_WIDTH-1:0] data_in,
     output logic [DATA_WIDTH/8-1:0] sel,
+    output logic trans_req,
 
     // Data memory to MMU
     input wire master_ready_o,
@@ -50,7 +52,7 @@ module IF_MMU #(
     always_comb begin
         // judge wishbone_owner
         if(mmu_addr <= 32'h807f_ffff && mmu_addr >= 32'h8000_0000)begin // SRAM
-            if(priv_level_i != `PRIV_M_LEVEL)begin
+            if(priv_level_i != `PRIV_M_LEVEL && !mem_exception_i)begin
                 wishbone_owner = tlb_wishbone_owner;
                 tlb_en = 1;
             end else begin
@@ -62,6 +64,7 @@ module IF_MMU #(
             tlb_en = 0;
         end
     end
+    assign trans_req = (wishbone_owner == `TRANSLATE_OWN);
 
     // include TLB, Translation, Cache, arbeiter
     logic tlb_ready;
@@ -299,6 +302,7 @@ module MEM_MMU #(
     output logic [ADDR_WIDTH-1:0] addr,
     output logic [DATA_WIDTH-1:0] data_in,
     output logic [DATA_WIDTH/8-1:0] sel,
+    output logic trans_req,
 
     // Data memory to MMU
     input wire master_ready_o,
@@ -327,6 +331,7 @@ module MEM_MMU #(
             tlb_en = 0;
         end
     end
+    assign trans_req = (wishbone_owner == `TRANSLATE_OWN);
 
     // include TLB, Translation, arbeiter
     logic tlb_ready;

@@ -29,7 +29,7 @@ module TLB #(
 
     // TLB to Translation
     output logic [ADDR_WIDTH-1:0] tlb_query_addr,
-    output reg translation_en,
+    output logic translation_en,
     output logic to_trans_query_write_en,
 
     // Translation to TLB
@@ -39,7 +39,7 @@ module TLB #(
 
     // TLB to Cache
     output logic [ADDR_WIDTH-1:0] phy_addr,
-    output reg cache_mem_en,
+    output logic cache_mem_en,
     output logic cache_write_en,
     output logic [DATA_WIDTH-1:0] cache_mem_data_o,
     output logic [DATA_WIDTH/8-1:0] cache_mem_sel_o,
@@ -94,14 +94,26 @@ module TLB #(
 
     assign tlb_ready = (state == STATE_IDLE) || (state == STATE_DONE);
 
+    always_comb begin
+        if((state == STATE_IDLE && tlb_en && !tlb_hit) || (state == STATE_TRANSLATE))begin
+            translation_en = 1;
+        end else begin
+            translation_en = 0;
+        end
+
+        if((state == STATE_IDLE && tlb_en && tlb_hit) || (state == STATE_TRANSLATE && translation_ready && !translation_error) || (state == STATE_READ_DATA))begin
+            cache_mem_en = 1;
+        end else begin
+            cache_mem_en = 0;
+        end
+    end
+
     always_ff @(posedge clk) begin
         if(rst)begin
             for(integer i = 0;i < TLB_LENGTH;i = i + 1)begin
                 tlb_table[i] <= 0;
             end
             state <= STATE_IDLE;
-            cache_mem_en <= 0;
-            translation_en <= 0;
         end else begin
             case (state)
                 STATE_IDLE: begin
@@ -112,10 +124,8 @@ module TLB #(
                     end
                     if(tlb_en)begin
                         if(tlb_hit)begin
-                            cache_mem_en <= 1;
                             state <= STATE_READ_DATA;
                         end else begin
-                            translation_en <= 1;
                             state <= STATE_TRANSLATE;
                         end
                     end
@@ -123,12 +133,9 @@ module TLB #(
                 STATE_TRANSLATE: begin
                     if(translation_ready)begin
                         if(!translation_error)begin
-                            translation_en <= 0;
-                            cache_mem_en <= 1;
                             tlb_table[tlb_req.TLBI] <= {tlb_req.TLBI, satp_i.asid, translation_result, 1'b1};
                             state <= STATE_READ_DATA;
                         end else begin
-                            translation_en <= 0;
                             state <= STATE_DONE;
                         end
                     end
@@ -136,11 +143,9 @@ module TLB #(
                 STATE_READ_DATA: begin
                     if(cache_ready)begin
                         if(!cache_error)begin
-                            cache_mem_en <= 0;
                             query_data_o <= cache_result;
                             state <= STATE_DONE;
                         end else begin
-                            cache_mem_en <= 0;
                             state <= STATE_DONE;
                         end
                     end

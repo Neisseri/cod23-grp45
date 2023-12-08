@@ -64,10 +64,16 @@ typedef enum logic [2:0] {
     page_entry_t cur_page;
 
     logic [ADDR_WIDTH-1:0] page_base;
-    assign page_base = {satp_i.ppn[`PPN1_LENGTH+`PPN0_LENGTH-3:0], {`PAGE_OFFSET{1'b0}}}; // 第一层页表基�??
+    assign page_base = {satp_i.ppn[`PPN1_LENGTH+`PPN0_LENGTH-3:0], {`PAGE_OFFSET{1'b0}}}; // 第一层页表基�??
 
     virtual_address_t vir_addr;
     assign vir_addr = query_addr;
+
+    logic [ADDR_WIDTH-1:0] first_table_addr;
+    assign first_table_addr = {satp_i.ppn[`PPN1_LENGTH+`PPN0_LENGTH-3:0], vir_addr.VPN1[`VPN1_LENGTH-1:0], 2'b00};
+
+    logic [ADDR_WIDTH-1:0] second_table_addr;
+    assign second_table_addr = {cur_page.PPN1[`PPN1_LENGTH-3:0], cur_page.PPN0[`PPN0_LENGTH-1:0], vir_addr.VPN0[`VPN0_LENGTH-1:0], 2'b00};
     
     always_ff @(posedge clk) begin
         if(rst)begin
@@ -85,7 +91,7 @@ typedef enum logic [2:0] {
                         instruction_page_fault <= 0;
                         load_page_fault <= 0;
                         store_page_fault <= 0;
-                        wb_adr_o <= page_base + (vir_addr.VPN1 << `PAGE_OFFSET);
+                        wb_adr_o <= first_table_addr;
                         cur_page <= 0;
                         state <= STATE_FETCH_TABLE;
                     end
@@ -104,7 +110,7 @@ typedef enum logic [2:0] {
                         state <= STATE_DONE;
                     end else begin
                         if(cur_page.X == 0 && cur_page.R == 0)begin
-                            wb_adr_o <= {cur_page.PPN1[`PPN1_LENGTH-3:0], cur_page.PPN0[`PPN0_LENGTH-1:0], {`PAGE_OFFSET{0}}} + (vir_addr.VPN0 << `PAGE_OFFSET);
+                            wb_adr_o <= second_table_addr;
                             state <= STATE_FIND_PAGE;
                         end else begin
                             wb_adr_o <= 0;

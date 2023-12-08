@@ -56,7 +56,7 @@ module thinpad_top #(
 
     // USB �������źţ��ο� SL811 оƬ�ֲ�
     output wire sl811_a0,
-    // inout  wire [7:0] sl811_d,     // USB �������������������???? dm9k_sd[7:0] ����
+    // inout  wire [7:0] sl811_d,     // USB �������������������???? dm9k_sd[7:0] ����
     output wire sl811_wr_n,
     output wire sl811_rd_n,
     output wire sl811_cs_n,
@@ -65,7 +65,7 @@ module thinpad_top #(
     input  wire sl811_intrq,
     input  wire sl811_drq_n,
 
-    // ����������źţ��ο�???? DM9000A оƬ�ֲ�
+    // ����������źţ��ο�???? DM9000A оƬ�ֲ�
     output wire dm9k_cmd,
     inout wire [15:0] dm9k_sd,
     output wire dm9k_iow_n,
@@ -74,13 +74,13 @@ module thinpad_top #(
     output wire dm9k_pwrst_n,
     input wire dm9k_int,
 
-    // ͼ������ź�????
+    // ͼ������ź�????
     output wire [2:0] video_red,    // ��ɫ���أ�3 λ
     output wire [2:0] video_green,  // ��ɫ���أ�3 λ
     output wire [1:0] video_blue,   // ��ɫ���أ�2 λ
     output wire       video_hsync,  // ��ͬ����ˮƽͬ�����ź�
     output wire       video_vsync,  // ��ͬ������ֱͬ�����ź�
-    output wire       video_clk,    // ����ʱ�����????
+    output wire       video_clk,    // ����ʱ�����????
     output wire       video_de      // ��������Ч�źţ���������������
 );
 
@@ -92,11 +92,11 @@ module thinpad_top #(
       // Clock in ports
       .clk_in1(clk_50M),  // �ⲿʱ������
       // Clock out ports
-      .clk_out1(clk_10M),  // ʱ�����???? 1��Ƶ���� IP ���ý���������
-      .clk_out2(clk_20M),  // ʱ�����???? 2��Ƶ���� IP ���ý���������
+      .clk_out1(clk_10M),  // ʱ�����???? 1��Ƶ���� IP ���ý���������
+      .clk_out2(clk_20M),  // ʱ�����???? 2��Ƶ���� IP ���ý���������
       // Status and control signals
       .reset(reset_btn),  // PLL ��λ����
-      .locked(locked)  // PLL ����ָʾ�����????"1"��ʾʱ���ȶ���
+      .locked(locked)  // PLL ����ָʾ�����????"1"��ʾʱ���ȶ���
                        // �󼶵�·��λ�ź�Ӧ���������ɣ����£�
   );
 
@@ -144,16 +144,16 @@ module thinpad_top #(
   // g=dpy0[7] // |     |
   //           // ---d---  p
 
-   //7 ���������������ʾ����???? number �� 16 ������ʾ�����������????
+   //7 ���������������ʾ����???? number �� 16 ������ʾ�����������????
 //   logic [7:0] number;
 //   SEG7_LUT segL (
 //       .oSEG1(dpy0),
 //       .iDIG (number[3:0])
-//   );  // dpy0 �ǵ�λ�����????
+//   );  // dpy0 �ǵ�λ�����????
 //   SEG7_LUT segH (
 //       .oSEG1(dpy1),
 //       .iDIG (number[7:4])
-//   );  // dpy1 �Ǹ�λ�����????
+//   );  // dpy1 �Ǹ�λ�����????
 
 //   logic [15:0] led_bits;
 //   assign leds = led_bits;
@@ -192,7 +192,7 @@ module thinpad_top #(
   //     .RxD_data      (ext_uart_rx)      // ���յ���һ�ֽ�����
   // );
 
-  // assign ext_uart_clear = ext_uart_ready; // �յ����ݵ�ͬʱ�������־����Ϊ������ȡ��???? ext_uart_buffer ��
+  // assign ext_uart_clear = ext_uart_ready; // �յ����ݵ�ͬʱ�������־����Ϊ������ȡ��???? ext_uart_buffer ��
   // always_ff @(posedge clk_50M) begin  // ���յ������� ext_uart_buffer
   //   if (ext_uart_ready) begin
   //     ext_uart_buffer <= ext_uart_rx;
@@ -216,13 +216,13 @@ module thinpad_top #(
   //     .Baud(9600)
   // ) ext_uart_t (
   //     .clk      (clk_50M),         // �ⲿʱ���ź�
-  //     .TxD      (txd),             // �����ź����????
+  //     .TxD      (txd),             // �����ź����????
   //     .TxD_busy (ext_uart_busy),   // ������æ״ָ̬ʾ
   //     .TxD_start(ext_uart_start),  // ��ʼ�����ź�
   //     .TxD_data (ext_uart_tx)      // �����͵�����
   // );
 
-  // ͼ�������ʾ���ֱ���???? 800x600@75Hz������ʱ��Ϊ 50MHz
+  // ͼ�������ʾ���ֱ���???? 800x600@75Hz������ʱ��Ϊ 50MHz
   // logic [11:0] hdata;
   // assign video_red   = hdata < 266 ? 3'b111 : 0;  // ��ɫ����
   // assign video_green = hdata < 532 && hdata >= 266 ? 3'b111 : 0;  // ��ɫ����
@@ -310,6 +310,7 @@ module thinpad_top #(
   logic [DATA_WIDTH-1:0] csr_satp;
   logic [DATA_WIDTH-1:0] rf_rdata_a;
   logic [DATA_WIDTH-1:0] rf_rdata_b;
+  logic satp_update;
   always_comb begin
     case (id_csr_op)
       `CSR_CSRRC: new_satp = csr_satp & ~rf_rdata_a;
@@ -324,21 +325,23 @@ module thinpad_top #(
     if(sys_rst)begin
       new_satp_reg <= 0;
     end else begin
-      new_satp_reg <= new_satp;
+        if(satp_update)begin
+            new_satp_reg <= new_satp;
+        end
     end
   end
 
-  logic satp_update;
   logic id_flush_tlb;
   logic im_master_ready_o;
-  assign if_stall_req = ~im_master_ready_o;
+  logic im_to_mmu_master_ready;
+  assign if_stall_req = ~im_master_ready_o; //im_to_mmu_master_ready;
   logic [DATA_WIDTH-1:0] im_data_out;
   logic mmu_to_im_mem_en;
   logic mmu_to_im_write_en;
   logic [ADDR_WIDTH-1:0] mmu_to_im_addr;
   logic [DATA_WIDTH-1:0] mmu_to_im_data_in;
   logic [DATA_WIDTH/8-1:0] mmu_to_im_sel;
-  logic im_to_mmu_master_ready;
+  logic mmu_to_im_trans_req;
   logic [DATA_WIDTH-1:0] im_to_mmu_data_out; 
   logic im_exception_occured;
   logic [DATA_WIDTH-1:0] im_exception_cause;
@@ -349,6 +352,7 @@ module thinpad_top #(
     .new_satp_reg_i(new_satp_reg),
     .satp_update_i(satp_update),
     .flush_tlb(id_flush_tlb),
+    .mem_exception_i(mem_exception),
     .if_fetch_instruction(1),
     .priv_level_i(priv_level_rdat),
     .mmu_mem_en(1'b1),
@@ -363,9 +367,9 @@ module thinpad_top #(
     .addr(mmu_to_im_addr),
     .data_in(mmu_to_im_data_in),
     .sel(mmu_to_im_sel),
+    .trans_req(mmu_to_im_trans_req),
     .master_ready_o(im_to_mmu_master_ready),
     .data_out(im_to_mmu_data_out),
-
     .exception_occured_o(im_exception_occured),
     .exception_cause_o(im_exception_cause)
   );
@@ -396,6 +400,7 @@ module thinpad_top #(
     .data_in(mmu_to_im_data_in),
     .sel(mmu_to_im_sel),
     .data_out(im_to_mmu_data_out),
+    .trans_req(mmu_to_im_trans_req),
     .pipeline_stall(pipeline_stall),
     .idle_stall(im_idle_stall)
   );
@@ -714,14 +719,15 @@ module thinpad_top #(
   
   //MEM
   logic dm_master_ready_o;
-  assign mem_stall_req = ~dm_master_ready_o;
+  logic dm_to_mmu_master_ready;
+  assign mem_stall_req = ~dm_master_ready_o; //dm_to_mmu_master_ready;
   logic [DATA_WIDTH-1:0] dm_data_out;
   logic mmu_to_dm_mem_en;
   logic mmu_to_dm_write_en;
   logic [ADDR_WIDTH-1:0] mmu_to_dm_addr;
   logic [DATA_WIDTH-1:0] mmu_to_dm_data_in;
   logic [DATA_WIDTH/8-1:0] mmu_to_dm_sel;
-  logic dm_to_mmu_master_ready;
+  logic mmu_to_dm_trans_req;
   logic [DATA_WIDTH-1:0] dm_to_mmu_data_out; 
   logic dm_exception_occured;
   logic [DATA_WIDTH-1:0] dm_exception_cause;
@@ -745,6 +751,7 @@ module thinpad_top #(
     .addr(mmu_to_dm_addr),
     .data_in(mmu_to_dm_data_in),
     .sel(mmu_to_dm_sel),
+    .trans_req(mmu_to_dm_trans_req),
     .master_ready_o(dm_to_mmu_master_ready),
     .data_out(dm_to_mmu_data_out),
 
@@ -786,6 +793,7 @@ module thinpad_top #(
     .data_in(mmu_to_dm_data_in),
     .sel(mmu_to_dm_sel),
     .data_out(dm_to_mmu_data_out),
+    .trans_req(mmu_to_dm_trans_req),
     .pipeline_stall(pipeline_stall),
     .idle_stall(dm_idle_stall)
   );
@@ -1208,8 +1216,8 @@ module thinpad_top #(
       .sram_be_n(ext_ram_be_n)
   );
 
-  // 串口控制器模�????
-  // NOTE: 如果修改系统时钟频率，也�????要修改此处的时钟频率参数
+  // 串口控制器模�????
+  // NOTE: 如果修改系统时钟频率，也�????要修改此处的时钟频率参数
   uart_controller #(
       .CLK_FREQ(50_000_000),
       .BAUD    (115200)
@@ -1266,6 +1274,6 @@ module thinpad_top #(
 //  assign leds[13] = pipeline_stall;
 //  assign leds[14] = 0;
 //  assign leds[15] = 0;
-    assign leds = exe_mem_wdata[15:0];
+    assign leds = pc_addr[15:0];
 
 endmodule

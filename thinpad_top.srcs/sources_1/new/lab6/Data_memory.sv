@@ -46,6 +46,7 @@ module Data_memory #(
     input wire [DATA_WIDTH/8-1:0] sel,
     output logic [DATA_WIDTH-1:0] data_out,
 
+    input wire trans_req,
     input wire pipeline_stall,
     output logic idle_stall
     );
@@ -79,7 +80,7 @@ module Data_memory #(
     reg [DATA_WIDTH-1:0] data_out_raw;
     logic [DATA_WIDTH-1:0] data_out_shift;
 
-    //符号位拓�???
+    //符号位拓�????
     logic sign_bit;
     always_comb begin
         case (sel)
@@ -123,7 +124,7 @@ module Data_memory #(
                         end
                     end
                     STATE_DONE: begin
-                        if(!pipeline_stall)begin
+                        if(!pipeline_stall || trans_req)begin
                             state <= STATE_IDLE;
                         end
                     end
@@ -297,6 +298,7 @@ module Instruction_memory #(
     input wire [DATA_WIDTH/8-1:0] sel,
     output reg [DATA_WIDTH-1:0] data_out,
 
+    input wire trans_req,
     input wire pipeline_stall,
     output logic idle_stall
     );
@@ -332,7 +334,7 @@ module Instruction_memory #(
                         end
                     end
                     STATE_DONE: begin
-                        if(!pipeline_stall)begin
+                        if(!pipeline_stall || trans_req)begin
                                 state <= STATE_READ_SRAM_ACTION;
                         end
                     end
