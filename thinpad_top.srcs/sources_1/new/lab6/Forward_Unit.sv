@@ -55,8 +55,6 @@ module Forward_Unit #(
     output logic [DATA_WIDTH-1:0] rs1_forward_dat_o,
     output logic [DATA_WIDTH-1:0] rs2_forward_dat_o,
 
-    input wire use_mem_dat_a, // mark mem hazard a
-    input wire use_mem_dat_b, // mark mem hazard b
     input wire [DATA_WIDTH-1:0] mem_wb_dat, // hazard 2
 
     input wire [2:0] id_exe_alu_mux_a,
@@ -71,8 +69,6 @@ module Forward_Unit #(
 
     // mem hazard: need stall
     output logic exe_stall_req,
-    output logic pass_use_mem_dat_a, // mem hazard a
-    output logic pass_use_mem_dat_b, // mem hazard b
 
     // branch hazard
     output logic branch_rs1,
@@ -231,26 +227,6 @@ module Forward_Unit #(
         end else if (hazard3_b) begin // hazard 3
             rs2_forward_o = 1;
             rs2_forward_dat_o = mem_wb_dat;
-        end
-        // alu_mux_a = id_exe_alu_mux_a;
-        // alu_a_forward = 0;
-        // alu_mux_b = id_exe_alu_mux_b;
-        // alu_b_forward = 0;
-    end
-
-    // mem hazard signal
-    always_comb begin
-        // rs1
-        if (hazard4_a || hazard5_a || hazard6_a) begin // hazard 4 5 6
-            pass_use_mem_dat_a = 1;
-        end else begin
-            pass_use_mem_dat_a = 0;
-        end
-        // rs2
-        if (hazard4_b || hazard5_b || hazard6_b) begin // hazard 4 5 6
-            pass_use_mem_dat_b = 1;
-        end else begin
-            pass_use_mem_dat_b = 0;
         end
     end
 

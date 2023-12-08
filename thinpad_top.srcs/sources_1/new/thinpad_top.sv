@@ -675,8 +675,6 @@ module thinpad_top #(
     .rs1_forward_dat_o(rs1_forward_dat),
     .rs2_forward_dat_o(rs2_forward_dat),
 
-    .use_mem_dat_a(use_mem_dat_a_o),
-    .use_mem_dat_b(use_mem_dat_b_o),
     .mem_wb_dat(mem_wb_wdata),
     .id_exe_alu_mux_a(id_exe_alu_mux_a),
     .id_exe_alu_mux_b(id_exe_alu_mux_b),
@@ -685,8 +683,6 @@ module thinpad_top #(
     .alu_a_forward(alu_mux_a_forward),
     .alu_b_forward(alu_mux_b_forward),
     .exe_stall_req(exe_stall_req),
-    .pass_use_mem_dat_a(use_mem_dat_a_i),
-    .pass_use_mem_dat_b(use_mem_dat_b_i),
     .branch_rs1(branch_rs1_hazard),
     .branch_rs2(branch_rs2_hazard)
   );
