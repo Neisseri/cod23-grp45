@@ -12,6 +12,7 @@ module CSR_controller #(
     input wire bubble,
 
     input wire [DATA_WIDTH-1:0] rs1_dat_i,
+    input wire [DATA_WIDTH-1:0] imm_dat_i,
     input wire [11:0] csr_adr_i,
     input wire csr_we_i,
     input wire [3:0] csr_op_i,
@@ -23,6 +24,7 @@ module CSR_controller #(
     output reg [DATA_WIDTH-1:0] csr_wdat_o,
     output reg csr_we_o,
 
+    input wire [DATA_WIDTH-1:0] csr_sepc_i,
     input wire [DATA_WIDTH-1:0] csr_mstatus_i,
     input wire [DATA_WIDTH-1:0] csr_mtvec_i,
     input wire [DATA_WIDTH-1:0] csr_mepc_i,
@@ -30,6 +32,8 @@ module CSR_controller #(
     input wire [DATA_WIDTH-1:0] csr_mip_i,
     input wire [DATA_WIDTH-1:0] csr_mie_i,
 
+    output reg [DATA_WIDTH-1:0] csr_sepc_o,
+    output reg csr_sepc_we_o,
     output reg [DATA_WIDTH-1:0] csr_mstatus_o,
     output reg csr_mstatus_we_o,
     output reg [DATA_WIDTH-1:0] csr_mtvec_o,
@@ -81,6 +85,24 @@ module CSR_controller #(
                 `CSR_CSRRC: begin
                     csr_adr_o = csr_adr_i;
                     csr_wdat_o = csr_i & ~rs1_dat_i;
+                    csr_we_o = csr_we_i;
+                    csr_o = csr_i;
+                end
+                `CSR_CSRRWI: begin
+                    csr_adr_o = csr_adr_i;
+                    csr_wdat_o = imm_dat_i;
+                    csr_we_o = csr_we_i;
+                    csr_o = csr_i;
+                end
+                `CSR_CSRRSI: begin
+                    csr_adr_o = csr_adr_i;
+                    csr_wdat_o = csr_i | imm_dat_i;
+                    csr_we_o = csr_we_i;
+                    csr_o = csr_i;
+                end
+                `CSR_CSRRCI: begin
+                    csr_adr_o = csr_adr_i;
+                    csr_wdat_o = csr_i & ~imm_dat_i;
                     csr_we_o = csr_we_i;
                     csr_o = csr_i;
                 end
@@ -170,7 +192,7 @@ module CSR_controller #(
                             `ENV_MRET: begin
                                 csr_mstatus_o <= {
                                     csr_mstatus_i[31:13],
-                                    `PRIV_M_LEVEL,
+                                    `PRIV_U_LEVEL,
                                     csr_mstatus_i[10:8],
                                     1'b1, // mpie <= 1
                                     csr_mstatus_i[6:4],
@@ -191,7 +213,7 @@ module CSR_controller #(
                                 csr_mepc_we_o <= 1;
                                 csr_mstatus_o <= {
                                     csr_mstatus_i[31:13],
-                                    `PRIV_U_LEVEL,
+                                    priv_level_i, // mpp <= priv_level
                                     csr_mstatus_i[10:8],
                                     csr_mstatus_i[3], // mpie <= mie
                                     csr_mstatus_i[6:4],
@@ -212,7 +234,7 @@ module CSR_controller #(
                                 csr_mepc_we_o <= 1;
                                 csr_mstatus_o <= {
                                     csr_mstatus_i[31:13],
-                                    `PRIV_U_LEVEL,
+                                    priv_level_i,
                                     csr_mstatus_i[10:8],
                                     csr_mstatus_i[3], // mpie <= mie
                                     csr_mstatus_i[6:4],
@@ -224,6 +246,23 @@ module CSR_controller #(
                                 mem_exception_o <= 1;
                                 exception_idle <= 1;
                                 priv_level_o <= `PRIV_M_LEVEL;
+                                priv_level_we_o <= 1;
+                            end
+                            `ENV_SRET: begin
+                                csr_mstatus_o <= {
+                                    csr_mstatus_i[31:9],
+                                    1'b0, // u-level
+                                    csr_mstatus_i[7:6],
+                                    1'b1, // spie <= 1
+                                    csr_mstatus_i[4:2],
+                                    csr_mstatus_i[5], // sie <= spie
+                                    csr_mstatus_i[0]
+                                };
+                                csr_mstatus_we_o <= 1;
+                                pc_next_exception_o <= csr_sepc_i;
+                                mem_exception_o <= 1;
+                                exception_idle <= 1;
+                                priv_level_o <= {1'b0, csr_mstatus_i[8]};
                                 priv_level_we_o <= 1;
                             end
                             default: begin

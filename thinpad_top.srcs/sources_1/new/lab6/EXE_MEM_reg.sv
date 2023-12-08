@@ -39,6 +39,7 @@ module EXE_MEM_reg #(
     input wire [4:0] rd_i,
     input wire [DATA_WIDTH-1:0] rs1_dat_i,
     input wire [DATA_WIDTH-1:0] rs2_dat_i,
+    input wire [DATA_WIDTH-1:0] imm_dat_i,
     input wire mem_en_i,
     input wire rf_wen_i,
     input wire [3:0] sel_i,
@@ -52,6 +53,7 @@ module EXE_MEM_reg #(
     output reg [4:0] rd_o,
     output reg [DATA_WIDTH-1:0] rs1_dat_o,
     output reg [DATA_WIDTH-1:0] rs2_dat_o,
+    output reg [DATA_WIDTH-1:0] imm_dat_o,
     output reg mem_en_o,
     output reg rf_wen_o,
     output reg [3:0] sel_o,
@@ -86,6 +88,7 @@ module EXE_MEM_reg #(
             rd_o <= 0;
             rs1_dat_o <= 0;
             rs2_dat_o <= 0;
+            imm_dat_o <= 0;
             mem_en_o <= 0;
             we_o <= 0;
             sel_o <= 4'b0000;
@@ -108,6 +111,7 @@ module EXE_MEM_reg #(
                     rd_o <= 0;
                     rs1_dat_o <= 0;
                     rs2_dat_o <= 0;
+                    imm_dat_o <= 0;
                     mem_en_o <= 0;
                     we_o <= 0;
                     sel_o <= 4'b0000;
@@ -128,6 +132,7 @@ module EXE_MEM_reg #(
                     rd_o <= rd_i;
                     rs1_dat_o <= rs1_dat_i;
                     rs2_dat_o <= rs2_dat_i;
+                    imm_dat_o <= imm_dat_i;
                     mem_en_o <= mem_en_i;
                     we_o <= we_i;
                     sel_o <= sel_i;

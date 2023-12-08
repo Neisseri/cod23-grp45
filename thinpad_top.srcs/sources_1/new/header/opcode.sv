@@ -29,7 +29,11 @@
     `define CSR_CSRRC 1
     `define CSR_CSRRS 2
     `define CSR_CSRRW 3
+    `define CSR_CSRRCI 4
+    `define CSR_CSRRSI 5
+    `define CSR_CSRRWI 6
     // ENV
-    `define ENV_ECALL 4
-    `define ENV_EBREAK 5
-    `define ENV_MRET 6
+    `define ENV_ECALL 7
+    `define ENV_EBREAK 8
+    `define ENV_MRET 9
+    `define ENV_SRET 10

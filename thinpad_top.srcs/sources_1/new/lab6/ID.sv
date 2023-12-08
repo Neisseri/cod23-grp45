@@ -248,6 +248,15 @@ module ID(
                     3'b001: begin // CSRRW
                         op_type = OP_CSRRW;
                     end
+                    3'b101: begin // CSRRWI
+                        op_type = OP_CSRRWI;
+                    end
+                    3'b110: begin // CSRRSI
+                        op_type = OP_CSRRSI;
+                    end
+                    3'b111: begin // CSRRCI
+                        op_type = OP_CSRRCI;
+                    end
                     3'b000: begin // PRIV
                         case(funct12)
                             12'b000000000001: begin // EBREAK
@@ -327,6 +336,9 @@ module ID(
             end
             OP_JAL: begin // J-type
                 imm = {{11{sign_bit}}, instr[31], instr[19:12], instr[20], instr[30:21], 1'b0};
+            end
+            OP_CSRRWI, OP_CSRRSI, OP_CSRRCI: begin // CSR
+                imm = {27'b0, instr[19:15]};
             end
             default: begin  // unknown or no need of imm
                 imm = 0;
@@ -607,6 +619,42 @@ module ID(
                 wb_if_mem = 2;
                 csr_we_o = 1;
                 csr_op_o = `CSR_CSRRS;
+            end
+            OP_CSRRWI: begin
+                alu_op = `ALU_ADD;
+                alu_mux_a = `ALU_MUX_ZERO;
+                alu_mux_b = `ALU_MUX_IMM_B;
+                mem_en = 0;
+                we = 0;
+                sel = 4'b0000;
+                rf_wen = valid_csr_adr;
+                wb_if_mem = 2;
+                csr_we_o = 1;
+                csr_op_o = `CSR_CSRRWI;
+            end
+            OP_CSRRSI: begin
+                alu_op = `ALU_ADD;
+                alu_mux_a = `ALU_MUX_ZERO;
+                alu_mux_b = `ALU_MUX_IMM_B;
+                mem_en = 0;
+                we = 0;
+                sel = 4'b0000;
+                rf_wen = valid_csr_adr;
+                wb_if_mem = 2;
+                csr_we_o = 1;
+                csr_op_o = `CSR_CSRRSI;
+            end
+            OP_CSRRCI: begin
+                alu_op = `ALU_ADD;
+                alu_mux_a = `ALU_MUX_ZERO;
+                alu_mux_b = `ALU_MUX_IMM_B;
+                mem_en = 0;
+                we = 0;
+                sel = 4'b0000;
+                rf_wen = valid_csr_adr;
+                wb_if_mem = 2;
+                csr_we_o = 1;
+                csr_op_o = `CSR_CSRRCI;
             end
             OP_ECALL: begin
                 alu_op = `ALU_ADD;

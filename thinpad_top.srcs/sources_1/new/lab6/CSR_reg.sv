@@ -13,6 +13,8 @@ module CSR_reg #(
     input wire  csr_we_i,
     output  reg [DATA_WIDTH-1:0] csr_o,
 
+    input wire [DATA_WIDTH-1:0] csr_sepc_i,
+    input wire csr_sepc_we_i,
     input wire [DATA_WIDTH-1:0] csr_mstatus_i,
     input wire csr_mstatus_we_i,
     input wire [DATA_WIDTH-1:0] csr_mtvec_i,
@@ -27,7 +29,7 @@ module CSR_reg #(
     input wire csr_mie_we_i,
 
     output reg [DATA_WIDTH-1:0] csr_satp_o,
-
+    output reg [DATA_WIDTH-1:0] csr_sepc_o,
     output reg [DATA_WIDTH-1:0] csr_mstatus_o,
     output reg [DATA_WIDTH-1:0] csr_mtvec_o,
     output reg [DATA_WIDTH-1:0] csr_mepc_o,
@@ -91,7 +93,7 @@ module CSR_reg #(
         endcase
 
         csr_satp_o = satp;
-
+        csr_sepc_o = sepc;
         csr_mstatus_o = mstatus;
         csr_mtvec_o = mtvec;
         csr_mepc_o = mepc;
@@ -152,6 +154,9 @@ module CSR_reg #(
                     12'hf14: mhartid <= csr_wdat_i;
                 endcase
             end else begin
+                if (csr_sepc_we_i) begin
+                    sepc <= csr_sepc_i;
+                end
                 if (csr_mstatus_we_i) begin
                     mstatus <= csr_mstatus_i;
                 end

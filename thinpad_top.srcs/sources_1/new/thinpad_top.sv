@@ -573,6 +573,7 @@ module thinpad_top #(
   logic [4:0] exe_mem_rd;
   logic [DATA_WIDTH-1:0] exe_mem_rs1_dat;
   logic [DATA_WIDTH-1:0] exe_mem_rs2_dat;
+  logic [DATA_WIDTH-1:0] exe_mem_imm_dat;
   logic exe_mem_mem_en;
   logic exe_mem_rf_wen;
   logic [3:0] exe_mem_sel;
@@ -613,6 +614,7 @@ module thinpad_top #(
     .rd_i(id_exe_rd),
     .rs1_dat_i(id_exe_rs1_dat),
     .rs2_dat_i(id_exe_rs2_dat),
+    .imm_dat_i(id_exe_imm),
     .mem_en_i(id_exe_mem_en),
     .rf_wen_i(id_exe_rf_wen),
     .sel_i(id_exe_sel),
@@ -626,6 +628,7 @@ module thinpad_top #(
     .rd_o(exe_mem_rd),
     .rs1_dat_o(exe_mem_rs1_dat),
     .rs2_dat_o(exe_mem_rs2_dat),
+    .imm_dat_o(exe_mem_imm_dat),
     .mem_en_o(exe_mem_mem_en),
     .rf_wen_o(exe_mem_rf_wen),
     .sel_o(exe_mem_sel),
@@ -717,6 +720,8 @@ module thinpad_top #(
   logic csr_we;
   logic [DATA_WIDTH-1:0] mem_csr_dat;
 
+  logic [DATA_WIDTH-1:0] csr_sepc_wdat;
+  logic csr_sepc_we;
   logic [DATA_WIDTH-1:0] csr_mstatus_wdat;
   logic csr_mstatus_we;
   logic [DATA_WIDTH-1:0] csr_mtvec_wdat;
@@ -730,6 +735,7 @@ module thinpad_top #(
   logic [DATA_WIDTH-1:0] csr_mie_wdat;
   logic csr_mie_we;
 
+  logic [DATA_WIDTH-1:0] csr_sepc_rdat;
   logic [DATA_WIDTH-1:0] csr_mstatus_rdat;
   logic [DATA_WIDTH-1:0] csr_mtvec_rdat;
   logic [DATA_WIDTH-1:0] csr_mepc_rdat;
@@ -748,6 +754,7 @@ module thinpad_top #(
 
     .rs1_dat_i(exe_mem_rs1_dat),
     .csr_adr_i(exe_mem_csr_adr),
+    .imm_dat_i(exe_mem_imm_dat),
     .csr_op_i(exe_mem_csr_op),
     .csr_we_i(exe_mem_csr_we),
 
@@ -758,6 +765,7 @@ module thinpad_top #(
     .csr_wdat_o(csr_wdat),
     .csr_we_o(csr_we),
 
+    .csr_sepc_i(csr_sepc_rdat),
     .csr_mstatus_i(csr_mstatus_rdat),
     .csr_mtvec_i(csr_mtvec_rdat),
     .csr_mepc_i(csr_mepc_rdat),
@@ -765,6 +773,8 @@ module thinpad_top #(
     .csr_mip_i(csr_mip_rdat),
     .csr_mie_i(csr_mie_rdat),
 
+    .csr_sepc_o(csr_sepc_wdat),
+    .csr_sepc_we_o(csr_sepc_we),
     .csr_mstatus_o(csr_mstatus_wdat),
     .csr_mstatus_we_o(csr_mstatus_we),
     .csr_mtvec_o(csr_mtvec_wdat),
@@ -801,6 +811,8 @@ module thinpad_top #(
     .csr_we_i(csr_we),
     .csr_o(csr_dat),
 
+    .csr_sepc_i(csr_sepc_wdat),
+    .csr_sepc_we_i(csr_sepc_we),
     .csr_mstatus_i(csr_mstatus_wdat),
     .csr_mstatus_we_i(csr_mstatus_we),
     .csr_mtvec_i(csr_mtvec_wdat),
@@ -814,6 +826,7 @@ module thinpad_top #(
     .csr_mie_i(csr_mie_wdat),
     .csr_mie_we_i(csr_mie_we),
 
+    .csr_sepc_o(csr_sepc_rdat),
     .csr_mstatus_o(csr_mstatus_rdat),
     .csr_mtvec_o(csr_mtvec_rdat),
     .csr_mepc_o(csr_mepc_rdat),

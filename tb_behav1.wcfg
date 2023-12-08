@@ -11,15 +11,18 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="5508891534fs"></ZoomStartTime>
-      <ZoomEndTime time="5508972935fs"></ZoomEndTime>
-      <Cursor1Time time="5508590000fs"></Cursor1Time>
+      <ZoomStartTime time="133976296fs"></ZoomStartTime>
+      <ZoomEndTime time="134466744fs"></ZoomEndTime>
+      <Cursor1Time time="134200000fs"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
       <NameColumnWidth column_width="246"></NameColumnWidth>
-      <ValueColumnWidth column_width="168"></ValueColumnWidth>
+      <ValueColumnWidth column_width="163"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="226" />
+   <WVObjectSize size="239" />
+   <wave_markers>
+      <marker time="2456415" label="" />
+   </wave_markers>
    <wvobject fp_name="/tb/dut/CSR_reg_u/clk" type="logic">
       <obj_property name="ElementShortName">clk</obj_property>
       <obj_property name="ObjectShortName">clk</obj_property>
@@ -108,6 +111,42 @@
       <obj_property name="ElementShortName">priv_level_o[1:0]</obj_property>
       <obj_property name="ObjectShortName">priv_level_o[1:0]</obj_property>
    </wvobject>
+   <wvobject fp_name="/tb/dut/CSR_reg_u/satp" type="array">
+      <obj_property name="ElementShortName">satp[31:0]</obj_property>
+      <obj_property name="ObjectShortName">satp[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/CSR_reg_u/sstatus" type="array">
+      <obj_property name="ElementShortName">sstatus[31:0]</obj_property>
+      <obj_property name="ObjectShortName">sstatus[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/CSR_reg_u/sepc" type="array">
+      <obj_property name="ElementShortName">sepc[31:0]</obj_property>
+      <obj_property name="ObjectShortName">sepc[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/CSR_reg_u/scause" type="array">
+      <obj_property name="ElementShortName">scause[31:0]</obj_property>
+      <obj_property name="ObjectShortName">scause[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/CSR_reg_u/stval" type="array">
+      <obj_property name="ElementShortName">stval[31:0]</obj_property>
+      <obj_property name="ObjectShortName">stval[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/CSR_reg_u/stvec" type="array">
+      <obj_property name="ElementShortName">stvec[31:0]</obj_property>
+      <obj_property name="ObjectShortName">stvec[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/CSR_reg_u/sscratch" type="array">
+      <obj_property name="ElementShortName">sscratch[31:0]</obj_property>
+      <obj_property name="ObjectShortName">sscratch[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/CSR_reg_u/sie" type="array">
+      <obj_property name="ElementShortName">sie[31:0]</obj_property>
+      <obj_property name="ObjectShortName">sie[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/CSR_reg_u/sip" type="array">
+      <obj_property name="ElementShortName">sip[31:0]</obj_property>
+      <obj_property name="ObjectShortName">sip[31:0]</obj_property>
+   </wvobject>
    <wvobject fp_name="/tb/dut/CSR_reg_u/mstatus" type="array">
       <obj_property name="ElementShortName">mstatus[31:0]</obj_property>
       <obj_property name="ObjectShortName">mstatus[31:0]</obj_property>
@@ -135,6 +174,22 @@
    <wvobject fp_name="/tb/dut/CSR_reg_u/mip" type="array">
       <obj_property name="ElementShortName">mip[31:0]</obj_property>
       <obj_property name="ObjectShortName">mip[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/CSR_reg_u/mhartid" type="array">
+      <obj_property name="ElementShortName">mhartid[31:0]</obj_property>
+      <obj_property name="ObjectShortName">mhartid[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/CSR_reg_u/mideleg" type="array">
+      <obj_property name="ElementShortName">mideleg[31:0]</obj_property>
+      <obj_property name="ObjectShortName">mideleg[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/CSR_reg_u/medeleg" type="array">
+      <obj_property name="ElementShortName">medeleg[31:0]</obj_property>
+      <obj_property name="ObjectShortName">medeleg[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/CSR_reg_u/mtval" type="array">
+      <obj_property name="ElementShortName">mtval[31:0]</obj_property>
+      <obj_property name="ObjectShortName">mtval[31:0]</obj_property>
    </wvobject>
    <wvobject fp_name="/tb/dut/CSR_reg_u/priv_level" type="array">
       <obj_property name="ElementShortName">priv_level[1:0]</obj_property>
