@@ -193,7 +193,7 @@ module Forward_Unit #(
             rs1_forward_dat_o = mem_dat;
         end else if (hazard6_a) begin // hazard 6
             rs1_forward_o = 1;
-            rs1_forward_dat_o = wb_dat;
+            rs1_forward_dat_o = mem_wb_dat;
         end else if (hazard1_a) begin // hazard 1
             rs1_forward_o = 1;
             rs1_forward_dat_o = id_exe_dat;
@@ -214,7 +214,7 @@ module Forward_Unit #(
             rs2_forward_dat_o = mem_dat;
         end else if (hazard6_b) begin // hazard 6
             rs2_forward_o = 1;
-            rs2_forward_dat_o = wb_dat;
+            rs2_forward_dat_o = mem_wb_dat;
         end else if (hazard1_b) begin // hazard 1
             rs2_forward_o = 1;
             rs2_forward_dat_o = id_exe_dat;
