@@ -260,8 +260,6 @@ module thinpad_top #(
   logic mem_wb_stall;
   logic mem_wb_bubble;
   logic pipeline_stall;
-  logic im_idle_stall;
-  logic dm_idle_stall;
   controller_pipeline controller_pipeline_u(
     .if_stall_req(if_stall_req),
     .mem_stall_req(mem_stall_req),
@@ -277,9 +275,7 @@ module thinpad_top #(
     .exe_mem_bubble(exe_mem_bubble),
     .mem_wb_stall(mem_wb_stall),
     .mem_wb_bubble(mem_wb_bubble),
-    .pipeline_stall(pipeline_stall),
-    .im_idle_stall(im_idle_stall),
-    .dm_idle_stall(dm_idle_stall)
+    .pipeline_stall(pipeline_stall)
   );
   
   //IF
@@ -401,8 +397,7 @@ module thinpad_top #(
     .sel(mmu_to_im_sel),
     .data_out(im_to_mmu_data_out),
     .trans_req(mmu_to_im_trans_req),
-    .pipeline_stall(pipeline_stall),
-    .idle_stall(im_idle_stall)
+    .pipeline_stall(pipeline_stall)
   );
   
   logic [DATA_WIDTH-1:0] if_id_instr;
@@ -794,8 +789,7 @@ module thinpad_top #(
     .sel(mmu_to_dm_sel),
     .data_out(dm_to_mmu_data_out),
     .trans_req(mmu_to_dm_trans_req),
-    .pipeline_stall(pipeline_stall),
-    .idle_stall(dm_idle_stall)
+    .pipeline_stall(pipeline_stall)
   );
 
   logic exception_occured_real;

@@ -122,7 +122,11 @@ module CSR_controller #(
                     csr_mcause_we_o <= 0;
                     csr_mtvec_we_o <= 0;
                     csr_mie_we_o <= 0;
-                    mem_exception_o <= 0;
+                    if (bubble) begin
+                        mem_exception_o <= 0;
+                    end else begin
+                        mem_exception_o <= 1;
+                    end
                     exception_idle <= 0;
                 end else begin
                     csr_mtvec_we_o <= 0;

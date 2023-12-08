@@ -37,31 +37,14 @@ module controller_pipeline(
     output logic mem_wb_stall,
     output logic mem_wb_bubble,
 
-    output logic pipeline_stall,
-    input wire im_idle_stall,
-    input wire dm_idle_stall
+    output logic pipeline_stall
     );
 
     //logic pipeline_stall;
     assign pipeline_stall = if_stall_req || mem_stall_req;
 
-    logic idle_stall;
-    assign idle_stall = im_idle_stall;
-
     always_comb begin
-        if(idle_stall)begin
-            pc_stall = 1;
-            if_id_stall = 0;
-            if_id_bubble = 0;
-            id_exe_stall = 0;
-            id_exe_bubble = 0;
-            exe_mem_stall = 0;
-            exe_mem_bubble = 0;
-            mem_wb_stall = 0;
-            mem_wb_bubble = 0;
-        end
-        else begin
-        if (pipeline_stall) begin
+        if(pipeline_stall)begin
             pc_stall = 1;
             if_id_stall = 1;
             if_id_bubble = 0;
@@ -71,51 +54,47 @@ module controller_pipeline(
             exe_mem_bubble = 0;
             mem_wb_stall = 1;
             mem_wb_bubble = 0;
+        end else if(mem_flush_req)begin
+            pc_stall = 0;
+            if_id_stall = 0;
+            if_id_bubble = 1;
+            id_exe_stall = 0;
+            id_exe_bubble = 1;
+            exe_mem_stall = 0;
+            exe_mem_bubble = 1;
+            mem_wb_stall = 0;
+            mem_wb_bubble = 0;
+        end else if(exe_stall_req)begin
+            pc_stall = 1;
+            if_id_stall = 1;
+            if_id_bubble = 0;
+            id_exe_stall = 0;
+            id_exe_bubble = 1;
+            exe_mem_stall = 0;
+            exe_mem_bubble = 0;
+            mem_wb_stall = 0;
+            mem_wb_bubble = 0;
+        end else if(id_flush_req)begin
+            pc_stall = 0;
+            if_id_stall = 0;
+            if_id_bubble = 1;
+            id_exe_stall = 0;
+            id_exe_bubble = 0;
+            exe_mem_stall = 0;
+            exe_mem_bubble = 0;
+            mem_wb_stall = 0;
+            mem_wb_bubble = 0;
         end else begin
-            if (exe_stall_req) begin
-                    pc_stall = 1;
-                    if_id_stall = 1;
-                    if_id_bubble = 0;
-                    id_exe_stall = 0;
-                    id_exe_bubble = 1;
-                    exe_mem_stall = 0;
-                    exe_mem_bubble = 0;
-                    mem_wb_stall = 0;
-                    mem_wb_bubble = 0;
-            end else begin
-                if (mem_flush_req) begin
-                    pc_stall = 0;
-                    if_id_stall = 0;
-                    if_id_bubble = 1;
-                    id_exe_stall = 0;
-                    id_exe_bubble = 1;
-                    exe_mem_stall = 0;
-                    exe_mem_bubble = 1;
-                    mem_wb_stall = 0;
-                    mem_wb_bubble = 0;
-                end else if (id_flush_req) begin
-                    pc_stall = 0;
-                    if_id_stall = 0;
-                    if_id_bubble = 1;
-                    id_exe_stall = 0;
-                    id_exe_bubble = 0;
-                    exe_mem_stall = 0;
-                    exe_mem_bubble = 0;
-                    mem_wb_stall = 0;
-                    mem_wb_bubble = 0;
-                end else begin
-                    pc_stall = 0;
-                    if_id_stall = 0;
-                    if_id_bubble = 0;
-                    id_exe_stall = 0;
-                    id_exe_bubble = 0;
-                    exe_mem_stall = 0;
-                    exe_mem_bubble = 0;
-                    mem_wb_stall = 0;
-                    mem_wb_bubble = 0;
-                end
-            end
-        end
+            pc_stall = 0;
+            if_id_stall = 0;
+            if_id_bubble = 0;
+            id_exe_stall = 0;
+            id_exe_bubble = 0;
+            exe_mem_stall = 0;
+            exe_mem_bubble = 0;
+            mem_wb_stall = 0;
+            mem_wb_bubble = 0;
         end
     end
+
 endmodule

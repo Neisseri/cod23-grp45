@@ -47,8 +47,7 @@ module Data_memory #(
     output logic [DATA_WIDTH-1:0] data_out,
 
     input wire trans_req,
-    input wire pipeline_stall,
-    output logic idle_stall
+    input wire pipeline_stall
     );
 
     typedef enum logic [3:0] {
@@ -74,8 +73,6 @@ module Data_memory #(
     assign wb_stb_o = (state == STATE_READ_SRAM_ACTION) || (state == STATE_WRITE_SRAM_ACTION);
     assign master_ready_o = !wb_stb_o;
     assign wb_we_o = write_en;
-
-    assign idle_stall = 0;
 
     reg [DATA_WIDTH-1:0] data_out_raw;
     logic [DATA_WIDTH-1:0] data_out_shift;
@@ -299,8 +296,7 @@ module Instruction_memory #(
     output reg [DATA_WIDTH-1:0] data_out,
 
     input wire trans_req,
-    input wire pipeline_stall,
-    output logic idle_stall
+    input wire pipeline_stall
     );
 
     typedef enum logic [3:0] {
@@ -317,8 +313,6 @@ module Instruction_memory #(
     assign wb_stb_o = (state == STATE_READ_SRAM_ACTION);
     assign master_ready_o = !wb_stb_o;
     assign wb_we_o = write_en;
-
-    assign idle_stall = 0;
 
     always_ff @(posedge clk) begin
         if(rst)begin

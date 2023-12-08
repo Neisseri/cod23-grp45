@@ -614,7 +614,7 @@ module ID(
                 id_exception_o = 1;
                 csr_op_o = `ENV_MRET;
             end
-            OP_NOP: begin
+            OP_NOP: begin // actually addi zero, zero, 0
                 alu_op = `ALU_ADD;
                 alu_mux_a = `ALU_MUX_DATA;
                 alu_mux_b = `ALU_MUX_IMM_B;
@@ -622,6 +622,16 @@ module ID(
                 we = 0;
                 sel = 4'b0000;
                 rf_wen = 1;
+                wb_if_mem = 0;
+            end
+            OP_SFENCE_VMA: begin // no use
+                alu_op = `ALU_ADD;
+                alu_mux_a = `ALU_MUX_ZERO;
+                alu_mux_b = `ALU_MUX_ZERO;
+                mem_en = 0;
+                we = 0;
+                sel = 4'b0000;
+                rf_wen = 0;
                 wb_if_mem = 0;
             end
             OP_UNKNOWN: begin
