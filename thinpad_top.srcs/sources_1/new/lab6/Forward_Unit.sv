@@ -192,18 +192,18 @@ module Forward_Unit #(
         if (hazard4_a) begin // hazard 4
             rs1_forward_o = 0;
             rs1_forward_dat_o = 0;
-        end else if (hazard5_a) begin // hazard 5
-            rs1_forward_o = 1;
-            rs1_forward_dat_o = mem_dat;
-        end else if (hazard6_a) begin // hazard 6
-            rs1_forward_o = 1;
-            rs1_forward_dat_o = mem_wb_mem_dat;
         end else if (hazard1_a) begin // hazard 1
             rs1_forward_o = 1;
             rs1_forward_dat_o = id_exe_dat;
+        end else if (hazard5_a) begin // hazard 5
+            rs1_forward_o = 1;
+            rs1_forward_dat_o = mem_dat;
         end else if (hazard2_a) begin // hazard 2
             rs1_forward_o = 1;
             rs1_forward_dat_o = exe_mem_dat;
+        end else if (hazard6_a) begin // hazard 6
+            rs1_forward_o = 1;
+            rs1_forward_dat_o = mem_wb_mem_dat;
         end else if (hazard3_a) begin // hazard 3
             rs1_forward_o = 1;
             rs1_forward_dat_o = mem_wb_dat;
@@ -216,18 +216,18 @@ module Forward_Unit #(
         if (hazard4_b) begin // hazard 4
             rs2_forward_o = 0;
             rs2_forward_dat_o = 0;
-        end else if (hazard5_b) begin // hazard 5
-            rs2_forward_o = 1;
-            rs2_forward_dat_o = mem_dat;
-        end else if (hazard6_b) begin // hazard 6
-            rs2_forward_o = 1;
-            rs2_forward_dat_o = mem_wb_mem_dat;
         end else if (hazard1_b) begin // hazard 1
             rs2_forward_o = 1;
             rs2_forward_dat_o = id_exe_dat;
+        end else if (hazard5_b) begin // hazard 5
+            rs2_forward_o = 1;
+            rs2_forward_dat_o = mem_dat;
         end else if (hazard2_b) begin // hazard 2
             rs2_forward_o = 1;
             rs2_forward_dat_o = exe_mem_dat;
+        end else if (hazard6_b) begin // hazard 6
+            rs2_forward_o = 1;
+            rs2_forward_dat_o = mem_wb_mem_dat;
         end else if (hazard3_b) begin // hazard 3
             rs2_forward_o = 1;
             rs2_forward_dat_o = mem_wb_dat;
