@@ -189,7 +189,10 @@ module Forward_Unit #(
         rs1_forward_dat_o = 0;
         alu_mux_a = id_exe_alu_mux_a;
         alu_a_forward = 0;
-        if (hazard5_a) begin // hazard 5
+        if (hazard4_a) begin // hazard 4
+            rs1_forward_o = 0;
+            rs1_forward_dat_o = 0;
+        end else if (hazard5_a) begin // hazard 5
             rs1_forward_o = 1;
             rs1_forward_dat_o = mem_dat;
         end else if (hazard6_a) begin // hazard 6
@@ -210,7 +213,10 @@ module Forward_Unit #(
         rs2_forward_dat_o = 0;
         alu_mux_b = id_exe_alu_mux_b;
         alu_b_forward = 0;
-        if (hazard5_b) begin // hazard 5
+        if (hazard4_b) begin // hazard 4
+            rs2_forward_o = 0;
+            rs2_forward_dat_o = 0;
+        end else if (hazard5_b) begin // hazard 5
             rs2_forward_o = 1;
             rs2_forward_dat_o = mem_dat;
         end else if (hazard6_b) begin // hazard 6

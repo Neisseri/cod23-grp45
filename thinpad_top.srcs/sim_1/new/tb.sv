@@ -51,7 +51,6 @@ module tb;
   parameter FLASH_INIT_FILE = "/tmp/kernel.elf";  // Flash ��ʼ���ļ������޸�Ϊʵ�ʵľ���·��
 
   initial begin
-    // ����������Զ�������������У����磺
     dip_sw = 32'h2;
     touch_btn = 0;
     reset_btn = 0;
@@ -67,11 +66,21 @@ module tb;
       #100;  // �ȴ� 100ns
       push_btn = 0;  // �ɿ� push_btn ��ť
     end
-  
+
     // ģ�� PC ͨ��ֱ�����ڣ��� FPGA �����ַ�
-    uart.pc_send_byte(8'h32); // ASCII '2'
+    #5000000;
+    $display("sending G");
+    uart.pc_send_byte(8'h47); // ASCII 'G'
     #10000;
-    uart.pc_send_byte(8'h33); // ASCII '3'
+    #10000;
+    uart.pc_send_byte(8'h08);
+    #10000;
+    uart.pc_send_byte(8'h10);
+    #10000;
+    uart.pc_send_byte(8'h00);
+    #10000;
+    uart.pc_send_byte(8'h80);
+    #10000; // 80001170
   end
 
   // �������û����?
