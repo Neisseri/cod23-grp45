@@ -64,6 +64,9 @@ module TLB #(
     tlb_req_t tlb_req;
     assign tlb_req = query_addr;
 
+    page_entry_t translation_page;
+    assign translation_page = translation_result;
+
     always_comb begin
         tlb_query_addr = query_addr;
         to_trans_query_write_en = query_write_en;
@@ -74,9 +77,9 @@ module TLB #(
 
     always_comb begin
         case (state)
-            STATE_TRANSLATE: wishbone_owner = `TRANSLATE_OWN;
+            STATE_DONE: wishbone_owner = `MMU_OWN;
             STATE_READ_DATA: wishbone_owner = `CACHE_OWN;
-            default: wishbone_owner = `MMU_OWN;
+            default: wishbone_owner = `TRANSLATE_OWN;
         endcase
     end
 
@@ -86,9 +89,9 @@ module TLB #(
         tlb_visit_entry = tlb_table[tlb_req.TLBT];
         tlb_hit = tlb_en && !flush_tlb && tlb_visit_entry.TLBI == tlb_req.TLBI && tlb_visit_entry.valid;
         if(tlb_hit)begin
-            phy_addr = {tlb_visit_entry.page.PPN1, tlb_visit_entry.page.PPN0, tlb_req.offset};
+            phy_addr = {tlb_visit_entry.page.PPN1[`PPN1_LENGTH-3:0], tlb_visit_entry.page.PPN0, tlb_req.offset};
         end else begin
-            phy_addr = translation_result;
+            phy_addr = {translation_page.PPN1[`PPN1_LENGTH-3:0], translation_page.PPN0[`PPN0_LENGTH-1:0], tlb_req.offset};
         end
     end
 
@@ -133,7 +136,7 @@ module TLB #(
                 STATE_TRANSLATE: begin
                     if(translation_ready)begin
                         if(!translation_error)begin
-                            tlb_table[tlb_req.TLBI] <= {tlb_req.TLBI, satp_i.asid, translation_result, 1'b1};
+                            tlb_table[tlb_req.TLBT] <= {tlb_req.TLBI, satp_i.asid, translation_page, 1'b1};
                             state <= STATE_READ_DATA;
                         end else begin
                             state <= STATE_DONE;

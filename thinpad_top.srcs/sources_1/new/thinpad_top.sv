@@ -339,6 +339,7 @@ module thinpad_top #(
   logic [DATA_WIDTH/8-1:0] mmu_to_im_sel;
   logic mmu_to_im_trans_req;
   logic [DATA_WIDTH-1:0] im_to_mmu_data_out; 
+  logic im_to_mmu_ack;
   logic im_exception_occured;
   logic [DATA_WIDTH-1:0] im_exception_cause;
   IF_MMU if_mmu_u(
@@ -366,6 +367,7 @@ module thinpad_top #(
     .trans_req(mmu_to_im_trans_req),
     .master_ready_o(im_to_mmu_master_ready),
     .data_out(im_to_mmu_data_out),
+    .ack(im_to_mmu_ack),
     .exception_occured_o(im_exception_occured),
     .exception_cause_o(im_exception_cause)
   );
@@ -396,6 +398,7 @@ module thinpad_top #(
     .data_in(mmu_to_im_data_in),
     .sel(mmu_to_im_sel),
     .data_out(im_to_mmu_data_out),
+    .ack(im_to_mmu_ack),
     .trans_req(mmu_to_im_trans_req),
     .pipeline_stall(pipeline_stall)
   );
@@ -724,6 +727,7 @@ module thinpad_top #(
   logic [DATA_WIDTH/8-1:0] mmu_to_dm_sel;
   logic mmu_to_dm_trans_req;
   logic [DATA_WIDTH-1:0] dm_to_mmu_data_out; 
+  logic dm_to_mmu_ack;
   logic dm_exception_occured;
   logic [DATA_WIDTH-1:0] dm_exception_cause;
   MEM_MMU mem_mmu_u (
@@ -749,6 +753,7 @@ module thinpad_top #(
     .trans_req(mmu_to_dm_trans_req),
     .master_ready_o(dm_to_mmu_master_ready),
     .data_out(dm_to_mmu_data_out),
+    .ack(dm_to_mmu_ack),
 
     .exception_occured_o(dm_exception_occured),
     .exception_cause_o(dm_exception_cause)
@@ -788,6 +793,7 @@ module thinpad_top #(
     .data_in(mmu_to_dm_data_in),
     .sel(mmu_to_dm_sel),
     .data_out(dm_to_mmu_data_out),
+    .ack(dm_to_mmu_ack),
     .trans_req(mmu_to_dm_trans_req),
     .pipeline_stall(pipeline_stall)
   );

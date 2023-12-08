@@ -31,6 +31,7 @@ module Translation #(
     output logic [DATA_WIDTH-1:0] wb_dat_o,
     output logic [DATA_WIDTH/8-1:0] wb_sel_o,
     output logic wb_we_o,
+    output logic trans_running,
 
     // CSR to Translation
     input wire satp_t satp_i,
@@ -59,9 +60,11 @@ typedef enum logic [2:0] {
         wb_cyc_o = (state == STATE_FETCH_TABLE) || (state == STATE_FIND_PAGE);
         wb_stb_o = (state == STATE_FETCH_TABLE) || (state == STATE_FIND_PAGE);
         translation_ready = (state == STATE_IDLE) || (state == STATE_DONE);
+        trans_running = (state != STATE_IDLE);
     end
 
     page_entry_t cur_page;
+    assign cur_page = wb_dat_i;
 
     logic [ADDR_WIDTH-1:0] page_base;
     assign page_base = {satp_i.ppn[`PPN1_LENGTH+`PPN0_LENGTH-3:0], {`PAGE_OFFSET{1'b0}}}; // 第一层页表基�??
@@ -82,7 +85,6 @@ typedef enum logic [2:0] {
             store_page_fault <= 0;
             query_addr_o <= 0;
             wb_adr_o <= 0;
-            cur_page <= 0;
             state <= STATE_IDLE;
         end else begin
             case (state)
@@ -92,13 +94,11 @@ typedef enum logic [2:0] {
                         load_page_fault <= 0;
                         store_page_fault <= 0;
                         wb_adr_o <= first_table_addr;
-                        cur_page <= 0;
                         state <= STATE_FETCH_TABLE;
                     end
                 end
                 STATE_FETCH_TABLE: begin
                     if(wb_ack_i)begin
-                        cur_page <= wb_dat_i;
                         state <= STATE_FETCH_TABLE_DONE;
                     end
                 end
@@ -120,7 +120,6 @@ typedef enum logic [2:0] {
                 end
                 STATE_FIND_PAGE: begin
                     if(wb_ack_i)begin
-                        cur_page <= wb_dat_i;
                         state <= STATE_FIND_LEAF;
                     end
                 end
@@ -155,7 +154,7 @@ typedef enum logic [2:0] {
                                 load_page_fault <= 1;
                                 state <= STATE_DONE;
                             end else begin
-                                query_addr_o <= {cur_page.PPN1[`PPN1_LENGTH-3:0], cur_page.PPN0[`PPN0_LENGTH-1:0], vir_addr.offset};
+                                query_addr_o <= cur_page;
                                 state <= STATE_DONE;
                             end
                         end

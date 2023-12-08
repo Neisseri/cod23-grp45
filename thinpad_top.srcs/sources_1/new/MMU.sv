@@ -40,6 +40,7 @@ module IF_MMU #(
     // Data memory to MMU
     input wire master_ready_o,
     input wire [DATA_WIDTH-1:0] data_out,
+    input wire ack,
 
     // report exception
     output logic exception_occured_o,
@@ -64,7 +65,6 @@ module IF_MMU #(
             tlb_en = 0;
         end
     end
-    assign trans_req = (wishbone_owner == `TRANSLATE_OWN);
 
     // include TLB, Translation, Cache, arbeiter
     logic tlb_ready;
@@ -139,10 +139,12 @@ module IF_MMU #(
     logic [DATA_WIDTH-1:0] trans_dat_o;
     logic [DATA_WIDTH/8-1:0] trans_sel_o;
     logic trans_we_o;
+    logic trans_running;
     logic instruction_page_fault;
     logic load_page_fault;
     logic store_page_fault;
     assign translation_error = instruction_page_fault | load_page_fault | store_page_fault;
+    assign trans_req = ((wishbone_owner == `TRANSLATE_OWN) && trans_running) || ((wishbone_owner == `CACHE_OWN) && cache_stb);
     Translation translation_u(
         .clk(clk),
         .rst(rst),
@@ -161,6 +163,7 @@ module IF_MMU #(
         .wb_dat_o(trans_dat_o),
         .wb_sel_o(trans_sel_o),
         .wb_we_o(trans_we_o),
+        .trans_running(trans_running),
         .satp_i(satp),
         .instruction_page_fault(instruction_page_fault),
         .load_page_fault(load_page_fault),
@@ -234,7 +237,7 @@ module IF_MMU #(
 
                 mmu_ready_o = 0;
                 mmu_data_out = 0;
-                trans_ack = master_ready_o;
+                trans_ack = ack;
                 trans_dat_i = data_out;
                 cache_ack = 0;
                 cache_dat_i = 0;
@@ -250,7 +253,7 @@ module IF_MMU #(
                 mmu_data_out = 0;
                 trans_ack = 0;
                 trans_dat_i = 0;
-                cache_ack = master_ready_o;
+                cache_ack = ack;
                 cache_dat_i = data_out;
             end
             default: begin
@@ -307,6 +310,7 @@ module MEM_MMU #(
     // Data memory to MMU
     input wire master_ready_o,
     input wire [DATA_WIDTH-1:0] data_out,
+    input wire ack,
 
     // report exception
     output logic exception_occured_o,
@@ -331,7 +335,7 @@ module MEM_MMU #(
             tlb_en = 0;
         end
     end
-    assign trans_req = (wishbone_owner == `TRANSLATE_OWN);
+    assign trans_req = (wishbone_owner == `TRANSLATE_OWN) && trans_running;
 
     // include TLB, Translation, arbeiter
     logic tlb_ready;
@@ -399,6 +403,7 @@ module MEM_MMU #(
     logic [DATA_WIDTH-1:0] trans_dat_o;
     logic [DATA_WIDTH/8-1:0] trans_sel_o;
     logic trans_we_o;
+    logic trans_running;
     logic instruction_page_fault;
     logic load_page_fault;
     logic store_page_fault;
@@ -421,6 +426,7 @@ module MEM_MMU #(
         .wb_dat_o(trans_dat_o),
         .wb_sel_o(trans_sel_o),
         .wb_we_o(trans_we_o),
+        .trans_running(trans_running),
         .satp_i(satp),
         .instruction_page_fault(instruction_page_fault),
         .load_page_fault(load_page_fault),
@@ -488,7 +494,7 @@ module MEM_MMU #(
 
                 mmu_ready_o = 0;
                 mmu_data_out = 0;
-                trans_ack = master_ready_o;
+                trans_ack = ack;
                 trans_dat_i = data_out;
                 cache_ack = 0;
                 cache_dat_i = 0;

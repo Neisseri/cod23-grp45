@@ -33,15 +33,16 @@ typedef struct packed {
     logic [`PAGE_OFFSET-1:0] offset;
 } physical_address_t;
 
+`define ASID_LENGTH 8
+
 typedef struct packed {
     logic mode;
-    logic [8:0] asid;
+    logic [`ASID_LENGTH-1:0] asid;
     logic [`PPN1_LENGTH+`PPN0_LENGTH-1:0] ppn;
 } satp_t;
 
 `define TLBT_LENGTH 5
 `define TLBI_LENGTH (32 - `TLBT_LENGTH - `PAGE_OFFSET)
-`define ASID_LENGTH 8
 
 typedef struct packed {
     logic [`TLBI_LENGTH-1:0] TLBI;

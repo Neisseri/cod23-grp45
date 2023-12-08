@@ -45,6 +45,7 @@ module Data_memory #(
     input wire [DATA_WIDTH-1:0] data_in,
     input wire [DATA_WIDTH/8-1:0] sel,
     output logic [DATA_WIDTH-1:0] data_out,
+    output logic ack,
 
     input wire trans_req,
     input wire pipeline_stall
@@ -61,6 +62,7 @@ module Data_memory #(
     
     assign wb_dat_o = data_in;
     assign wb_adr_o = addr;
+    assign ack = wb_ack_i;
 
     always_comb begin
         case (sel)
@@ -69,9 +71,9 @@ module Data_memory #(
         endcase
     end
 
-    assign wb_cyc_o = (state == STATE_READ_SRAM_ACTION) || (state == STATE_WRITE_SRAM_ACTION);
-    assign wb_stb_o = (state == STATE_READ_SRAM_ACTION) || (state == STATE_WRITE_SRAM_ACTION);
-    assign master_ready_o = !wb_stb_o;
+    assign wb_cyc_o = ((state == STATE_READ_SRAM_ACTION) || (state == STATE_WRITE_SRAM_ACTION)) && mem_en;
+    assign wb_stb_o = ((state == STATE_READ_SRAM_ACTION) || (state == STATE_WRITE_SRAM_ACTION)) && mem_en;
+    assign master_ready_o = !((state == STATE_READ_SRAM_ACTION) || (state == STATE_WRITE_SRAM_ACTION));
     assign wb_we_o = write_en;
 
     reg [DATA_WIDTH-1:0] data_out_raw;
@@ -294,6 +296,7 @@ module Instruction_memory #(
     input wire [DATA_WIDTH-1:0] data_in,
     input wire [DATA_WIDTH/8-1:0] sel,
     output reg [DATA_WIDTH-1:0] data_out,
+    output logic ack,
 
     input wire trans_req,
     input wire pipeline_stall
@@ -309,10 +312,11 @@ module Instruction_memory #(
     assign wb_dat_o = data_in;
     assign wb_adr_o = addr;
     assign wb_sel_o = sel;
-    assign wb_cyc_o = (state == STATE_READ_SRAM_ACTION);
-    assign wb_stb_o = (state == STATE_READ_SRAM_ACTION);
-    assign master_ready_o = !wb_stb_o;
+    assign wb_cyc_o = (state == STATE_READ_SRAM_ACTION) && mem_en;
+    assign wb_stb_o = (state == STATE_READ_SRAM_ACTION) && mem_en;
+    assign master_ready_o = (state != STATE_READ_SRAM_ACTION);
     assign wb_we_o = write_en;
+    assign ack = wb_ack_i;
 
     always_ff @(posedge clk) begin
         if(rst)begin
