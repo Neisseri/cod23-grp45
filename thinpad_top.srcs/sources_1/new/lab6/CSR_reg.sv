@@ -17,6 +17,8 @@ module CSR_reg #(
     input wire csr_sepc_we_i,
     input wire [DATA_WIDTH-1:0] csr_scause_i,
     input wire csr_scause_we_i,
+    input wire [DATA_WIDTH-1:0] csr_stval_i,
+    input wire csr_stval_we_i,
     input wire [DATA_WIDTH-1:0] csr_mstatus_i,
     input wire csr_mstatus_we_i,
     input wire [DATA_WIDTH-1:0] csr_mtvec_i,
@@ -25,6 +27,8 @@ module CSR_reg #(
     input wire csr_mepc_we_i,
     input wire [DATA_WIDTH-1:0] csr_mcause_i,
     input wire csr_mcause_we_i,
+    input wire [DATA_WIDTH-1:0] csr_mtval_i,
+    input wire csr_mtval_we_i,
     input wire [DATA_WIDTH-1:0] csr_mip_i,
     input wire csr_mip_we_i,
     input wire [DATA_WIDTH-1:0] csr_mie_i,
@@ -32,9 +36,13 @@ module CSR_reg #(
 
     output reg [DATA_WIDTH-1:0] csr_satp_o,
     output reg [DATA_WIDTH-1:0] csr_stvec_o,
+    output reg [DATA_WIDTH-1:0] csr_stval_o,
+    output reg [DATA_WIDTH-1:0] csr_sip_o,
+    output reg [DATA_WIDTH-1:0] csr_sie_o,
     output reg [DATA_WIDTH-1:0] csr_sepc_o,
     output reg [DATA_WIDTH-1:0] csr_mstatus_o,
     output reg [DATA_WIDTH-1:0] csr_mtvec_o,
+    output reg [DATA_WIDTH-1:0] csr_mtval_o,
     output reg [DATA_WIDTH-1:0] csr_mepc_o,
     output reg [DATA_WIDTH-1:0] csr_mcause_o,
     output reg [DATA_WIDTH-1:0] csr_mip_o,
@@ -106,9 +114,13 @@ module CSR_reg #(
 
         csr_satp_o = satp;
         csr_stvec_o = stvec;
+        csr_stval_o = stval;
+        csr_sip_o = sip;
+        csr_sie_o = sie;
         csr_sepc_o = sepc;
         csr_mstatus_o = mstatus;
         csr_mtvec_o = mtvec;
+        csr_mtval_o = mtval;
         csr_mepc_o = mepc;
         csr_mcause_o = mcause;
         csr_mip_o = mip;
@@ -176,6 +188,9 @@ module CSR_reg #(
                 if (csr_scause_we_i) begin
                     scause <= csr_scause_i;
                 end
+                if (csr_stval_we_i) begin
+                    stval <= csr_stval_i;
+                end
                 if (csr_mstatus_we_i) begin
                     mstatus <= csr_mstatus_i;
                 end
@@ -187,6 +202,9 @@ module CSR_reg #(
                 end
                 if (csr_mcause_we_i) begin
                     mcause <= csr_mcause_i;
+                end
+                if (csr_mtval_we_i) begin
+                    mtval <= csr_mtval_i;
                 end
                 if (csr_mip_we_i) begin
                     mip <= csr_mip_i;

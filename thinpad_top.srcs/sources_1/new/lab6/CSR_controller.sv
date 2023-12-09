@@ -26,8 +26,12 @@ module CSR_controller #(
 
     input wire [DATA_WIDTH-1:0] csr_sepc_i,
     input wire [DATA_WIDTH-1:0] csr_stvec_i,
+    input wire [DATA_WIDTH-1:0] csr_stval_i,
+    input wire [DATA_WIDTH-1:0] csr_sip_i,
+    input wire [DATA_WIDTH-1:0] csr_sie_i,
     input wire [DATA_WIDTH-1:0] csr_mstatus_i,
     input wire [DATA_WIDTH-1:0] csr_mtvec_i,
+    input wire [DATA_WIDTH-1:0] csr_mtval_i,
     input wire [DATA_WIDTH-1:0] csr_mepc_i,
     input wire [DATA_WIDTH-1:0] csr_mcause_i,
     input wire [DATA_WIDTH-1:0] csr_mip_i,
@@ -39,6 +43,8 @@ module CSR_controller #(
     output reg csr_sepc_we_o,
     output reg [DATA_WIDTH-1:0] csr_scause_o,
     output reg csr_scause_we_o,
+    output reg [DATA_WIDTH-1:0] csr_stval_o,
+    output reg csr_stval_we_o,
     output reg [DATA_WIDTH-1:0] csr_mstatus_o,
     output reg csr_mstatus_we_o,
     output reg [DATA_WIDTH-1:0] csr_mtvec_o,
@@ -47,6 +53,8 @@ module CSR_controller #(
     output reg csr_mepc_we_o,
     output reg [DATA_WIDTH-1:0] csr_mcause_o,
     output reg csr_mcause_we_o,
+    output reg [DATA_WIDTH-1:0] csr_mtval_o,
+    output reg csr_mtval_we_o,
     output reg [DATA_WIDTH-1:0] csr_mip_o,
     output reg csr_mip_we_o,
     output reg [DATA_WIDTH-1:0] csr_mie_o,
@@ -63,6 +71,7 @@ module CSR_controller #(
 
     input wire exception_occured_i,
     input wire [DATA_WIDTH-1:0] exception_cause_i,
+    input wire [DATA_WIDTH-1:0] exception_val_i,
     input wire [ADDR_WIDTH-1:0] exception_pc_i
     );
 
@@ -130,9 +139,13 @@ module CSR_controller #(
 
     always_ff @(posedge clk) begin
         if(rst) begin
+            csr_sepc_we_o <= 0;
+            csr_scause_we_o <= 0;
+            csr_stval_we_o <= 0;
             csr_mstatus_we_o <= 0;
             csr_mepc_we_o <= 0;
             csr_mcause_we_o <= 0;
+            csr_mtval_we_o <= 0;
             csr_mtvec_we_o <= 0;
             csr_mie_we_o <= 0;
             priv_level_we_o <= 0;
@@ -141,12 +154,16 @@ module CSR_controller #(
         end else begin
             if (!stall) begin
                 if (bubble || exception_idle) begin
+                    csr_sepc_we_o <= 0;
+                    csr_scause_we_o <= 0;
+                    csr_stval_we_o <= 0;
                     csr_mstatus_we_o <= 0;
-                    priv_level_we_o <= 0;
                     csr_mepc_we_o <= 0;
                     csr_mcause_we_o <= 0;
+                    csr_mtval_we_o <= 0;
                     csr_mtvec_we_o <= 0;
                     csr_mie_we_o <= 0;
+                    priv_level_we_o <= 0;
                     mem_exception_o <= 0;
                     exception_idle <= 0;
                 end else begin
@@ -158,6 +175,8 @@ module CSR_controller #(
                         if ((priv_level_i == `PRIV_U_LEVEL || priv_level_i == `PRIV_S_LEVEL) && csr_medeleg_i[exc_cause]) begin // to S-level
                             csr_scause_o <= exception_cause_i;
                             csr_scause_we_o <= 1;
+                            csr_stval_o <= exception_val_i;
+                            csr_stval_we_o <= 1;
                             csr_sepc_o <= exception_pc_i;
                             csr_sepc_we_o <= 1;
                             csr_mstatus_o <= {
@@ -178,6 +197,8 @@ module CSR_controller #(
                         end else begin // to M-level
                             csr_mcause_o <= exception_cause_i;
                             csr_mcause_we_o <= 1;
+                            csr_mtval_o <= exception_val_i;
+                            csr_mtval_we_o <= 1;
                             csr_mepc_o <= exception_pc_i;
                             csr_mepc_we_o <= 1;
                             csr_mstatus_o <= {
@@ -196,9 +217,33 @@ module CSR_controller #(
                             priv_level_o <= `PRIV_M_LEVEL;
                             priv_level_we_o <= 1;
                         end
+                    end else if (csr_sip_i[5] && csr_sie_i[5] && (priv_level_i == `PRIV_U_LEVEL || (priv_level_i == `PRIV_S_LEVEL && csr_mstatus_i[1]))) begin
+                        csr_scause_o <= {1'b1, `SUPERVISOR_TIMER_INTERRUPT};
+                        csr_scause_we_o <= 1;
+                        csr_stval_o <= csr_stval_i;
+                        csr_stval_we_o <= 1;
+                        csr_sepc_o <= mem_pc_i;
+                        csr_sepc_we_o <= 1;
+                        csr_mstatus_o <= {
+                            csr_mstatus_i[31:9],
+                            priv_level_i[0], // spp <= priv_level
+                            csr_mstatus_i[7:6],
+                            csr_mstatus_i[1], // spie <= sie
+                            csr_mstatus_i[4:2],
+                            1'b0, // sie <= 0
+                            csr_mstatus_i[0]
+                        };
+                        csr_mstatus_we_o <= 1;
+                        pc_next_exception_o <= csr_stvec_i;
+                        mem_exception_o <= 1;
+                        exception_idle <= 1;
+                        priv_level_o <= `PRIV_S_LEVEL;
+                        priv_level_we_o <= 1;
                     end else if (csr_mip_i[7] && csr_mie_i[7] && (priv_level_i == `PRIV_U_LEVEL || priv_level_i == `PRIV_S_LEVEL || (priv_level_i == `PRIV_M_LEVEL && csr_mstatus_i[3]))) begin // time_interrupt
                         csr_mcause_o <= {1'b1, `MACHINE_TIMER_INTERRUPT};
                         csr_mcause_we_o <= 1;
+                        csr_mtval_o <= csr_mtval_i;
+                        csr_mtval_we_o <= 1;
                         csr_mepc_o <= mem_pc_i;
                         csr_mepc_we_o <= 1;
                         csr_mstatus_o <= {
@@ -247,6 +292,8 @@ module CSR_controller #(
                                 if ((priv_level_i == `PRIV_U_LEVEL || priv_level_i == `PRIV_S_LEVEL) && csr_medeleg_i[ecall_cause]) begin // to S-level
                                     csr_scause_o <= {1'b0, ecall_cause};
                                     csr_scause_we_o <= 1;
+                                    csr_stval_o <= csr_stval_i;
+                                    csr_stval_we_o <= 1;
                                     csr_sepc_o <= mem_pc_i;
                                     csr_sepc_we_o <= 1;
                                     csr_mstatus_o <= {
@@ -267,6 +314,8 @@ module CSR_controller #(
                                 end else begin // to M-level
                                     csr_mcause_o <= {1'b0, ecall_cause};
                                     csr_mcause_we_o <= 1;
+                                    csr_mtval_o <= csr_mtval_i;
+                                    csr_mtval_we_o <= 1;
                                     csr_mepc_o <= mem_pc_i;
                                     csr_mepc_we_o <= 1;
                                     csr_mstatus_o <= {
@@ -290,6 +339,8 @@ module CSR_controller #(
                                 if ((priv_level_i == `PRIV_U_LEVEL || priv_level_i == `PRIV_S_LEVEL) && csr_medeleg_i[`BREAKPOINT_EXCEPTION]) begin // to S-level
                                     csr_scause_o <= {1'b0, `BREAKPOINT_EXCEPTION};
                                     csr_scause_we_o <= 1;
+                                    csr_stval_o <= mem_pc_i;
+                                    csr_stval_we_o <= 1;
                                     csr_sepc_o <= mem_pc_i;
                                     csr_sepc_we_o <= 1;
                                     csr_mstatus_o <= {
@@ -310,6 +361,8 @@ module CSR_controller #(
                                 end else begin // to M-level
                                     csr_mcause_o <= {1'b0, `BREAKPOINT_EXCEPTION};
                                     csr_mcause_we_o <= 1;
+                                    csr_mtval_o <= mem_pc_i;
+                                    csr_mtval_we_o <= 1;
                                     csr_mepc_o <= mem_pc_i;
                                     csr_mepc_we_o <= 1;
                                     csr_mstatus_o <= {
@@ -347,10 +400,16 @@ module CSR_controller #(
                                 priv_level_we_o <= 1;
                             end
                             default: begin
+                                csr_sepc_we_o <= 0;
+                                csr_scause_we_o <= 0;
+                                csr_stval_we_o <= 0;
                                 csr_mstatus_we_o <= 0;
-                                priv_level_we_o <= 0;
                                 csr_mepc_we_o <= 0;
                                 csr_mcause_we_o <= 0;
+                                csr_mtval_we_o <= 0;
+                                csr_mtvec_we_o <= 0;
+                                csr_mie_we_o <= 0;
+                                priv_level_we_o <= 0;
                                 mem_exception_o <= 0;
                                 exception_idle <= 0;
                             end

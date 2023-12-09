@@ -47,7 +47,8 @@ module ID(
         output logic [3:0] csr_op_o,
 
         output logic exception_occured_o,
-        output logic [31:0] exception_cause_o
+        output logic [31:0] exception_cause_o,
+        output logic [31:0] exception_val_o
     );
 
     logic [2:0] funct3;
@@ -357,6 +358,7 @@ module ID(
         id_exception_o = 0;
         exception_occured_o = 0;
         exception_cause_o = 0;
+        exception_val_o = 0;
         case (op_type)
             OP_LUI: begin
                 alu_op = `ALU_ADD;
@@ -717,6 +719,7 @@ module ID(
                 wb_if_mem = 0;
                 exception_occured_o = 1;
                 exception_cause_o = 2;
+                exception_val_o = instr; // TODO:change to the correct val
             end
             default: begin // NOP: addi zero, zero, 0
                 alu_op = `ALU_ADD;
@@ -729,6 +732,7 @@ module ID(
                 wb_if_mem = 0;
                 exception_occured_o = 1;
                 exception_cause_o = 2;
+                exception_val_o = instr; // TODO:change to the correct val
             end
         endcase
     end
