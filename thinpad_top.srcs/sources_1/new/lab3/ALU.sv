@@ -42,25 +42,25 @@ module ALU #(
     always_comb begin
         if (alu_op == `ALU_ADD) begin
             alu_y = alu_a + alu_b;
-        end else if (alu_op == ALU_SUB) begin
+        end else if (alu_op == `ALU_SUB) begin
             alu_y = alu_a - alu_b;
-        end else if (alu_op == ALU_AND) begin
+        end else if (alu_op == `ALU_AND) begin
             alu_y = alu_a & alu_b;
-        end else if (alu_op == ALU_OR) begin
+        end else if (alu_op == `ALU_OR) begin
             alu_y = alu_a | alu_b;
-        end else if (alu_op == ALU_XOR) begin
+        end else if (alu_op == `ALU_XOR) begin
             alu_y = alu_a ^ alu_b;
-        end else if (alu_op == ALU_NOT) begin
+        end else if (alu_op == `ALU_NOT) begin
             alu_y = ~alu_a;
-        end else if (alu_op == ALU_LOGIC_LEFT) begin
+        end else if (alu_op == `ALU_LOGIC_LEFT) begin
             alu_y = alu_a << (alu_b & (DATA_WIDTH-1));
-        end else if (alu_op == ALU_LOGIC_RIGHT) begin
+        end else if (alu_op == `ALU_LOGIC_RIGHT) begin
             alu_y = alu_a >> (alu_b & (DATA_WIDTH-1));
-        end else if (alu_op == ALU_ALG_RIGH) begin
+        end else if (alu_op == `ALU_ALG_RIGHT) begin
             alu_y = $signed(alu_a) >>> (alu_b & (DATA_WIDTH-1));
-        end else if (alu_op == ALU_CIRCLE_LEFT) begin
+        end else if (alu_op == `ALU_CIRCLE_LEFT) begin
             alu_y = {DATA_WIDTH{1'b1}} & (alu_a << (alu_b & (DATA_WIDTH-1))) | (alu_a >> (DATA_WIDTH - (alu_b & (DATA_WIDTH-1))));
-        end else if (alu_op == ALU_CTZ) begin
+        end else if (alu_op == `ALU_CTZ) begin
             casez (alu_a)
                 32'b???????????????????????????????1: alu_y = 32'h0;
                 32'b??????????????????????????????10: alu_y = 32'h1;
@@ -97,21 +97,21 @@ module ALU #(
                 32'b00000000000000000000000000000000: alu_y = 32'h20;
                 default: alu_y = 32'h20;
             endcase
-        end else if (alu_op == ALU_ANDN) begin
+        end else if (alu_op == `ALU_ANDN) begin
             alu_y = alu_a & (~alu_b);
-        end else if (alu_op == ALU_MINU) begin
+        end else if (alu_op == `ALU_MINU) begin
             if (alu_a < alu_b) begin
                 alu_y = alu_a;
             end else begin
                 alu_y = alu_b;
             end
-        end else if (alu_op == ALU_SLTU) begin
+        end else if (alu_op == `ALU_SLTU) begin
             if (alu_a < alu_b) begin
                 alu_y = 1;
             end else begin
                 alu_y = 0;
             end
-        end else if (alu_op == ALU_SLT) begin
+        end else if (alu_op == `ALU_SLT) begin
             if ($signed(alu_a) < $signed(alu_b)) begin
                 alu_y = 1;
             end else begin
