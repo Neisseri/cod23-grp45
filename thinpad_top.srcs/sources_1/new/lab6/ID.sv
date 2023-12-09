@@ -109,9 +109,9 @@ module ID(
         OP_CSRRW,
         OP_CSRRS,
         OP_CSRRC,
-        OP_CSRRWI, // TODO
-        OP_CSRRSI, // TODO
-        OP_CSRRCI, // TODO
+        OP_CSRRWI,
+        OP_CSRRSI,
+        OP_CSRRCI,
 
         //Zicntr instructions
         OP_RDTIME, // TODO
@@ -314,6 +314,10 @@ module ID(
             12'h342: valid_csr_adr = 1;
             12'h343: valid_csr_adr = 1;
             12'h344: valid_csr_adr = 1;
+
+            12'hc01: valid_csr_adr = 1;
+            12'hc81: valid_csr_adr = 1;
+
             12'hf14: valid_csr_adr = 1;
             default: valid_csr_adr = 0;
         endcase

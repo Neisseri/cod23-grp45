@@ -37,6 +37,9 @@ module CSR_reg #(
     output reg [DATA_WIDTH-1:0] csr_mip_o,
     output reg [DATA_WIDTH-1:0] csr_mie_o,
 
+    input wire [DATA_WIDTH-1:0] mtime_h_i,
+    input wire [DATA_WIDTH-1:0] mtime_l_i,
+
     input wire [1:0] priv_level_i,
     input wire priv_level_we_i,
     output reg [1:0] priv_level_o
@@ -88,6 +91,10 @@ module CSR_reg #(
             12'h342: csr_o = mcause;
             12'h343: csr_o = mtval;
             12'h344: csr_o = mip;
+
+            12'hc01: csr_o = mtime_l_i;
+            12'hc81: csr_o = mtime_h_i;
+
             12'hf14: csr_o = mhartid;
             default: csr_o = 0;
         endcase

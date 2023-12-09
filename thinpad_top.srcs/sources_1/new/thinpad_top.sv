@@ -802,6 +802,9 @@ module thinpad_top #(
     .exception_pc_i(exception_pc_real)
   );
   
+  logic [DATA_WIDTH-1:0] mtime_h_rdat;
+  logic [DATA_WIDTH-1:0] mtime_l_rdat;
+
   CSR_reg CSR_reg_u(
     .clk(sys_clk),
     .rst(sys_rst),
@@ -833,6 +836,9 @@ module thinpad_top #(
     .csr_mcause_o(csr_mcause_rdat),
     .csr_mip_o(csr_mip_rdat),
     .csr_mie_o(csr_mie_rdat),
+
+    .mtime_h_i(mtime_h_rdat),
+    .mtime_l_i(mtime_l_rdat),
 
     .priv_level_i(priv_level_wdat),
     .priv_level_we_i(priv_level_we),
@@ -1161,6 +1167,9 @@ module thinpad_top #(
       .wb_dat_o(wbs3_dat_i),
       .wb_sel_i(wbs3_sel_o),
       .wb_we_i (wbs3_we_o),
+
+      .mtime_h_o(mtime_h_rdat),
+      .mtime_l_o(mtime_l_rdat),
 
       .time_interrupt_o(time_interrupt)
   );
