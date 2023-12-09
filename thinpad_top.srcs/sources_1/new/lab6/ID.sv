@@ -98,8 +98,8 @@ module ID(
         OP_SLT, // TODO: test
         OP_SLTU,
         OP_XOR,
-        OP_SRL, // TODO
-        OP_SRA, // TODO
+        OP_SRL, // TODO: test
+        OP_SRA, // TODO: test
         OP_OR,
         OP_AND,
         // no FENCE
@@ -148,6 +148,8 @@ module ID(
                     10'b0000000_111: op_type = OP_AND;
                     10'b0000000_110: op_type = OP_OR;
                     10'b0000000_100: op_type = OP_XOR;
+                    10'b0000000_101: op_type = OP_SRL;
+                    10'b0100000_101: op_type = OP_SRA;
                     10'b0000101_110: op_type = OP_MINU;
                     10'b0100000_111: op_type = OP_ANDN;
                     10'b0000000_001: op_type = OP_SLL;
@@ -645,6 +647,26 @@ module ID(
                 alu_op = `ALU_XOR;
                 alu_mux_a = `ALU_MUX_DATA;
                 alu_mux_b = `ALU_MUX_DATA;
+                mem_en = 0;
+                we = 0;
+                sel = 4'b0000;
+                rf_wen = 1;
+                wb_if_mem = 0;
+            end
+            OP_SRL: begin
+                alu_op = `ALU_LOGIC_RIGHT;
+                alu_mux_a = `ALU_MUX_DATA;
+                alu_mux_b = `ALU_MUX_DATA; 
+                mem_en = 0;
+                we = 0;
+                sel = 4'b0000;
+                rf_wen = 1;
+                wb_if_mem = 0;
+            end
+            OP_SRA: begin
+                alu_op = `ALU_ALG_RIGHT;
+                alu_mux_a = `ALU_MUX_DATA;
+                alu_mux_b = `ALU_MUX_DATA; 
                 mem_en = 0;
                 we = 0;
                 sel = 4'b0000;
