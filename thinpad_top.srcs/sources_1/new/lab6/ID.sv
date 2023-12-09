@@ -76,7 +76,7 @@ module ID(
         OP_BLTU, // branch less than unsigned
         OP_BGEU, // branch greater equal unsigned
         OP_LB,
-        OP_LH, // TODO: test
+        OP_LH, // load half
         OP_LW,
         OP_LBU, // TODO: test
         OP_LHU, // TODO: test
