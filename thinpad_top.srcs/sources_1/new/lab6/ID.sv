@@ -78,8 +78,8 @@ module ID(
         OP_LB,
         OP_LH, // load half
         OP_LW,
-        OP_LBU, // TODO: test
-        OP_LHU, // TODO: test
+        OP_LBU, // load byte unsigned
+        OP_LHU, // load half unsigned
         OP_SB,
         OP_SH, // TODO: test
         OP_SW,
