@@ -165,6 +165,7 @@ module ID(
                             op_type = OP_ADDI;
                         end
                     end
+                    3'b010: op_type = OP_SLTI;
                     3'b111: op_type = OP_ANDI;
                     3'b110: op_type = OP_ORI;
                     3'b001: begin
@@ -299,7 +300,7 @@ module ID(
             OP_BEQ, OP_BNE, OP_BLT, OP_BGE, OP_BLTU, OP_BGEU: begin // B-type
                 imm = {{19{sign_bit}}, instr[31], instr[7], instr[30:25], instr[11:8], 1'b0};
             end
-            OP_LB, OP_ADDI, OP_ANDI, OP_JALR, OP_LW, OP_ORI, OP_SLLI, OP_SRLI, OP_LH, OP_LBU, OP_LHU: begin  // I-type
+            OP_LB, OP_ADDI, OP_ANDI, OP_JALR, OP_LW, OP_ORI, OP_SLLI, OP_SRLI, OP_LH, OP_LBU, OP_LHU, OP_SLTI: begin  // I-type
                 imm = {{20{sign_bit}}, instr[31:20]};
             end
             OP_SB, OP_SW, OP_SH: begin // S-type
@@ -438,6 +439,16 @@ module ID(
                 rf_wen = 1;
                 wb_if_mem = 0;
             end
+            OP_SLTI: begin
+                alu_op = `ALU_SLT;
+                alu_mux_a = `ALU_MUX_DATA;
+                alu_mux_b = `ALU_MUX_IMM_B;
+                mem_en = 0;
+                we = 0;
+                sel = 4'b0000;
+                rf_wen = 1;
+                wb_if_mem = 0;
+            end 
             OP_ANDI: begin
                 alu_op = `ALU_AND;
                 alu_mux_a = `ALU_MUX_DATA;

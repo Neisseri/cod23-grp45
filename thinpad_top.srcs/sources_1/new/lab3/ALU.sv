@@ -1,4 +1,5 @@
 `timescale 1ns / 1ps
+`include "../header/opcode.sv"
 //////////////////////////////////////////////////////////////////////////////////
 // Company: 
 // Engineer: 
@@ -39,27 +40,27 @@ module ALU #(
     end
 
     always_comb begin
-        if(alu_op == 1)begin
+        if (alu_op == `ALU_ADD) begin
             alu_y = alu_a + alu_b;
-        end else if(alu_op == 2)begin
+        end else if (alu_op == ALU_SUB) begin
             alu_y = alu_a - alu_b;
-        end else if(alu_op == 3)begin
+        end else if (alu_op == ALU_AND) begin
             alu_y = alu_a & alu_b;
-        end else if(alu_op == 4)begin
+        end else if (alu_op == ALU_OR) begin
             alu_y = alu_a | alu_b;
-        end else if(alu_op == 5)begin
+        end else if (alu_op == ALU_XOR) begin
             alu_y = alu_a ^ alu_b;
-        end else if(alu_op == 6)begin
+        end else if (alu_op == ALU_NOT) begin
             alu_y = ~alu_a;
-        end else if(alu_op == 7)begin
+        end else if (alu_op == ALU_LOGIC_LEFT) begin
             alu_y = alu_a << (alu_b & (DATA_WIDTH-1));
-        end else if(alu_op == 8)begin
+        end else if (alu_op == ALU_LOGIC_RIGHT) begin
             alu_y = alu_a >> (alu_b & (DATA_WIDTH-1));
-        end else if(alu_op == 9)begin
+        end else if (alu_op == ALU_ALG_RIGH) begin
             alu_y = $signed(alu_a) >>> (alu_b & (DATA_WIDTH-1));
-        end else if(alu_op == 10)begin
+        end else if (alu_op == ALU_CIRCLE_LEFT) begin
             alu_y = {DATA_WIDTH{1'b1}} & (alu_a << (alu_b & (DATA_WIDTH-1))) | (alu_a >> (DATA_WIDTH - (alu_b & (DATA_WIDTH-1))));
-        end else if(alu_op == 11)begin
+        end else if (alu_op == ALU_CTZ) begin
             casez (alu_a)
                 32'b???????????????????????????????1: alu_y = 32'h0;
                 32'b??????????????????????????????10: alu_y = 32'h1;
@@ -96,20 +97,29 @@ module ALU #(
                 32'b00000000000000000000000000000000: alu_y = 32'h20;
                 default: alu_y = 32'h20;
             endcase
-        end else if(alu_op == 12)begin
+        end else if (alu_op == ALU_ANDN) begin
             alu_y = alu_a & (~alu_b);
-        end else if(alu_op == 13)begin
-            if(alu_a < alu_b)begin
+        end else if (alu_op == ALU_MINU) begin
+            if (alu_a < alu_b) begin
                 alu_y = alu_a;
             end else begin
                 alu_y = alu_b;
             end
-        end else if(alu_op == 14)begin
-            if(alu_a < alu_b)begin
+        end else if (alu_op == ALU_SLTU) begin
+            if (alu_a < alu_b) begin
                 alu_y = 1;
             end else begin
                 alu_y = 0;
             end
+        end else if (alu_op == ALU_SLT) begin
+            if ($signed(alu_a) < $signed(alu_b)) begin
+                alu_y = 1;
+            end else begin
+                alu_y = 0;
+            end
+        end else begin
+            alu_y = 0;
+        end
         end else begin
             alu_y = 0;
         end
