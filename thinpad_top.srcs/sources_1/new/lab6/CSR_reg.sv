@@ -15,6 +15,8 @@ module CSR_reg #(
 
     input wire [DATA_WIDTH-1:0] csr_sepc_i,
     input wire csr_sepc_we_i,
+    input wire [DATA_WIDTH-1:0] csr_scause_i,
+    input wire csr_scause_we_i,
     input wire [DATA_WIDTH-1:0] csr_mstatus_i,
     input wire csr_mstatus_we_i,
     input wire [DATA_WIDTH-1:0] csr_mtvec_i,
@@ -29,6 +31,7 @@ module CSR_reg #(
     input wire csr_mie_we_i,
 
     output reg [DATA_WIDTH-1:0] csr_satp_o,
+    output reg [DATA_WIDTH-1:0] csr_stvec_o,
     output reg [DATA_WIDTH-1:0] csr_sepc_o,
     output reg [DATA_WIDTH-1:0] csr_mstatus_o,
     output reg [DATA_WIDTH-1:0] csr_mtvec_o,
@@ -36,6 +39,8 @@ module CSR_reg #(
     output reg [DATA_WIDTH-1:0] csr_mcause_o,
     output reg [DATA_WIDTH-1:0] csr_mip_o,
     output reg [DATA_WIDTH-1:0] csr_mie_o,
+    output reg [DATA_WIDTH-1:0] csr_medeleg_o,
+    output reg [DATA_WIDTH-1:0] csr_mideleg_o,
 
     input wire [DATA_WIDTH-1:0] mtime_h_i,
     input wire [DATA_WIDTH-1:0] mtime_l_i,
@@ -100,6 +105,7 @@ module CSR_reg #(
         endcase
 
         csr_satp_o = satp;
+        csr_stvec_o = stvec;
         csr_sepc_o = sepc;
         csr_mstatus_o = mstatus;
         csr_mtvec_o = mtvec;
@@ -107,6 +113,9 @@ module CSR_reg #(
         csr_mcause_o = mcause;
         csr_mip_o = mip;
         csr_mie_o = mie;
+        csr_medeleg_o = medeleg;
+        csr_mideleg_o = mideleg;
+
         priv_level_o = priv_level;
     end
 
@@ -163,6 +172,9 @@ module CSR_reg #(
             end else begin
                 if (csr_sepc_we_i) begin
                     sepc <= csr_sepc_i;
+                end
+                if (csr_scause_we_i) begin
+                    scause <= csr_scause_i;
                 end
                 if (csr_mstatus_we_i) begin
                     mstatus <= csr_mstatus_i;

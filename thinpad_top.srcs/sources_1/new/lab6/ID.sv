@@ -114,8 +114,8 @@ module ID(
         OP_CSRRCI,
 
         //Zicntr instructions
-        OP_RDTIME, // TODO
-        OP_RDTIMEH, // TODO
+        OP_RDTIME,
+        OP_RDTIMEH,
 
         // priv instructions
         OP_MRET,

@@ -722,6 +722,8 @@ module thinpad_top #(
 
   logic [DATA_WIDTH-1:0] csr_sepc_wdat;
   logic csr_sepc_we;
+  logic [DATA_WIDTH-1:0] csr_scause_wdat;
+  logic csr_scause_we;
   logic [DATA_WIDTH-1:0] csr_mstatus_wdat;
   logic csr_mstatus_we;
   logic [DATA_WIDTH-1:0] csr_mtvec_wdat;
@@ -736,12 +738,15 @@ module thinpad_top #(
   logic csr_mie_we;
 
   logic [DATA_WIDTH-1:0] csr_sepc_rdat;
+  logic [DATA_WIDTH-1:0] csr_stvec_rdat;
   logic [DATA_WIDTH-1:0] csr_mstatus_rdat;
   logic [DATA_WIDTH-1:0] csr_mtvec_rdat;
   logic [DATA_WIDTH-1:0] csr_mepc_rdat;
   logic [DATA_WIDTH-1:0] csr_mcause_rdat;
   logic [DATA_WIDTH-1:0] csr_mip_rdat;
   logic [DATA_WIDTH-1:0] csr_mie_rdat;
+  logic [DATA_WIDTH-1:0] csr_medeleg_rdat;
+  logic [DATA_WIDTH-1:0] csr_mideleg_rdat;
 
   logic [1:0] priv_level_wdat;
   logic priv_level_we;
@@ -766,15 +771,20 @@ module thinpad_top #(
     .csr_we_o(csr_we),
 
     .csr_sepc_i(csr_sepc_rdat),
+    .csr_stvec_i(csr_stvec_rdat),
     .csr_mstatus_i(csr_mstatus_rdat),
     .csr_mtvec_i(csr_mtvec_rdat),
     .csr_mepc_i(csr_mepc_rdat),
     .csr_mcause_i(csr_mcause_rdat),
     .csr_mip_i(csr_mip_rdat),
     .csr_mie_i(csr_mie_rdat),
+    .csr_medeleg_i(csr_medeleg_rdat),
+    .csr_mideleg_i(csr_mideleg_rdat),
 
     .csr_sepc_o(csr_sepc_wdat),
     .csr_sepc_we_o(csr_sepc_we),
+    .csr_scause_o(csr_scause_wdat),
+    .csr_scause_we_o(csr_scause_we),
     .csr_mstatus_o(csr_mstatus_wdat),
     .csr_mstatus_we_o(csr_mstatus_we),
     .csr_mtvec_o(csr_mtvec_wdat),
@@ -816,6 +826,8 @@ module thinpad_top #(
 
     .csr_sepc_i(csr_sepc_wdat),
     .csr_sepc_we_i(csr_sepc_we),
+    .csr_scause_i(csr_scause_wdat),
+    .csr_scause_we_i(csr_scause_we),
     .csr_mstatus_i(csr_mstatus_wdat),
     .csr_mstatus_we_i(csr_mstatus_we),
     .csr_mtvec_i(csr_mtvec_wdat),
@@ -830,12 +842,15 @@ module thinpad_top #(
     .csr_mie_we_i(csr_mie_we),
 
     .csr_sepc_o(csr_sepc_rdat),
+    .csr_stvec_o(csr_stvec_rdat),
     .csr_mstatus_o(csr_mstatus_rdat),
     .csr_mtvec_o(csr_mtvec_rdat),
     .csr_mepc_o(csr_mepc_rdat),
     .csr_mcause_o(csr_mcause_rdat),
     .csr_mip_o(csr_mip_rdat),
     .csr_mie_o(csr_mie_rdat),
+    .csr_medeleg_o(csr_medeleg_rdat),
+    .csr_mideleg_o(csr_mideleg_rdat),
 
     .mtime_h_i(mtime_h_rdat),
     .mtime_l_i(mtime_l_rdat),

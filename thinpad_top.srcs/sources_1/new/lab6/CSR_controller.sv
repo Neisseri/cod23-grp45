@@ -25,15 +25,20 @@ module CSR_controller #(
     output reg csr_we_o,
 
     input wire [DATA_WIDTH-1:0] csr_sepc_i,
+    input wire [DATA_WIDTH-1:0] csr_stvec_i,
     input wire [DATA_WIDTH-1:0] csr_mstatus_i,
     input wire [DATA_WIDTH-1:0] csr_mtvec_i,
     input wire [DATA_WIDTH-1:0] csr_mepc_i,
     input wire [DATA_WIDTH-1:0] csr_mcause_i,
     input wire [DATA_WIDTH-1:0] csr_mip_i,
     input wire [DATA_WIDTH-1:0] csr_mie_i,
+    input wire [DATA_WIDTH-1:0] csr_medeleg_i,
+    input wire [DATA_WIDTH-1:0] csr_mideleg_i,
 
     output reg [DATA_WIDTH-1:0] csr_sepc_o,
     output reg csr_sepc_we_o,
+    output reg [DATA_WIDTH-1:0] csr_scause_o,
+    output reg csr_scause_we_o,
     output reg [DATA_WIDTH-1:0] csr_mstatus_o,
     output reg csr_mstatus_we_o,
     output reg [DATA_WIDTH-1:0] csr_mtvec_o,
@@ -147,34 +152,58 @@ module CSR_controller #(
                 end else begin
                     csr_mtvec_we_o <= 0;
                     csr_mie_we_o <= 0;
-                    if (exception_occured_i) begin
-                        csr_mcause_o <= exception_cause_i;
-                        csr_mcause_we_o <= 1;
-                        csr_mepc_o <= exception_pc_i;
-                        csr_mepc_we_o <= 1;
-                        csr_mstatus_o <= {
-                            csr_mstatus_i[31:13],
-                            `PRIV_U_LEVEL,
-                            csr_mstatus_i[10:8],
-                            csr_mstatus_i[3], // mpie <= mie
-                            csr_mstatus_i[6:4],
-                            1'b0, // mie <= 0
-                            csr_mstatus_i[2:0]
-                        };
-                        csr_mstatus_we_o <= 1;
-                        pc_next_exception_o <= csr_mtvec_i;
-                        mem_exception_o <= 1;
-                        exception_idle <= 1;
-                        priv_level_o <= `PRIV_M_LEVEL;
-                        priv_level_we_o <= 1;
-                    end else if (csr_mip_i[7] && csr_mie_i[7] && (priv_level_i == `PRIV_U_LEVEL || (priv_level_i == `PRIV_M_LEVEL && csr_mstatus_i[3]))) begin // time_interrupt
-                        csr_mcause_o <= {1'b1, `USER_TIMER_INTERRUPT};
+                    if (exception_occured_i) begin // exception
+                        logic [DATA_WIDTH-2:0] exc_cause;
+                        exc_cause = exception_cause_i[DATA_WIDTH-2:0];
+                        if ((priv_level_i == `PRIV_U_LEVEL || priv_level_i == `PRIV_S_LEVEL) && csr_medeleg_i[exc_cause]) begin // to S-level
+                            csr_scause_o <= exception_cause_i;
+                            csr_scause_we_o <= 1;
+                            csr_sepc_o <= exception_pc_i;
+                            csr_sepc_we_o <= 1;
+                            csr_mstatus_o <= {
+                                csr_mstatus_i[31:9],
+                                priv_level_i[0], // spp <= priv_level
+                                csr_mstatus_i[7:6],
+                                csr_mstatus_i[1], // spie <= sie
+                                csr_mstatus_i[4:2],
+                                1'b0, // sie <= 0
+                                csr_mstatus_i[0]
+                            };
+                            csr_mstatus_we_o <= 1;
+                            pc_next_exception_o <= csr_stvec_i;
+                            mem_exception_o <= 1;
+                            exception_idle <= 1;
+                            priv_level_o <= `PRIV_S_LEVEL;
+                            priv_level_we_o <= 1;
+                        end else begin // to M-level
+                            csr_mcause_o <= exception_cause_i;
+                            csr_mcause_we_o <= 1;
+                            csr_mepc_o <= exception_pc_i;
+                            csr_mepc_we_o <= 1;
+                            csr_mstatus_o <= {
+                                csr_mstatus_i[31:13],
+                                priv_level_i, // mpp <= priv_level
+                                csr_mstatus_i[10:8],
+                                csr_mstatus_i[3], // mpie <= mie
+                                csr_mstatus_i[6:4],
+                                1'b0, // mie <= 0
+                                csr_mstatus_i[2:0]
+                            };
+                            csr_mstatus_we_o <= 1;
+                            pc_next_exception_o <= csr_mtvec_i;
+                            mem_exception_o <= 1;
+                            exception_idle <= 1;
+                            priv_level_o <= `PRIV_M_LEVEL;
+                            priv_level_we_o <= 1;
+                        end
+                    end else if (csr_mip_i[7] && csr_mie_i[7] && (priv_level_i == `PRIV_U_LEVEL || priv_level_i == `PRIV_S_LEVEL || (priv_level_i == `PRIV_M_LEVEL && csr_mstatus_i[3]))) begin // time_interrupt
+                        csr_mcause_o <= {1'b1, `MACHINE_TIMER_INTERRUPT};
                         csr_mcause_we_o <= 1;
                         csr_mepc_o <= mem_pc_i;
                         csr_mepc_we_o <= 1;
                         csr_mstatus_o <= {
                             csr_mstatus_i[31:13],
-                            `PRIV_U_LEVEL,
+                            priv_level_i, // mpp <= priv_level
                             csr_mstatus_i[10:8],
                             csr_mstatus_i[3], // mpie <= mie
                             csr_mstatus_i[6:4],
@@ -207,46 +236,98 @@ module CSR_controller #(
                                 priv_level_we_o <= 1;
                             end
                             `ENV_ECALL: begin
-                                csr_mcause_o <= {1'b0, `ENVIRONMENT_CALL_FROM_U};
-                                csr_mcause_we_o <= 1;
-                                csr_mepc_o <= mem_pc_i;
-                                csr_mepc_we_o <= 1;
-                                csr_mstatus_o <= {
-                                    csr_mstatus_i[31:13],
-                                    priv_level_i, // mpp <= priv_level
-                                    csr_mstatus_i[10:8],
-                                    csr_mstatus_i[3], // mpie <= mie
-                                    csr_mstatus_i[6:4],
-                                    1'b0, // mie <= 0
-                                    csr_mstatus_i[2:0]
-                                };
-                                csr_mstatus_we_o <= 1;
-                                pc_next_exception_o <= csr_mtvec_i;
-                                mem_exception_o <= 1;
-                                exception_idle <= 1;
-                                priv_level_o <= `PRIV_M_LEVEL;
-                                priv_level_we_o <= 1;
+                                logic [DATA_WIDTH-2:0] ecall_cause;
+                                if (priv_level_i == `PRIV_U_LEVEL)begin
+                                    ecall_cause = `ENVIRONMENT_CALL_FROM_U;
+                                end else if (priv_level_i == `PRIV_S_LEVEL) begin
+                                    ecall_cause = `ENVIRONMENT_CALL_FROM_S;
+                                end else begin
+                                    ecall_cause = `ENVIRONMENT_CALL_FROM_M;
+                                end
+                                if ((priv_level_i == `PRIV_U_LEVEL || priv_level_i == `PRIV_S_LEVEL) && csr_medeleg_i[ecall_cause]) begin // to S-level
+                                    csr_scause_o <= {1'b0, ecall_cause};
+                                    csr_scause_we_o <= 1;
+                                    csr_sepc_o <= mem_pc_i;
+                                    csr_sepc_we_o <= 1;
+                                    csr_mstatus_o <= {
+                                        csr_mstatus_i[31:9],
+                                        priv_level_i[0], // spp <= priv_level
+                                        csr_mstatus_i[7:6],
+                                        csr_mstatus_i[1], // spie <= sie
+                                        csr_mstatus_i[4:2],
+                                        1'b0, // sie <= 0
+                                        csr_mstatus_i[0]
+                                    };
+                                    csr_mstatus_we_o <= 1;
+                                    pc_next_exception_o <= csr_stvec_i;
+                                    mem_exception_o <= 1;
+                                    exception_idle <= 1;
+                                    priv_level_o <= `PRIV_S_LEVEL;
+                                    priv_level_we_o <= 1;
+                                end else begin // to M-level
+                                    csr_mcause_o <= {1'b0, ecall_cause};
+                                    csr_mcause_we_o <= 1;
+                                    csr_mepc_o <= mem_pc_i;
+                                    csr_mepc_we_o <= 1;
+                                    csr_mstatus_o <= {
+                                        csr_mstatus_i[31:13],
+                                        priv_level_i, // mpp <= priv_level
+                                        csr_mstatus_i[10:8],
+                                        csr_mstatus_i[3], // mpie <= mie
+                                        csr_mstatus_i[6:4],
+                                        1'b0, // mie <= 0
+                                        csr_mstatus_i[2:0]
+                                    };
+                                    csr_mstatus_we_o <= 1;
+                                    pc_next_exception_o <= csr_mtvec_i;
+                                    mem_exception_o <= 1;
+                                    exception_idle <= 1;
+                                    priv_level_o <= `PRIV_M_LEVEL;
+                                    priv_level_we_o <= 1;
+                                end
                             end
-                            `ENV_EBREAK: begin 
-                                csr_mcause_o <= {1'b0, `BREAKPOINT_EXCEPTION};
-                                csr_mcause_we_o <= 1;
-                                csr_mepc_o <= mem_pc_i;
-                                csr_mepc_we_o <= 1;
-                                csr_mstatus_o <= {
-                                    csr_mstatus_i[31:13],
-                                    priv_level_i,
-                                    csr_mstatus_i[10:8],
-                                    csr_mstatus_i[3], // mpie <= mie
-                                    csr_mstatus_i[6:4],
-                                    1'b0, // mie <= 0
-                                    csr_mstatus_i[2:0]
-                                };
-                                csr_mstatus_we_o <= 1;
-                                pc_next_exception_o <= csr_mtvec_i;
-                                mem_exception_o <= 1;
-                                exception_idle <= 1;
-                                priv_level_o <= `PRIV_M_LEVEL;
-                                priv_level_we_o <= 1;
+                            `ENV_EBREAK: begin
+                                if ((priv_level_i == `PRIV_U_LEVEL || priv_level_i == `PRIV_S_LEVEL) && csr_medeleg_i[`BREAKPOINT_EXCEPTION]) begin // to S-level
+                                    csr_scause_o <= {1'b0, `BREAKPOINT_EXCEPTION};
+                                    csr_scause_we_o <= 1;
+                                    csr_sepc_o <= mem_pc_i;
+                                    csr_sepc_we_o <= 1;
+                                    csr_mstatus_o <= {
+                                        csr_mstatus_i[31:9],
+                                        priv_level_i[0], // spp <= priv_level
+                                        csr_mstatus_i[7:6],
+                                        csr_mstatus_i[1], // spie <= sie
+                                        csr_mstatus_i[4:2],
+                                        1'b0, // sie <= 0
+                                        csr_mstatus_i[0]
+                                    };
+                                    csr_mstatus_we_o <= 1;
+                                    pc_next_exception_o <= csr_stvec_i;
+                                    mem_exception_o <= 1;
+                                    exception_idle <= 1;
+                                    priv_level_o <= `PRIV_S_LEVEL;
+                                    priv_level_we_o <= 1;
+                                end else begin // to M-level
+                                    csr_mcause_o <= {1'b0, `BREAKPOINT_EXCEPTION};
+                                    csr_mcause_we_o <= 1;
+                                    csr_mepc_o <= mem_pc_i;
+                                    csr_mepc_we_o <= 1;
+                                    csr_mstatus_o <= {
+                                        csr_mstatus_i[31:13],
+                                        priv_level_i, // mpp <= priv_level
+                                        csr_mstatus_i[10:8],
+                                        csr_mstatus_i[3], // mpie <= mie
+                                        csr_mstatus_i[6:4],
+                                        1'b0, // mie <= 0
+                                        csr_mstatus_i[2:0]
+                                    };
+                                    csr_mstatus_we_o <= 1;
+                                    pc_next_exception_o <= csr_mtvec_i;
+                                    mem_exception_o <= 1;
+                                    exception_idle <= 1;
+                                    priv_level_o <= `PRIV_M_LEVEL;
+                                    priv_level_we_o <= 1;
+                                end
                             end
                             `ENV_SRET: begin
                                 csr_mstatus_o <= {
