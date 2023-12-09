@@ -81,7 +81,7 @@ module ID(
         OP_LBU, // TODO: test
         OP_LHU, // TODO: test
         OP_SB,
-        OP_SH, // TODO
+        OP_SH, // TODO: test
         OP_SW,
         OP_ADDI,
         OP_SLTI, // TODO
@@ -207,6 +207,7 @@ module ID(
                 case (funct3)
                     3'b000: op_type = OP_SB;
                     3'b010: op_type = OP_SW;
+                    3'b001: op_type = OP_SH;
                     default: op_type = OP_UNKNOWN;
                 endcase
                 rd = 0;
@@ -301,7 +302,7 @@ module ID(
             OP_LB, OP_ADDI, OP_ANDI, OP_JALR, OP_LW, OP_ORI, OP_SLLI, OP_SRLI, OP_LH, OP_LBU, OP_LHU: begin  // I-type
                 imm = {{20{sign_bit}}, instr[31:20]};
             end
-            OP_SB, OP_SW: begin // S-type
+            OP_SB, OP_SW, OP_SH: begin // S-type
                 imm = {{20{sign_bit}}, instr[31:25], instr[11:7]};
             end
             OP_JAL: begin // J-type
@@ -404,6 +405,16 @@ module ID(
                 mem_en = 1;
                 we = 1;
                 sel = 4'b0001;
+                rf_wen = 0;
+                wb_if_mem = 0;
+            end
+            OP_SH: begin
+                alu_op = `ALU_ADD;
+                alu_mux_a = `ALU_MUX_DATA;
+                alu_mux_b = `ALU_MUX_IMM_B;
+                mem_en = 1;
+                we = 1;
+                sel = 4'b0011;
                 rf_wen = 0;
                 wb_if_mem = 0;
             end
