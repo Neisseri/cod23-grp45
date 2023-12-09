@@ -36,7 +36,7 @@ module ID(
         output logic mem_en,
         output logic we,
         output logic [3:0] sel,
-        output logic signed_ext, // load instr: if signed extention
+        output logic signed_ext, // load instr: if signed extension
 
         output logic rf_wen,
         output logic [3:0] wb_if_mem,
@@ -76,10 +76,10 @@ module ID(
         OP_BLTU, // TODO: test
         OP_BGEU, // TODO: test
         OP_LB,
-        OP_LH, // TODO
+        OP_LH, // TODO: test
         OP_LW,
-        OP_LBU, // TODO
-        OP_LHU, // TODO
+        OP_LBU, // TODO: test
+        OP_LHU, // TODO: test
         OP_SB,
         OP_SH, // TODO
         OP_SW,
@@ -320,6 +320,7 @@ module ID(
         id_exception_o = 0;
         exception_occured_o = 0;
         exception_cause_o = 0;
+        signed_ext = 0;
         case (op_type)
             OP_LUI: begin
                 alu_op = `ALU_ADD;
@@ -348,6 +349,7 @@ module ID(
                 mem_en = 1;
                 we = 0;
                 sel = 4'b0001;
+                signed_ext = 1;
                 rf_wen = 1;
                 wb_if_mem = 1;
             end
@@ -358,6 +360,7 @@ module ID(
                 mem_en = 1;
                 we = 0;
                 sel = 4'b1111;
+                signed_ext = 1;
                 rf_wen = 1;
                 wb_if_mem = 1;
             end
@@ -368,6 +371,7 @@ module ID(
                 mem_en = 1;
                 we = 0;
                 sel = 4'b0011;
+                signed_ext = 1;
                 rf_wen = 1;
                 wb_if_mem = 1;
             end
@@ -378,6 +382,7 @@ module ID(
                 mem_en = 1;
                 we = 0;
                 sel = 4'b0001;
+                signed_ext = 0;
                 rf_wen = 1;
                 wb_if_mem = 1;
             end
@@ -388,6 +393,7 @@ module ID(
                 mem_en = 1;
                 we = 0;
                 sel = 4'b0011;
+                signed_ext = 0;
                 rf_wen = 1;
                 wb_if_mem = 1;
             end
