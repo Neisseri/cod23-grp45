@@ -93,7 +93,7 @@ module ID(
         OP_SRLI,
         OP_SRAI, // TODO: test
         OP_ADD,
-        OP_SUB, // TODO
+        OP_SUB, // TODO: test
         OP_SLL, // TODO
         OP_SLT, // TODO
         OP_SLTU,
@@ -144,6 +144,7 @@ module ID(
             7'b0110011: begin // R-type
                 case (funct)
                     10'b0000000_000: op_type = OP_ADD;
+                    10'b0100000_000: op_type = OP_SUB;
                     10'b0000000_111: op_type = OP_AND;
                     10'b0000000_110: op_type = OP_OR;
                     10'b0000000_100: op_type = OP_XOR;
@@ -491,6 +492,16 @@ module ID(
                 alu_op = `ALU_ADD;
                 alu_mux_a = `ALU_MUX_DATA;
                 alu_mux_b = `ALU_MUX_DATA;
+                mem_en = 0;
+                we = 0;
+                sel = 4'b0000;
+                rf_wen = 1;
+                wb_if_mem = 0;
+            end
+            OP_SUB: begin
+                alu_op = `ALU_SUB;
+                alu_mux_a = `ALU_MUX_DATA;
+                alu_mux_b = `ALU_MUX_DATA; 
                 mem_en = 0;
                 we = 0;
                 sel = 4'b0000;
