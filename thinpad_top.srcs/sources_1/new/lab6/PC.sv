@@ -32,7 +32,7 @@ module PC#(
 
     always_ff @(posedge  clk) begin
         if(rst)begin
-            addr <= 32'h7fff_fffc;
+            addr <= 32'h8000_0000;
         end else begin
             if(!stall)begin
                 addr <= next_pc;

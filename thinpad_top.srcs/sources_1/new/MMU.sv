@@ -238,6 +238,25 @@ module IF_MMU #(
         .data_out(s_cache_dat_out)
     );
 
+    // always_ff @(posedge clk) begin
+    //     if(rst)begin
+    //         mmu_own_work <= 0;
+    //     end else begin
+    //         if(wishbone_owner == `MMU_OWN)begin
+    //             if(master_ready_o)begin
+    //                 mmu_own_work <= 0;
+    //             end else begin
+    //                 mmu_own_work <= 1;
+    //             end
+    //         end else begin
+    //             mmu_own_work <= 0;
+    //         end
+    //     end
+    // end
+
+    logic mmu_own_work;
+    assign mmu_own_work = (wishbone_owner == `MMU_OWN) && !master_ready_o;
+
     // arbeiter
     always_comb begin
         case (wishbone_owner)
@@ -313,7 +332,7 @@ module IF_MMU #(
                 mmu_ready_o = s_cache_ready;
                 mmu_data_out = s_cache_dat_out;
             end else begin
-                mmu_ready_o = master_ready_o;
+                mmu_ready_o = !mem_en || master_ready_o;
                 mmu_data_out = data_out;
             end
         end
@@ -499,8 +518,8 @@ module MEM_MMU #(
     logic cache_ack;
     logic [DATA_WIDTH-1:0] cache_dat_i;
     always_comb begin
-        cache_cyc = cache_mem_en;
-        cache_stb = cache_mem_en;
+        cache_cyc = cache_mem_en && !cache_ack;
+        cache_stb = cache_mem_en && !cache_ack;
         cache_adr = phy_addr;
         cache_sel = cache_mem_sel_o;
         cache_we = cache_write_en;
@@ -509,11 +528,29 @@ module MEM_MMU #(
         cache_result = cache_dat_i;
     end
 
+    reg mmu_own_work;
+    // assign mmu_own_work = (wishbone_owner == `MMU_OWN) && !master_ready_o;
+    always_ff @(posedge clk) begin
+        if(rst)begin
+            mmu_own_work <= 0;
+        end else begin
+            if(wishbone_owner == `MMU_OWN && mmu_mem_en)begin
+                if(master_ready_o)begin
+                    mmu_own_work <= 0;
+                end else begin
+                    mmu_own_work <= 1;
+                end
+            end else begin
+                mmu_own_work <= 0;
+            end
+        end
+    end
+
     // arbeiter
     always_comb begin
         case (wishbone_owner)
             `MMU_OWN: begin
-                mem_en = mmu_mem_en;
+                mem_en = mmu_own_work;
                 write_en = mmu_write_en;
                 addr = mmu_addr;
                 data_in = mmu_data_in;
@@ -580,7 +617,7 @@ module MEM_MMU #(
             mmu_ready_o = tlb_ready;
             mmu_data_out = query_data_o;
         end else begin
-            mmu_ready_o = master_ready_o;
+            mmu_ready_o = !mem_en || master_ready_o;
             mmu_data_out = data_out;
         end
     end

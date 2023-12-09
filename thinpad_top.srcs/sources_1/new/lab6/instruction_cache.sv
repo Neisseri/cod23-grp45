@@ -43,10 +43,13 @@ module instruction_cache #(
     
     typedef enum logic [3:0] {
         STATE_READ_SRAM_ACTION,
-        STATE_DONE
+        STATE_DONE_HIT,
+        STATE_DONE_NO_HIT
     } state_t;
 
     state_t state;
+    
+    reg cache_hit;
     
     assign wb_adr_o = addr;
     assign wb_sel_o = sel;
@@ -55,7 +58,6 @@ module instruction_cache #(
     assign wb_we_o = 1'b0;
 
     // cache hit sign
-    reg cache_hit;
     reg [$clog2(CACHE_ASSOCIATIVITY)-1:0] selected_way; // which way is selected 
 
     always_comb begin
@@ -91,7 +93,7 @@ module instruction_cache #(
                 end
             end
             data_out <= `NOP_INSTR;
-            state <= STATE_DONE;
+            state <= STATE_DONE_NO_HIT;
             master_ready_o <= 1'b0;
         end else begin
             if (mem_en) begin
@@ -102,26 +104,31 @@ module instruction_cache #(
                             // cache miss
                             if (wb_ack_i) begin
                                 // update cache
-                                cache_group_num[group_index] <= cache_group_num[group_index] + 1;
-                                if (cache_group_num[group_index] == CACHE_ASSOCIATIVITY + 1) begin
-                                    cache_group_num[group_index] <= 1;
-                                end
-                                cache[group_index][cache_group_num[group_index] - 1] <= wb_dat_i;
-                                cache_tag[group_index][cache_group_num[group_index] - 1] <= addr;
+                                cache[group_index][cache_group_num[group_index]] <= wb_dat_i;
+                                cache_tag[group_index][cache_group_num[group_index]] <= addr;
                                 // pass data
                                 data_out <= wb_dat_i;
                                 master_ready_o <= 1'b1;
-                                state <= STATE_DONE;
+                                state <= STATE_DONE_HIT;
                             end
                         end else begin
                             // cache hit
                             data_out <= cache[group_index][selected_way];
                             master_ready_o <= 1'b1;
-                            state <= STATE_DONE;
+                            state <= STATE_DONE_NO_HIT;
                         end
                     end
 
-                    STATE_DONE: begin
+                    STATE_DONE_HIT: begin
+                        cache_group_num[group_index] <= cache_group_num[group_index] + 1;
+                        if (cache_group_num[group_index] == CACHE_ASSOCIATIVITY) begin
+                            cache_group_num[group_index] <= 0;
+                        end
+                        master_ready_o <= 1'b0;
+                        state <= STATE_READ_SRAM_ACTION;
+                    end
+
+                    STATE_DONE_NO_HIT: begin
                         master_ready_o <= 1'b0;
                         state <= STATE_READ_SRAM_ACTION;
                     end
