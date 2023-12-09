@@ -72,7 +72,7 @@ module ID(
         OP_BEQ,
         OP_BNE,
         OP_BLT, // branch less than
-        OP_BGE, // TODO: test
+        OP_BGE, // branch greater equal
         OP_BLTU, // TODO: test
         OP_BGEU, // TODO: test
         OP_LB,
