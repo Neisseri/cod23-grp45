@@ -278,11 +278,11 @@ module IF_MMU #(
                 cache_dat_i = data_out;
             end
             `TLB_OWN: begin // TLB doesn't send direct message to wishbone
-                mem_en = 0;
-                write_en = 0;
-                addr = 0;
+                mem_en = cache_stb;
+                write_en = 0; // read only
+                addr = cache_adr;
                 data_in = 0;
-                sel = 0;
+                sel = cache_sel;
 
                 trans_ack = 0;
                 trans_dat_i = 0;
@@ -549,11 +549,11 @@ module MEM_MMU #(
                 cache_dat_i = data_out;
             end
             `TLB_OWN: begin // TLB doesn't send direct message to wishbone
-                mem_en = 0;
-                write_en = 0;
-                addr = 0;
-                data_in = 0;
-                sel = 0;
+                mem_en = cache_stb;
+                write_en = cache_we;
+                addr = cache_adr;
+                data_in = cache_dat_o;
+                sel = cache_sel;
 
                 trans_ack = 0;
                 trans_dat_i = 0;

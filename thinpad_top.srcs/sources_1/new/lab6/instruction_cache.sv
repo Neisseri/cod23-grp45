@@ -50,8 +50,8 @@ module instruction_cache #(
     
     assign wb_adr_o = addr;
     assign wb_sel_o = sel;
-    assign wb_cyc_o = (state == STATE_READ_SRAM_ACTION);
-    assign wb_stb_o = (state == STATE_READ_SRAM_ACTION);
+    assign wb_cyc_o = (state == STATE_READ_SRAM_ACTION) && !cache_hit && mem_en;
+    assign wb_stb_o = (state == STATE_READ_SRAM_ACTION) && !cache_hit && mem_en;
     assign wb_we_o = 1'b0;
 
     // cache hit sign
