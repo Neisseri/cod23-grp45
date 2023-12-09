@@ -71,7 +71,7 @@ module ID(
         OP_JALR,
         OP_BEQ,
         OP_BNE,
-        OP_BLT, // TODO: test
+        OP_BLT, // branch less than
         OP_BGE, // TODO: test
         OP_BLTU, // TODO: test
         OP_BGEU, // TODO: test
