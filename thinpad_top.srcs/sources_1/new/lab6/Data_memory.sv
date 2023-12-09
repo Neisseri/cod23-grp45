@@ -44,6 +44,7 @@ module Data_memory #(
     input wire [ADDR_WIDTH-1:0] addr,
     input wire [DATA_WIDTH-1:0] data_in,
     input wire [DATA_WIDTH/8-1:0] sel,
+    input wire signed_ext_i,
     output logic [DATA_WIDTH-1:0] data_out,
 
     input wire pipeline_stall,
@@ -83,14 +84,30 @@ module Data_memory #(
     reg [DATA_WIDTH-1:0] data_out_raw;
     logic [DATA_WIDTH-1:0] data_out_shift;
 
-    //符号位拓�??
+    //符号位拓展
     logic sign_bit;
     always_comb begin
         case (sel)
+            // TODO: 1000 0100 ... ?
             4'b0001: begin
-                data_out_shift = data_out_raw >> ((addr & 3) * 8);
-                sign_bit = data_out_shift[7];
-                data_out = {{24{sign_bit}}, data_out_shift[7:0]};
+                if (signed_ext_i) begin
+                    data_out_shift = data_out_raw >> ((addr & 3) * 8);
+                    sign_bit = data_out_shift[7];
+                    data_out = {{24{sign_bit}}, data_out_shift[7:0]};
+                end else begin
+                    data_out_shift = data_out_raw >> ((addr & 3) * 8);
+                    data_out = {24'b0, data_out_shift[7:0]};
+                end
+            end
+            4'b0011: begin
+                if (signed_ext_i) begin
+                    data_out_shift = data_out_raw >> ((addr & 3) * 8);
+                    sign_bit = data_out_shift[15];
+                    data_out = {{16{sign_bit}}, data_out_shift[15:0]};
+                end else begin
+                    data_out_shift = data_out_raw >> ((addr & 3) * 8);
+                    data_out = {16'b0, data_out_shift[15:0]};
+                end
             end
             default: begin
                 data_out_shift = data_out_raw;

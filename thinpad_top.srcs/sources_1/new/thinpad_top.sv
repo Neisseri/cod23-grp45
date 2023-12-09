@@ -372,12 +372,13 @@ module thinpad_top #(
   logic [4:0] id_rs2;
   logic [31:0] id_imm;
   logic [7:0] id_op_type_out;
-  logic [3:0] id_alu_op;
+  logic [5:0] id_alu_op;
   logic [2:0] id_alu_mux_a;
   logic [2:0] id_alu_mux_b;
   logic id_mem_en;
   logic id_we;
   logic [3:0] id_sel;
+  logic id_signed_ext;
   logic id_rf_wen;
   logic [3:0] id_wb_if_mem;
   logic id_csr_we;
@@ -399,6 +400,7 @@ module thinpad_top #(
     .mem_en(id_mem_en),
     .we(id_we),
     .sel(id_sel),
+    .signed_ext(id_signed_ext),
     .rf_wen(id_rf_wen),
     .wb_if_mem(id_wb_if_mem),
     .id_exception_o(id_exception),
@@ -465,12 +467,13 @@ module thinpad_top #(
   logic [DATA_WIDTH-1:0] id_exe_rs1_dat;
   logic [DATA_WIDTH-1:0] id_exe_rs2_dat;
   logic [DATA_WIDTH-1:0] id_exe_imm;
-  logic [3:0] id_exe_alu_op;
+  logic [5:0] id_exe_alu_op;
   logic [2:0] id_exe_alu_mux_a;
   logic [2:0] id_exe_alu_mux_b;
   logic id_exe_mem_en;
   logic id_exe_rf_wen;
   logic [3:0] id_exe_sel;
+  logic id_exe_signed_ext;
   logic id_exe_we;
   logic [3:0] id_exe_wb_if_mem;
   logic id_exe_csr_we;
@@ -515,6 +518,7 @@ module thinpad_top #(
     .mem_en_i(id_mem_en),
     .rf_wen_i(id_rf_wen),
     .sel_i(id_sel),
+    .signed_ext_i(id_signed_ext),
     .we_i(id_we),
     .wb_if_mem_i(id_wb_if_mem),
     .csr_we_i(id_csr_we),
@@ -533,6 +537,7 @@ module thinpad_top #(
     .mem_en_o(id_exe_mem_en),
     .rf_wen_o(id_exe_rf_wen),
     .sel_o(id_exe_sel),
+    .signed_ext_o(id_exe_signed_ext),
     .we_o(id_exe_we),
     .wb_if_mem_o(id_exe_wb_if_mem),
     .csr_we_o(id_exe_csr_we),
@@ -592,6 +597,7 @@ module thinpad_top #(
   logic exe_mem_mem_en;
   logic exe_mem_rf_wen;
   logic [3:0] exe_mem_sel;
+  logic exe_mem_signed_ext;
   logic exe_mem_we;
   logic [DATA_WIDTH-1:0] exe_mem_wdata;
   logic [3:0] exe_mem_wb_if_mem;
@@ -637,6 +643,7 @@ module thinpad_top #(
     .mem_en_i(id_exe_mem_en),
     .rf_wen_i(id_exe_rf_wen),
     .sel_i(id_exe_sel),
+    .signed_ext_i(id_exe_signed_ext),
     .we_i(id_exe_we),
     .wb_if_mem_i(id_exe_wb_if_mem),
     .csr_we_i(id_exe_csr_we),
@@ -651,6 +658,7 @@ module thinpad_top #(
     .mem_en_o(exe_mem_mem_en),
     .rf_wen_o(exe_mem_rf_wen),
     .sel_o(exe_mem_sel),
+    .signed_ext_o(exe_mem_signed_ext),
     .we_o(exe_mem_we),
     .wdata_i(alu_y),
     .wdata_o(exe_mem_wdata),
@@ -713,6 +721,7 @@ module thinpad_top #(
     .addr(exe_mem_wdata),
     .data_in(exe_mem_rs2_dat),
     .sel(exe_mem_sel),
+    .signed_ext_i(exe_mem_signed_ext),
     .data_out(dm_data_out),
     .pipeline_stall(pipeline_stall),
     .idle_stall(dm_idle_stall),
