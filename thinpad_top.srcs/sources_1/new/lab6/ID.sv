@@ -73,7 +73,7 @@ module ID(
         OP_BNE,
         OP_BLT, // branch less than
         OP_BGE, // branch greater equal
-        OP_BLTU, // TODO: test
+        OP_BLTU, // branch less than unsigned
         OP_BGEU, // TODO: test
         OP_LB,
         OP_LH, // TODO: test
