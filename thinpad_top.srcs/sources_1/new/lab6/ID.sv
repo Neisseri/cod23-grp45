@@ -91,15 +91,15 @@ module ID(
         OP_ANDI,
         OP_SLLI,
         OP_SRLI,
-        OP_SRAI, // TODO: test
+        OP_SRAI, // shift right arithmetic immediate
         OP_ADD,
-        OP_SUB, // TODO: test
-        OP_SLL, // TODO: test
-        OP_SLT, // TODO: test
+        OP_SUB, // subtract
+        OP_SLL, // shift left logical
+        OP_SLT, // set less than
         OP_SLTU,
         OP_XOR,
-        OP_SRL, // TODO: test
-        OP_SRA, // TODO: test
+        OP_SRL, // shift right logical
+        OP_SRA, // shift right arithmetic
         OP_OR,
         OP_AND,
         // no FENCE
