@@ -91,7 +91,7 @@ module ID(
         OP_ANDI,
         OP_SLLI,
         OP_SRLI,
-        OP_SRAI, // TODO
+        OP_SRAI, // TODO: test
         OP_ADD,
         OP_SUB, // TODO
         OP_SLL, // TODO
@@ -177,7 +177,13 @@ module ID(
                             op_type = OP_SLLI;
                         end
                     end
-                    3'b101: op_type = OP_SRLI;
+                    3'b101: begin
+                        if (funct7 == 7'b0000000) begin
+                            op_type = OP_SRLI;
+                        end else if (funct7 == 7'b0100000) begin
+                            op_type = OP_SRAI;
+                        end
+                    end
                     default: op_type = OP_UNKNOWN;
                 endcase
                 rd = instr[11:7];
@@ -302,7 +308,7 @@ module ID(
             OP_BEQ, OP_BNE, OP_BLT, OP_BGE, OP_BLTU, OP_BGEU: begin // B-type
                 imm = {{19{sign_bit}}, instr[31], instr[7], instr[30:25], instr[11:8], 1'b0};
             end
-            OP_LB, OP_ADDI, OP_ANDI, OP_JALR, OP_LW, OP_ORI, OP_SLLI, OP_SRLI, OP_LH, OP_LBU, OP_LHU, OP_SLTI, OP_SLTIU, OP_XORI: begin  // I-type
+            OP_LB, OP_ADDI, OP_ANDI, OP_JALR, OP_LW, OP_ORI, OP_SLLI, OP_SRLI, OP_SRAI, OP_LH, OP_LBU, OP_LHU, OP_SLTI, OP_SLTIU, OP_XORI: begin  // I-type
                 imm = {{20{sign_bit}}, instr[31:20]};
             end
             OP_SB, OP_SW, OP_SH: begin // S-type
@@ -583,6 +589,16 @@ module ID(
             end
             OP_SRLI: begin
                 alu_op = `ALU_LOGIC_RIGHT;
+                alu_mux_a = `ALU_MUX_DATA;
+                alu_mux_b = `ALU_MUX_IMM_B;
+                mem_en = 0;
+                we = 0;
+                sel = 4'b0000;
+                rf_wen = 1;
+                wb_if_mem = 0;
+            end
+            OP_SRAI: begin
+                alu_op = `ALU_ALG_RIGHT;
                 alu_mux_a = `ALU_MUX_DATA;
                 alu_mux_b = `ALU_MUX_IMM_B;
                 mem_en = 0;
