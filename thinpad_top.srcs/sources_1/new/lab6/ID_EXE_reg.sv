@@ -49,6 +49,7 @@ module ID_EXE_reg #(
     input wire mem_en_i,
     input wire rf_wen_i,
     input wire [3:0] sel_i,
+    input wire signed_ext_i,
     input wire we_i,
     input wire [3:0] wb_if_mem_i,
     input wire csr_we_i,
@@ -67,6 +68,7 @@ module ID_EXE_reg #(
     output reg mem_en_o,
     output reg rf_wen_o,
     output reg [3:0] sel_o,
+    output reg signed_ext_o,
     output reg we_o,
     output reg [3:0] wb_if_mem_o,
     output reg csr_we_o,
@@ -96,6 +98,7 @@ module ID_EXE_reg #(
             mem_en_o <= 0;
             we_o <= 0;
             sel_o <= 4'b0000;
+            signed_ext_o <= 0;
             rf_wen_o <= 0;
             wb_if_mem_o <= 0;
             csr_we_o <= 0;
@@ -120,6 +123,7 @@ module ID_EXE_reg #(
                     mem_en_o <= 0;
                     we_o <= 0;
                     sel_o <= 4'b0000;
+                    signed_ext_o <= 0;
                     rf_wen_o <= 0;
                     wb_if_mem_o <= 0;
                     csr_we_o <= 0;
@@ -142,6 +146,7 @@ module ID_EXE_reg #(
                     mem_en_o <= mem_en_i;
                     we_o <= we_i;
                     sel_o <= sel_i;
+                    signed_ext_o <= signed_ext_i;
                     rf_wen_o <= rf_wen_i;
                     wb_if_mem_o <= wb_if_mem_i;
                     csr_we_o <= csr_we_i;

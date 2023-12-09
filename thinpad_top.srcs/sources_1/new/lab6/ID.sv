@@ -36,6 +36,7 @@ module ID(
         output logic mem_en,
         output logic we,
         output logic [3:0] sel,
+        output logic signed_ext, // load instr: if signed extention
 
         output logic rf_wen,
         output logic [3:0] wb_if_mem,
@@ -184,6 +185,9 @@ module ID(
                 case (funct3)
                     3'b000: op_type = OP_LB; 
                     3'b010: op_type = OP_LW;
+                    3'b001: op_type = OP_LH;
+                    3'b100: op_type = OP_LBU;
+                    3'b101: op_type = OP_LHU;
                     default: op_type = OP_UNKNOWN;
                 endcase
                 rd = instr[11:7];
@@ -294,7 +298,7 @@ module ID(
             OP_BEQ, OP_BNE, OP_BLT, OP_BGE, OP_BLTU, OP_BGEU: begin // B-type
                 imm = {{19{sign_bit}}, instr[31], instr[7], instr[30:25], instr[11:8], 1'b0};
             end
-            OP_LB, OP_ADDI, OP_ANDI, OP_JALR, OP_LW, OP_ORI, OP_SLLI, OP_SRLI: begin  // I-type
+            OP_LB, OP_ADDI, OP_ANDI, OP_JALR, OP_LW, OP_ORI, OP_SLLI, OP_SRLI, OP_LH, OP_LBU, OP_LHU: begin  // I-type
                 imm = {{20{sign_bit}}, instr[31:20]};
             end
             OP_SB, OP_SW: begin // S-type
@@ -344,6 +348,46 @@ module ID(
                 mem_en = 1;
                 we = 0;
                 sel = 4'b0001;
+                rf_wen = 1;
+                wb_if_mem = 1;
+            end
+            OP_LW: begin
+                alu_op = `ALU_ADD;
+                alu_mux_a = `ALU_MUX_DATA;
+                alu_mux_b = `ALU_MUX_IMM_B;
+                mem_en = 1;
+                we = 0;
+                sel = 4'b1111;
+                rf_wen = 1;
+                wb_if_mem = 1;
+            end
+            OP_LH: begin
+                alu_op = `ALU_ADD;
+                alu_mux_a = `ALU_MUX_DATA;
+                alu_mux_b = `ALU_MUX_IMM_B;
+                mem_en = 1;
+                we = 0;
+                sel = 4'b0011;
+                rf_wen = 1;
+                wb_if_mem = 1;
+            end
+            OP_LBU: begin
+                alu_op = `ALU_ADD;
+                alu_mux_a = `ALU_MUX_DATA;
+                alu_mux_b = `ALU_MUX_IMM_B; 
+                mem_en = 1;
+                we = 0;
+                sel = 4'b0001;
+                rf_wen = 1;
+                wb_if_mem = 1;
+            end
+            OP_LHU: begin
+                alu_op = `ALU_ADD;
+                alu_mux_a = `ALU_MUX_DATA;
+                alu_mux_b = `ALU_MUX_IMM_B; 
+                mem_en = 1;
+                we = 0;
+                sel = 4'b0011;
                 rf_wen = 1;
                 wb_if_mem = 1;
             end
@@ -456,16 +500,6 @@ module ID(
                 sel = 4'b0000;
                 rf_wen = 1;
                 wb_if_mem = 0;
-            end
-            OP_LW: begin
-                alu_op = `ALU_ADD;
-                alu_mux_a = `ALU_MUX_DATA;
-                alu_mux_b = `ALU_MUX_IMM_B;
-                mem_en = 1;
-                we = 0;
-                sel = 4'b1111;
-                rf_wen = 1;
-                wb_if_mem = 1;
             end
             OP_OR: begin
                 alu_op = `ALU_OR;
