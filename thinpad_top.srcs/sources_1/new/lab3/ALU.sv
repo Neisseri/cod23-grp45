@@ -27,7 +27,7 @@ module ALU #(
 )(
     input wire [DATA_WIDTH-1:0] alu_a,
     input wire [DATA_WIDTH-1:0] alu_b,
-    input wire [3:0] alu_op,
+    input wire [5:0] alu_op,
     output logic [DATA_WIDTH-1:0] alu_y,
 
     output logic exception_occured_o,
@@ -117,9 +117,6 @@ module ALU #(
             end else begin
                 alu_y = 0;
             end
-        end else begin
-            alu_y = 0;
-        end
         end else begin
             alu_y = 0;
         end

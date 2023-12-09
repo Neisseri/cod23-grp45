@@ -367,7 +367,7 @@ module thinpad_top #(
   logic [4:0] id_rs2;
   logic [31:0] id_imm;
   logic [7:0] id_op_type_out;
-  logic [3:0] id_alu_op;
+  logic [5:0] id_alu_op;
   logic [2:0] id_alu_mux_a;
   logic [2:0] id_alu_mux_b;
   logic id_mem_en;
@@ -460,7 +460,7 @@ module thinpad_top #(
   logic [DATA_WIDTH-1:0] id_exe_rs1_dat;
   logic [DATA_WIDTH-1:0] id_exe_rs2_dat;
   logic [DATA_WIDTH-1:0] id_exe_imm;
-  logic [3:0] id_exe_alu_op;
+  logic [5:0] id_exe_alu_op;
   logic [2:0] id_exe_alu_mux_a;
   logic [2:0] id_exe_alu_mux_b;
   logic id_exe_mem_en;

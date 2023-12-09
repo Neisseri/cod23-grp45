@@ -29,7 +29,7 @@ module ID(
         output logic [31:0] imm,
         output logic [7:0] op_type_out, // for branch comp
 
-        output logic [3:0] alu_op,
+        output logic [5:0] alu_op,
         output logic [2:0] alu_mux_a,
         output logic [2:0] alu_mux_b,
 
@@ -84,7 +84,7 @@ module ID(
         OP_SH, // TODO: test
         OP_SW,
         OP_ADDI,
-        OP_SLTI, // TODO
+        OP_SLTI, // TODO： test
         OP_SLTIU, // TODO
         OP_XORI, // TODO
         OP_ORI,
