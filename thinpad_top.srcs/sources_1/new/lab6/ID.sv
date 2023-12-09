@@ -94,8 +94,8 @@ module ID(
         OP_SRAI, // TODO: test
         OP_ADD,
         OP_SUB, // TODO: test
-        OP_SLL, // TODO
-        OP_SLT, // TODO
+        OP_SLL, // TODO: test
+        OP_SLT, // TODO: test
         OP_SLTU,
         OP_XOR,
         OP_SRL, // TODO
@@ -150,6 +150,8 @@ module ID(
                     10'b0000000_100: op_type = OP_XOR;
                     10'b0000101_110: op_type = OP_MINU;
                     10'b0100000_111: op_type = OP_ANDN;
+                    10'b0000000_001: op_type = OP_SLL;
+                    10'b0000000_010: op_type = OP_SLT;
                     10'b0000000_011: op_type = OP_SLTU;
                     default: op_type = OP_UNKNOWN;
                 endcase
@@ -507,6 +509,27 @@ module ID(
                 sel = 4'b0000;
                 rf_wen = 1;
                 wb_if_mem = 0;
+            end
+            OP_SLL: begin
+                alu_op = `ALU_LOGIC_LEFT;
+                alu_mux_a = `ALU_MUX_DATA;
+                alu_mux_b = `ALU_MUX_DATA; 
+                mem_en = 0;
+                we = 0;
+                sel = 4'b0000;
+                rf_wen = 1;
+                wb_if_mem = 0;
+            end
+            OP_SLT: begin
+                alu_op = `ALU_SLT;
+                alu_mux_a = `ALU_MUX_DATA;
+                alu_mux_b = `ALU_MUX_DATA; 
+                mem_en = 0;
+                we = 0;
+                sel = 4'b0000;
+                rf_wen = 1;
+                wb_if_mem =0;
+            end
             end
             OP_SLTU: begin
                 alu_op = `ALU_SLTU;
