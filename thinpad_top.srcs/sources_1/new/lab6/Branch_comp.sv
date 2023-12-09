@@ -117,6 +117,10 @@ module Branch_comp #(
         case (op_type)
             OP_BEQ: comp_result = (data_a == data_b);
             OP_BNE: comp_result = (data_a != data_b);
+            OP_BLT: comp_result = ($signed(data_a) < $signed(data_b));
+            OP_BGE: comp_result = ($signed(data_a) >= $signed(data_b));
+            OP_BLTU: comp_result = (data_a < data_b);
+            OP_BGEU: comp_result = (data_a >= data_b);
             OP_JAL, OP_JALR: comp_result = 1;
             default: comp_result = 0;
         endcase

@@ -70,10 +70,10 @@ module ID(
         OP_JALR,
         OP_BEQ,
         OP_BNE,
-        OP_BLT, // TODO
-        OP_BGE, // TODO
-        OP_BLTU, // TODO
-        OP_BGEU, // TODO
+        OP_BLT, // TODO: test
+        OP_BGE, // TODO: test
+        OP_BLTU, // TODO: test
+        OP_BGEU, // TODO: test
         OP_LB,
         OP_LH, // TODO
         OP_LW,
@@ -109,7 +109,7 @@ module ID(
         OP_CSRRW,
         OP_CSRRS,
         OP_CSRRC,
-        OP_CSRRWI, // TODO
+        OP_CSRRWI, // TODO:--------------------------------------------------------↑
         OP_CSRRSI, // TODO
         OP_CSRRCI, // TODO
 
@@ -213,6 +213,10 @@ module ID(
                 case (funct3)
                     3'b000: op_type = OP_BEQ; 
                     3'b001: op_type = OP_BNE;
+                    3'b100: op_type = OP_BLT;
+                    3'b101: op_type = OP_BGE;
+                    3'b110: op_type = OP_BLTU;
+                    3'b111: op_type = OP_BGEU;
                     default: op_type = OP_UNKNOWN;
                 endcase
                 rd = 0;
@@ -287,7 +291,7 @@ module ID(
             OP_LUI, OP_AUIPC: begin // U-type
                 imm = {instr[31:12], 12'b0};
             end
-            OP_BEQ, OP_BNE: begin // B-type
+            OP_BEQ, OP_BNE, OP_BLT, OP_BGE, OP_BLTU, OP_BGEU: begin // B-type
                 imm = {{19{sign_bit}}, instr[31], instr[7], instr[30:25], instr[11:8], 1'b0};
             end
             OP_LB, OP_ADDI, OP_ANDI, OP_JALR, OP_LW, OP_ORI, OP_SLLI, OP_SRLI: begin  // I-type
@@ -423,7 +427,7 @@ module ID(
                 rf_wen = 1;
                 wb_if_mem = 0;
             end
-            OP_BNE: begin
+            OP_BNE, OP_BLT, OP_BGE, OP_BLTU, OP_BGEU: begin
                 alu_op = `ALU_ADD;
                 alu_mux_a = `ALU_MUX_PC_A;
                 alu_mux_b = `ALU_MUX_IMM_B;
