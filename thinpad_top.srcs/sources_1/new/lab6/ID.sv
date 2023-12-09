@@ -532,7 +532,6 @@ module ID(
                 rf_wen = 1;
                 wb_if_mem =0;
             end
-            end
             OP_SLTU: begin
                 alu_op = `ALU_SLTU;
                 alu_mux_a = `ALU_MUX_DATA;
