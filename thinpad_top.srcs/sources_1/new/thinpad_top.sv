@@ -526,7 +526,7 @@ module thinpad_top #(
     .mem_en_o(id_exe_mem_en),
     .rf_wen_o(id_exe_rf_wen),
     .sel_o(id_exe_sel),
-    .signed_ext_o(id_signed_ext),
+    .signed_ext_o(id_exe_signed_ext),
     .we_o(id_exe_we),
     .wb_if_mem_o(id_exe_wb_if_mem),
     .csr_we_o(id_exe_csr_we),
