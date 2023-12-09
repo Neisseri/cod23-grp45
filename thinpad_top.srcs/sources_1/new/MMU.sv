@@ -50,19 +50,22 @@ module IF_MMU #(
     logic [1:0] wishbone_owner;
     logic [1:0] tlb_wishbone_owner;
     logic tlb_en;
+    logic permit_cache;
     always_comb begin
         // judge wishbone_owner
-        if(mmu_addr <= 32'h807f_ffff && mmu_addr >= 32'h8000_0000)begin // SRAM
-            if(priv_level_i != `PRIV_M_LEVEL && !mem_exception_i)begin
-                wishbone_owner = tlb_wishbone_owner;
-                tlb_en = 1;
-            end else begin
-                wishbone_owner = `MMU_OWN;
-                tlb_en = 0;
-            end
+        if(priv_level_i != `PRIV_M_LEVEL && !mem_exception_i && mmu_mem_en)begin
+            wishbone_owner = tlb_wishbone_owner;
+            tlb_en = 1;
+            permit_cache = 0;
         end else begin
-            wishbone_owner = `MMU_OWN;
             tlb_en = 0;
+            if(mmu_addr <= 32'h807f_ffff && mmu_addr >= 32'h8000_0000)begin // SRAM
+                permit_cache = 1;
+                wishbone_owner = `CACHE_OWN;
+            end else begin
+                permit_cache = 0;
+                wishbone_owner = `MMU_OWN;
+            end
         end
     end
 
@@ -75,12 +78,12 @@ module IF_MMU #(
     logic translation_error;
     logic [ADDR_WIDTH-1:0] translation_result;
     logic [ADDR_WIDTH-1:0] phy_addr;
-    logic cache_mem_en;
-    logic cache_write_en;
-    logic [DATA_WIDTH-1:0] cache_mem_data_o;
-    logic [DATA_WIDTH/8-1:0] cache_mem_sel_o;
-    logic cache_ready;
-    logic [DATA_WIDTH-1:0] cache_result;
+    logic tlb_cache_mem_en;
+    logic tlb_cache_write_en;
+    logic [DATA_WIDTH-1:0] tlb_cache_mem_data_o;
+    logic [DATA_WIDTH/8-1:0] tlb_cache_mem_sel_o;
+    logic tlb_cache_ready;
+    logic [DATA_WIDTH-1:0] tlb_cache_result;
 
     satp_t satp;
     always_comb begin
@@ -120,13 +123,13 @@ module IF_MMU #(
         .translation_result(translation_result),
         
         .phy_addr(phy_addr),
-        .cache_mem_en(cache_mem_en),
-        .cache_write_en(cache_write_en),
-        .cache_mem_data_o(cache_mem_data_o),
-        .cache_mem_sel_o(cache_mem_sel_o),
-        .cache_ready(cache_ready),
+        .cache_mem_en(tlb_cache_mem_en),
+        .cache_write_en(tlb_cache_write_en),
+        .cache_mem_data_o(tlb_cache_mem_data_o),
+        .cache_mem_sel_o(tlb_cache_mem_sel_o),
+        .cache_ready(tlb_cache_ready),
         .cache_error(1'b0),
-        .cache_result(cache_result)
+        .cache_result(tlb_cache_result)
     );
 
     logic if_user_mode;
@@ -143,6 +146,15 @@ module IF_MMU #(
     logic instruction_page_fault;
     logic load_page_fault;
     logic store_page_fault;
+    
+    logic cache_cyc;
+    logic cache_stb;
+    logic [ADDR_WIDTH-1:0] cache_adr;
+    logic [DATA_WIDTH/8-1:0] cache_sel;
+    logic cache_we;
+    logic cache_ack;
+    logic [DATA_WIDTH-1:0] cache_dat_i;
+    
     assign translation_error = instruction_page_fault | load_page_fault | store_page_fault;
     assign trans_req = ((wishbone_owner == `TRANSLATE_OWN) && trans_running) || ((wishbone_owner == `CACHE_OWN) && cache_stb);
     Translation translation_u(
@@ -185,13 +197,28 @@ module IF_MMU #(
         exception_cause_o = {1'b0, exception_code};
     end
 
-    logic cache_cyc;
-    logic cache_stb;
-    logic [ADDR_WIDTH-1:0] cache_adr;
-    logic [DATA_WIDTH/8-1:0] cache_sel;
-    logic cache_we;
-    logic cache_ack;
-    logic [DATA_WIDTH-1:0] cache_dat_i;
+    logic s_cache_ready;
+    logic s_cache_mem_en;
+    logic [ADDR_WIDTH-1:0] s_cache_addr;
+    logic [DATA_WIDTH/8-1:0] s_cache_sel;
+    logic [DATA_WIDTH-1:0] s_cache_dat_out;
+    always_comb begin
+        if(permit_cache)begin // MMU controlls cache
+            s_cache_mem_en = mmu_mem_en;
+            s_cache_addr = mmu_addr;
+            s_cache_sel = mmu_sel;
+
+            tlb_cache_ready = 1'b0;
+            tlb_cache_result = 0;
+        end else begin // TLB controlls cache
+            s_cache_mem_en = tlb_cache_mem_en;
+            s_cache_addr = phy_addr;
+            s_cache_sel = tlb_cache_mem_sel_o;
+
+            tlb_cache_ready = s_cache_ready;
+            tlb_cache_result = s_cache_dat_out;
+        end
+    end
     instruction_cache instr_cache(
         .clk(clk),
         .rst(rst),
@@ -204,11 +231,11 @@ module IF_MMU #(
         .wb_ack_i(cache_ack),
         .wb_dat_i(cache_dat_i),
 
-        .master_ready_o(cache_ready),
-        .mem_en(cache_mem_en),
-        .addr(phy_addr),
-        .sel(cache_mem_sel_o),
-        .data_out(cache_result)
+        .master_ready_o(s_cache_ready),
+        .mem_en(s_cache_mem_en),
+        .addr(s_cache_addr),
+        .sel(s_cache_sel),
+        .data_out(s_cache_dat_out)
     );
 
     // arbeiter
@@ -221,8 +248,6 @@ module IF_MMU #(
                 data_in = mmu_data_in;
                 sel = mmu_sel;
 
-                mmu_ready_o = master_ready_o;
-                mmu_data_out = data_out;
                 trans_ack = 0;
                 trans_dat_i = 0;
                 cache_ack = 0;
@@ -235,9 +260,7 @@ module IF_MMU #(
                 data_in = trans_dat_o;
                 sel = trans_sel_o;
 
-                mmu_ready_o = 0;
-                mmu_data_out = 0;
-                trans_ack = ack;
+                trans_ack = master_ready_o;
                 trans_dat_i = data_out;
                 cache_ack = 0;
                 cache_dat_i = 0;
@@ -249,11 +272,21 @@ module IF_MMU #(
                 data_in = 0;
                 sel = cache_sel;
 
-                mmu_ready_o = 0;
-                mmu_data_out = 0;
                 trans_ack = 0;
                 trans_dat_i = 0;
-                cache_ack = ack;
+                cache_ack = master_ready_o;
+                cache_dat_i = data_out;
+            end
+            `TLB_OWN: begin // TLB doesn't send direct message to wishbone
+                mem_en = 0;
+                write_en = 0;
+                addr = 0;
+                data_in = 0;
+                sel = 0;
+
+                trans_ack = 0;
+                trans_dat_i = 0;
+                cache_ack = master_ready_o;
                 cache_dat_i = data_out;
             end
             default: begin
@@ -263,14 +296,27 @@ module IF_MMU #(
                 data_in = mmu_data_in;
                 sel = mmu_sel;
 
-                mmu_ready_o = master_ready_o;
-                mmu_data_out = data_out;
                 trans_ack = 0;
                 trans_dat_i = 0;
                 cache_ack = 0;
                 cache_dat_i = 0;
             end
         endcase
+    end
+
+    always_comb begin
+        if(tlb_en)begin
+            mmu_ready_o = tlb_ready;
+            mmu_data_out = query_data_o;
+        end else begin
+            if(permit_cache)begin
+                mmu_ready_o = s_cache_ready;
+                mmu_data_out = s_cache_dat_out;
+            end else begin
+                mmu_ready_o = master_ready_o;
+                mmu_data_out = data_out;
+            end
+        end
     end
     
 endmodule
@@ -317,19 +363,15 @@ module MEM_MMU #(
     output logic [DATA_WIDTH-1:0] exception_cause_o
 );
 
+    logic trans_running;
     logic [1:0] wishbone_owner;
     logic [1:0] tlb_wishbone_owner;
     logic tlb_en;
     always_comb begin
-        // judge wishbone_owner
-        if(mmu_addr <= 32'h807f_ffff && mmu_addr >= 32'h8000_0000)begin // SRAM
-            if(priv_level_i != `PRIV_M_LEVEL)begin
-                wishbone_owner = tlb_wishbone_owner;
-                tlb_en = 1;
-            end else begin
-                wishbone_owner = `MMU_OWN;
-                tlb_en = 0;
-            end
+        // judge wishbone_owner, no cache
+        if(priv_level_i != `PRIV_M_LEVEL && mmu_mem_en)begin
+            wishbone_owner = tlb_wishbone_owner;
+            tlb_en = 1;
         end else begin
             wishbone_owner = `MMU_OWN;
             tlb_en = 0;
@@ -403,7 +445,6 @@ module MEM_MMU #(
     logic [DATA_WIDTH-1:0] trans_dat_o;
     logic [DATA_WIDTH/8-1:0] trans_sel_o;
     logic trans_we_o;
-    logic trans_running;
     logic instruction_page_fault;
     logic load_page_fault;
     logic store_page_fault;
@@ -478,8 +519,6 @@ module MEM_MMU #(
                 data_in = mmu_data_in;
                 sel = mmu_sel;
 
-                mmu_ready_o = master_ready_o;
-                mmu_data_out = data_out;
                 trans_ack = 0;
                 trans_dat_i = 0;
                 cache_ack = 0;
@@ -492,22 +531,30 @@ module MEM_MMU #(
                 data_in = trans_dat_o;
                 sel = trans_sel_o;
 
-                mmu_ready_o = 0;
-                mmu_data_out = 0;
-                trans_ack = ack;
+                trans_ack = master_ready_o;
                 trans_dat_i = data_out;
                 cache_ack = 0;
                 cache_dat_i = 0;
             end
             `CACHE_OWN: begin
                 mem_en = cache_stb;
-                write_en = cache_we; // read only
+                write_en = cache_we;
                 addr = cache_adr;
                 data_in = cache_dat_o;
                 sel = cache_sel;
 
-                mmu_ready_o = 0;
-                mmu_data_out = 0;
+                trans_ack = 0;
+                trans_dat_i = 0;
+                cache_ack = master_ready_o;
+                cache_dat_i = data_out;
+            end
+            `TLB_OWN: begin // TLB doesn't send direct message to wishbone
+                mem_en = 0;
+                write_en = 0;
+                addr = 0;
+                data_in = 0;
+                sel = 0;
+
                 trans_ack = 0;
                 trans_dat_i = 0;
                 cache_ack = master_ready_o;
@@ -520,14 +567,22 @@ module MEM_MMU #(
                 data_in = mmu_data_in;
                 sel = mmu_sel;
 
-                mmu_ready_o = master_ready_o;
-                mmu_data_out = data_out;
                 trans_ack = 0;
                 trans_dat_i = 0;
                 cache_ack = 0;
                 cache_dat_i = 0;
             end
         endcase
+    end
+
+    always_comb begin
+        if(tlb_en)begin
+            mmu_ready_o = tlb_ready;
+            mmu_data_out = query_data_o;
+        end else begin
+            mmu_ready_o = master_ready_o;
+            mmu_data_out = data_out;
+        end
     end
     
 endmodule

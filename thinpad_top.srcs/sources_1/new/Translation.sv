@@ -59,7 +59,7 @@ typedef enum logic [2:0] {
         wb_sel_o = 4'b1111;
         wb_cyc_o = (state == STATE_FETCH_TABLE) || (state == STATE_FIND_PAGE);
         wb_stb_o = (state == STATE_FETCH_TABLE) || (state == STATE_FIND_PAGE);
-        translation_ready = (state == STATE_IDLE) || (state == STATE_DONE);
+        translation_ready = (state == STATE_IDLE && !translation_en) || (state == STATE_DONE);
         trans_running = (state != STATE_IDLE);
     end
 

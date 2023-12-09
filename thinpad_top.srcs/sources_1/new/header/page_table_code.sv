@@ -60,4 +60,5 @@ typedef struct packed {
 `define MMU_OWN 0
 `define TRANSLATE_OWN 1
 `define CACHE_OWN 2
+`define TLB_OWN 3
 `endif

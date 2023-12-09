@@ -73,7 +73,7 @@ module Data_memory #(
 
     assign wb_cyc_o = ((state == STATE_READ_SRAM_ACTION) || (state == STATE_WRITE_SRAM_ACTION)) && mem_en;
     assign wb_stb_o = ((state == STATE_READ_SRAM_ACTION) || (state == STATE_WRITE_SRAM_ACTION)) && mem_en;
-    assign master_ready_o = !((state == STATE_READ_SRAM_ACTION) || (state == STATE_WRITE_SRAM_ACTION));
+    assign master_ready_o = (state == STATE_DONE) || (state == STATE_IDLE && !mem_en);
     assign wb_we_o = write_en;
 
     reg [DATA_WIDTH-1:0] data_out_raw;

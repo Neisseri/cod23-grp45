@@ -69,12 +69,12 @@ module tb;
     end
   
     // ģ�� PC ͨ��ֱ�����ڣ��� FPGA �����ַ�
-    #7800000;
+    #5500000;
     $display("sending G");
     uart.pc_send_byte(8'h47); // ASCII 'G'
     #10000;
     #10000;
-    uart.pc_send_byte(8'h00);
+    uart.pc_send_byte(8'h80);
     #10000;
     uart.pc_send_byte(8'h10);
     #10000;

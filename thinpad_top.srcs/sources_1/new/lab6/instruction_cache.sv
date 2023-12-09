@@ -52,7 +52,6 @@ module instruction_cache #(
     assign wb_sel_o = sel;
     assign wb_cyc_o = (state == STATE_READ_SRAM_ACTION);
     assign wb_stb_o = (state == STATE_READ_SRAM_ACTION);
-    assign master_ready_o = !wb_stb_o;
     assign wb_we_o = 1'b0;
 
     // cache hit sign
@@ -93,6 +92,7 @@ module instruction_cache #(
             end
             data_out <= `NOP_INSTR;
             state <= STATE_DONE;
+            master_ready_o <= 1'b0;
         end else begin
             if (mem_en) begin
                 case (state)
@@ -110,16 +110,19 @@ module instruction_cache #(
                                 cache_tag[group_index][cache_group_num[group_index] - 1] <= addr;
                                 // pass data
                                 data_out <= wb_dat_i;
+                                master_ready_o <= 1'b1;
                                 state <= STATE_DONE;
                             end
                         end else begin
                             // cache hit
                             data_out <= cache[group_index][selected_way];
+                            master_ready_o <= 1'b1;
                             state <= STATE_DONE;
                         end
                     end
 
                     STATE_DONE: begin
+                        master_ready_o <= 1'b0;
                         state <= STATE_READ_SRAM_ACTION;
                     end
 

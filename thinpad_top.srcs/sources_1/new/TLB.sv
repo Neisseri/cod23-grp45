@@ -75,14 +75,6 @@ module TLB #(
         cache_mem_sel_o = query_sel;
     end
 
-    always_comb begin
-        case (state)
-            STATE_DONE: wishbone_owner = `MMU_OWN;
-            STATE_READ_DATA: wishbone_owner = `CACHE_OWN;
-            default: wishbone_owner = `TRANSLATE_OWN;
-        endcase
-    end
-
     logic tlb_hit;
     tlb_entry_t tlb_visit_entry;
     always_comb begin
@@ -95,7 +87,22 @@ module TLB #(
         end
     end
 
-    assign tlb_ready = (state == STATE_IDLE) || (state == STATE_DONE);
+    always_comb begin
+        case (state)
+            STATE_IDLE: begin
+                if(tlb_hit)begin
+                    wishbone_owner = `CACHE_OWN;
+                end else begin
+                    wishbone_owner = `TRANSLATE_OWN;
+                end
+            end
+            STATE_TRANSLATE: wishbone_owner = `TRANSLATE_OWN;
+            STATE_READ_DATA: wishbone_owner = `CACHE_OWN;
+            STATE_DONE: wishbone_owner = `TLB_OWN;
+        endcase
+    end
+
+    assign tlb_ready = (state == STATE_IDLE && !tlb_en) || (state == STATE_DONE);
 
     always_comb begin
         if((state == STATE_IDLE && tlb_en && !tlb_hit) || (state == STATE_TRANSLATE))begin
