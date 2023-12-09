@@ -81,12 +81,12 @@ module ID(
         OP_LBU, // load byte unsigned
         OP_LHU, // load half unsigned
         OP_SB,
-        OP_SH, // TODO: test
+        OP_SH, // store half
         OP_SW,
         OP_ADDI,
-        OP_SLTI, // TODO： test
-        OP_SLTIU, // TODO: test
-        OP_XORI, // TODO: test
+        OP_SLTI, // set less than immediate
+        OP_SLTIU, // set less than immediate unsigned
+        OP_XORI, // xor immediate
         OP_ORI,
         OP_ANDI,
         OP_SLLI,
@@ -313,8 +313,11 @@ module ID(
             OP_BEQ, OP_BNE, OP_BLT, OP_BGE, OP_BLTU, OP_BGEU: begin // B-type
                 imm = {{19{sign_bit}}, instr[31], instr[7], instr[30:25], instr[11:8], 1'b0};
             end
-            OP_LB, OP_ADDI, OP_ANDI, OP_JALR, OP_LW, OP_ORI, OP_SLLI, OP_SRLI, OP_SRAI, OP_LH, OP_LBU, OP_LHU, OP_SLTI, OP_SLTIU, OP_XORI: begin  // I-type
+            OP_LB, OP_ADDI, OP_ANDI, OP_JALR, OP_LW, OP_ORI, OP_LH, OP_LBU, OP_LHU, OP_SLTI, OP_SLTIU, OP_XORI: begin  // I-type
                 imm = {{20{sign_bit}}, instr[31:20]};
+            end
+            OP_SLLI, OP_SRLI, OP_SRAI: begin // I-type
+                imm = {{20{sign_bit}}, instr[24:20]};
             end
             OP_SB, OP_SW, OP_SH: begin // S-type
                 imm = {{20{sign_bit}}, instr[31:25], instr[11:7]};

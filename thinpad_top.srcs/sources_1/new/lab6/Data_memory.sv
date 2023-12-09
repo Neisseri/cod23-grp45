@@ -87,6 +87,7 @@ module Data_memory #(
     logic sign_bit;
     always_comb begin
         case (sel)
+            // TODO: 1000 0100 ... ?
             4'b0001: begin
                 if (signed_ext_i) begin
                     data_out_shift = data_out_raw >> ((addr & 3) * 8);
