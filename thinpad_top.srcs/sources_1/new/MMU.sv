@@ -44,7 +44,8 @@ module IF_MMU #(
 
     // report exception
     output logic exception_occured_o,
-    output logic [DATA_WIDTH-1:0] exception_cause_o
+    output logic [DATA_WIDTH-1:0] exception_cause_o,
+    output logic [DATA_WIDTH-1:0] exception_val_o
 );
 
     logic [1:0] wishbone_owner;
@@ -195,6 +196,7 @@ module IF_MMU #(
         end
         exception_occured_o = instruction_page_fault | load_page_fault | store_page_fault;
         exception_cause_o = {1'b0, exception_code};
+        exception_val_o = 0;
     end
 
     logic s_cache_ready;
@@ -379,7 +381,8 @@ module MEM_MMU #(
 
     // report exception
     output logic exception_occured_o,
-    output logic [DATA_WIDTH-1:0] exception_cause_o
+    output logic [DATA_WIDTH-1:0] exception_cause_o,
+    output logic [DATA_WIDTH-1:0] exception_val_o
 );
 
     logic trans_running;
@@ -506,6 +509,7 @@ module MEM_MMU #(
         end
         exception_occured_o = instruction_page_fault | load_page_fault | store_page_fault;
         exception_cause_o = {1'b0, exception_code};
+        exception_val_o = 0;
     end
 
     // no cache, connect directly

@@ -342,6 +342,7 @@ module thinpad_top #(
   logic im_to_mmu_ack;
   logic im_exception_occured;
   logic [DATA_WIDTH-1:0] im_exception_cause;
+  logic [DATA_WIDTH-1:0] im_exception_val;
   IF_MMU if_mmu_u(
     .clk(sys_clk),
     .rst(sys_rst),
@@ -369,7 +370,8 @@ module thinpad_top #(
     .data_out(im_to_mmu_data_out),
     .ack(im_to_mmu_ack),
     .exception_occured_o(im_exception_occured),
-    .exception_cause_o(im_exception_cause)
+    .exception_cause_o(im_exception_cause),
+    .exception_val_o(im_exception_val)
   );
 
   logic im_wb_cyc_o;
@@ -396,6 +398,7 @@ module thinpad_top #(
   logic [DATA_WIDTH-1:0] if_id_instr;
   logic if_id_exception_occured;
   logic [DATA_WIDTH-1:0] if_id_exception_cause;
+  logic [DATA_WIDTH-1:0] if_id_exception_val;
   IF_ID_reg IF_ID(
     .clk(sys_clk),
     .rst(sys_rst),
@@ -408,8 +411,10 @@ module thinpad_top #(
 
     .exception_occured_i(im_exception_occured),
     .exception_cause_i(im_exception_cause),
+    .exception_val_i(im_exception_val),
     .exception_occured_o(if_id_exception_occured),
-    .exception_cause_o(if_id_exception_cause)
+    .exception_cause_o(if_id_exception_cause),
+    .exception_val_o(if_id_exception_val)
   );
   
   //ID
@@ -418,18 +423,20 @@ module thinpad_top #(
   logic [4:0] id_rs2;
   logic [31:0] id_imm;
   logic [7:0] id_op_type_out;
-  logic [3:0] id_alu_op;
+  logic [5:0] id_alu_op;
   logic [2:0] id_alu_mux_a;
   logic [2:0] id_alu_mux_b;
   logic id_mem_en;
   logic id_we;
   logic [3:0] id_sel;
+  logic id_signed_ext;
   logic id_rf_wen;
   logic [3:0] id_wb_if_mem;
   logic id_csr_we;
   logic [11:0] id_csr_adr;
   logic id_exception_occured;
   logic [DATA_WIDTH-1:0] id_exception_cause;
+  logic [DATA_WIDTH-1:0] id_exception_val;
   ID ID_u(
     .instr(if_id_instr),
     .rd(id_rd),
@@ -443,6 +450,7 @@ module thinpad_top #(
     .mem_en(id_mem_en),
     .we(id_we),
     .sel(id_sel),
+    .signed_ext(id_signed_ext),
     .rf_wen(id_rf_wen),
     .wb_if_mem(id_wb_if_mem),
     .id_exception_o(id_exception),
@@ -452,6 +460,7 @@ module thinpad_top #(
 
     .exception_occured_o(id_exception_occured),
     .exception_cause_o(id_exception_cause),
+    .exception_val_o(id_exception_val),
     .satp_update_o(satp_update),
     .flush_tlb(id_flush_tlb)
   );
@@ -527,12 +536,13 @@ module thinpad_top #(
   logic [DATA_WIDTH-1:0] id_exe_rs1_dat;
   logic [DATA_WIDTH-1:0] id_exe_rs2_dat;
   logic [DATA_WIDTH-1:0] id_exe_imm;
-  logic [3:0] id_exe_alu_op;
+  logic [5:0] id_exe_alu_op;
   logic [2:0] id_exe_alu_mux_a;
   logic [2:0] id_exe_alu_mux_b;
   logic id_exe_mem_en;
   logic id_exe_rf_wen;
   logic [3:0] id_exe_sel;
+  logic id_exe_signed_ext;
   logic id_exe_we;
   logic [3:0] id_exe_wb_if_mem;
   logic id_exe_csr_we;
@@ -541,15 +551,19 @@ module thinpad_top #(
   logic [3:0] id_exe_env_op;
   logic id_exe_exception_occured;
   logic [DATA_WIDTH-1:0] id_exe_exception_cause;
+  logic [DATA_WIDTH-1:0] id_exe_exception_val;
   logic id_exe_exception_occured_change;
   logic [DATA_WIDTH-1:0] id_exe_exception_cause_change;
+  logic [DATA_WIDTH-1:0] id_exe_exception_val_change;
   always_comb begin
     if (if_id_exception_occured) begin
       id_exe_exception_occured_change = 1'b1;
       id_exe_exception_cause_change = if_id_exception_cause;
+      id_exe_exception_val_change = if_id_exception_val;
     end else begin
       id_exe_exception_occured_change = id_exception_occured;
       id_exe_exception_cause_change = id_exception_cause;
+      id_exe_exception_val_change = id_exception_val;
     end
   end
   logic id_exe_flush_tlb;
@@ -574,6 +588,7 @@ module thinpad_top #(
     .mem_en_i(id_mem_en),
     .rf_wen_i(id_rf_wen),
     .sel_i(id_sel),
+    .signed_ext_i(id_signed_ext),
     .we_i(id_we),
     .wb_if_mem_i(id_wb_if_mem),
     .csr_we_i(id_csr_we),
@@ -593,6 +608,7 @@ module thinpad_top #(
     .mem_en_o(id_exe_mem_en),
     .rf_wen_o(id_exe_rf_wen),
     .sel_o(id_exe_sel),
+    .signed_ext_o(id_exe_signed_ext),
     .we_o(id_exe_we),
     .wb_if_mem_o(id_exe_wb_if_mem),
     .csr_we_o(id_exe_csr_we),
@@ -602,8 +618,10 @@ module thinpad_top #(
 
     .exception_occured_i(id_exe_exception_occured_change),
     .exception_cause_i(id_exe_exception_cause_change),
+    .exception_val_i(id_exe_exception_val_change),
     .exception_occured_o(id_exe_exception_occured),
-    .exception_cause_o(id_exe_exception_cause)
+    .exception_cause_o(id_exe_exception_cause),
+    .exception_val_o(id_exe_exception_val)
   );
   
   //EXE
@@ -631,6 +649,7 @@ module thinpad_top #(
 
   logic exe_exception_occured;
   logic [DATA_WIDTH-1:0] exe_exception_cause;
+  logic [DATA_WIDTH-1:0] exe_exception_val;
 
   ALU alu_u(
     .alu_a(alu_a),
@@ -638,16 +657,19 @@ module thinpad_top #(
     .alu_op(id_exe_alu_op),
     .alu_y(alu_y),
     .exception_occured_o(exe_exception_occured),
-    .exception_cause_o(exe_exception_cause)
+    .exception_cause_o(exe_exception_cause),
+    .exception_val_o(exe_exception_val)
   );
   
   logic [DATA_WIDTH-1:0] exe_mem_instr;
   logic [4:0] exe_mem_rd;
   logic [DATA_WIDTH-1:0] exe_mem_rs1_dat;
   logic [DATA_WIDTH-1:0] exe_mem_rs2_dat;
+  logic [DATA_WIDTH-1:0] exe_mem_imm_dat;
   logic exe_mem_mem_en;
   logic exe_mem_rf_wen;
   logic [3:0] exe_mem_sel;
+  logic exe_mem_signed_ext;
   logic exe_mem_we;
   logic [DATA_WIDTH-1:0] exe_mem_wdata;
   logic [3:0] exe_mem_wb_if_mem;
@@ -662,15 +684,19 @@ module thinpad_top #(
   logic use_mem_dat_b_o;
   logic exe_mem_exception_occured;
   logic [DATA_WIDTH-1:0] exe_mem_exception_cause;
+  logic [DATA_WIDTH-1:0] exe_mem_exception_val;
   logic exe_mem_exception_occured_change;
   logic [DATA_WIDTH-1:0] exe_mem_exception_cause_change;
+  logic [DATA_WIDTH-1:0] exe_mem_exception_val_change;
   always_comb begin
     if (id_exe_exception_occured) begin
       exe_mem_exception_occured_change = 1'b1;
       exe_mem_exception_cause_change = id_exe_exception_cause;
+      exe_mem_exception_val_change = id_exe_exception_val;
     end else begin
       exe_mem_exception_occured_change = exe_exception_occured;
       exe_mem_exception_cause_change = exe_exception_cause;
+      exe_mem_exception_val_change = exe_exception_val;
     end
   end
   logic exe_mem_flush_tlb;
@@ -686,9 +712,11 @@ module thinpad_top #(
     .rd_i(id_exe_rd),
     .rs1_dat_i(id_exe_rs1_dat),
     .rs2_dat_i(id_exe_rs2_dat),
+    .imm_dat_i(id_exe_imm),
     .mem_en_i(id_exe_mem_en),
     .rf_wen_i(id_exe_rf_wen),
     .sel_i(id_exe_sel),
+    .signed_ext_i(id_exe_signed_ext),
     .we_i(id_exe_we),
     .wb_if_mem_i(id_exe_wb_if_mem),
     .csr_we_i(id_exe_csr_we),
@@ -700,9 +728,11 @@ module thinpad_top #(
     .rd_o(exe_mem_rd),
     .rs1_dat_o(exe_mem_rs1_dat),
     .rs2_dat_o(exe_mem_rs2_dat),
+    .imm_dat_o(exe_mem_imm_dat),
     .mem_en_o(exe_mem_mem_en),
     .rf_wen_o(exe_mem_rf_wen),
     .sel_o(exe_mem_sel),
+    .signed_ext_o(exe_mem_signed_ext),
     .we_o(exe_mem_we),
     .wdata_i(alu_y),
     .wdata_o(exe_mem_wdata),
@@ -720,11 +750,15 @@ module thinpad_top #(
 
     .exception_occured_i(exe_mem_exception_occured_change),
     .exception_cause_i(exe_mem_exception_cause_change),
+    .exception_val_i(exe_mem_exception_val_change),
     .exception_occured_o(exe_mem_exception_occured),
-    .exception_cause_o(exe_mem_exception_cause)
+    .exception_cause_o(exe_mem_exception_cause),
+    .exception_val_o(exe_mem_exception_val)
   );
   
   //MEM
+  logic cpu_to_mmu_mem_en;
+  assign cpu_to_mmu_mem_en = exe_mem_mem_en && !exe_mem_exception_occured;
   logic dm_master_ready_o;
   logic dm_to_mmu_master_ready;
   assign mem_stall_req = ~dm_master_ready_o; //dm_to_mmu_master_ready;
@@ -739,6 +773,7 @@ module thinpad_top #(
   logic dm_to_mmu_ack;
   logic dm_exception_occured;
   logic [DATA_WIDTH-1:0] dm_exception_cause;
+  logic [DATA_WIDTH-1:0] dm_exception_val;
   MEM_MMU mem_mmu_u (
     .clk(sys_clk),
     .rst(sys_rst),
@@ -746,7 +781,7 @@ module thinpad_top #(
     .flush_tlb(exe_mem_flush_tlb),
     .if_fetch_instruction(0),
     .priv_level_i(priv_level_rdat),
-    .mmu_mem_en(exe_mem_mem_en),
+    .mmu_mem_en(cpu_to_mmu_mem_en),
     .mmu_write_en(exe_mem_we),
     .mmu_addr(exe_mem_wdata),
     .mmu_data_in(exe_mem_rs2_dat),
@@ -765,7 +800,8 @@ module thinpad_top #(
     .ack(dm_to_mmu_ack),
 
     .exception_occured_o(dm_exception_occured),
-    .exception_cause_o(dm_exception_cause)
+    .exception_cause_o(dm_exception_cause),
+    .exception_val_o(dm_exception_val)
   );
 
   logic dm_wb_cyc_o;
@@ -776,6 +812,9 @@ module thinpad_top #(
   logic [DATA_WIDTH-1:0] dm_wb_dat_i;
   logic [DATA_WIDTH/8-1:0] dm_wb_sel_o;
   logic dm_wb_we_o;
+  logic dm_master_ready_o;
+  assign mem_stall_req = ~dm_master_ready_o;
+  logic [DATA_WIDTH-1:0] dm_data_out;
   logic [ADDR_WIDTH-1:0] dm_exception_pc;
   always_ff @ (posedge sys_clk) begin
     if (sys_rst) begin
@@ -798,9 +837,27 @@ module thinpad_top #(
     case (mmu_to_dm_sel)
       4'b0001: begin
         dm_wb_sel_o = mmu_to_dm_sel << (mmu_to_dm_addr & 3);
-        data_out_shift = dm_wb_dat_i >> ((mmu_to_dm_addr & 3) * 8);
-        sign_bit = data_out_shift[7];
-        dm_to_mmu_data_out = {{24{sign_bit}}, data_out_shift[7:0]};
+        if(exe_mem_signed_ext)begin
+          data_out_shift = dm_wb_dat_i >> ((mmu_to_dm_addr & 3) * 8);
+          sign_bit = data_out_shift[7];
+          dm_to_mmu_data_out = {{24{sign_bit}}, data_out_shift[7:0]};
+        end else begin
+          data_out_shift = dm_wb_dat_i >> ((mmu_to_dm_addr & 3) * 8);
+          sign_bit = 0;
+          dm_to_mmu_data_out = {24'b0, data_out_shift[7:0]};
+        end
+      end
+      4'b0011: begin
+        dm_wb_sel_o = mmu_to_dm_sel << (mmu_to_dm_addr & 3); // if addr % 3 == 3, exception occurs in ID
+        if(exe_mem_signed_ext)begin
+          data_out_shift = dm_wb_dat_i >> ((mmu_to_dm_addr & 3) * 8);
+          sign_bit = data_out_shift[15];
+          dm_to_mmu_data_out = {{24{sign_bit}}, data_out_shift[7:0]};
+        end else begin
+          data_out_shift = dm_wb_dat_i >> ((mmu_to_dm_addr & 3) * 8);
+          sign_bit = 0;
+          dm_to_mmu_data_out = {24'b0, data_out_shift[7:0]};
+        end
       end
       default: begin
         dm_wb_sel_o = mmu_to_dm_sel;
@@ -814,15 +871,18 @@ module thinpad_top #(
 
   logic exception_occured_real;
   logic [DATA_WIDTH-1:0] exception_cause_real;
+  logic [ADDR_WIDTH-1:0] exception_val_real;
   logic [ADDR_WIDTH-1:0] exception_pc_real;
   always_comb begin
     if (dm_exception_occured) begin
       exception_occured_real = 1'b1;
       exception_cause_real = dm_exception_cause;
+      exception_val_real = dm_exception_val;
       exception_pc_real = dm_exception_pc;
     end else begin
       exception_occured_real = exe_mem_exception_occured;
       exception_cause_real = exe_mem_exception_cause;
+      exception_val_real = exe_mem_exception_val;
       exception_pc_real = exe_mem_pc;
     end
   end
@@ -833,6 +893,12 @@ module thinpad_top #(
   logic csr_we;
   logic [DATA_WIDTH-1:0] mem_csr_dat;
 
+  logic [DATA_WIDTH-1:0] csr_sepc_wdat;
+  logic csr_sepc_we;
+  logic [DATA_WIDTH-1:0] csr_scause_wdat;
+  logic csr_scause_we;
+  logic [DATA_WIDTH-1:0] csr_stval_wdat;
+  logic csr_stval_we;
   logic [DATA_WIDTH-1:0] csr_mstatus_wdat;
   logic csr_mstatus_we;
   logic [DATA_WIDTH-1:0] csr_mtvec_wdat;
@@ -841,17 +907,27 @@ module thinpad_top #(
   logic csr_mepc_we;
   logic [DATA_WIDTH-1:0] csr_mcause_wdat;
   logic csr_mcause_we;
+  logic [DATA_WIDTH-1:0] csr_mtval_wdat;
+  logic csr_mtval_we;
   logic [DATA_WIDTH-1:0] csr_mip_wdat;
   logic csr_mip_we;
   logic [DATA_WIDTH-1:0] csr_mie_wdat;
   logic csr_mie_we;
 
+  logic [DATA_WIDTH-1:0] csr_sepc_rdat;
+  logic [DATA_WIDTH-1:0] csr_stvec_rdat;
+  logic [DATA_WIDTH-1:0] csr_stval_rdat;
+  logic [DATA_WIDTH-1:0] csr_sip_rdat;
+  logic [DATA_WIDTH-1:0] csr_sie_rdat;
   logic [DATA_WIDTH-1:0] csr_mstatus_rdat;
   logic [DATA_WIDTH-1:0] csr_mtvec_rdat;
+  logic [DATA_WIDTH-1:0] csr_mtval_rdat;
   logic [DATA_WIDTH-1:0] csr_mepc_rdat;
   logic [DATA_WIDTH-1:0] csr_mcause_rdat;
   logic [DATA_WIDTH-1:0] csr_mip_rdat;
   logic [DATA_WIDTH-1:0] csr_mie_rdat;
+  logic [DATA_WIDTH-1:0] csr_medeleg_rdat;
+  logic [DATA_WIDTH-1:0] csr_mideleg_rdat;
 
   logic [1:0] priv_level_wdat;
   logic priv_level_we;
@@ -864,6 +940,7 @@ module thinpad_top #(
 
     .rs1_dat_i(exe_mem_rs1_dat),
     .csr_adr_i(exe_mem_csr_adr),
+    .imm_dat_i(exe_mem_imm_dat),
     .csr_op_i(exe_mem_csr_op),
     .csr_we_i(exe_mem_csr_we),
 
@@ -874,13 +951,27 @@ module thinpad_top #(
     .csr_wdat_o(csr_wdat),
     .csr_we_o(csr_we),
 
+    .csr_sepc_i(csr_sepc_rdat),
+    .csr_stvec_i(csr_stvec_rdat),
+    .csr_stval_i(csr_stval_rdat),
+    .csr_sip_i(csr_sip_rdat),
+    .csr_sie_i(csr_sie_rdat),
     .csr_mstatus_i(csr_mstatus_rdat),
     .csr_mtvec_i(csr_mtvec_rdat),
+    .csr_mtval_i(csr_mtval_rdat),
     .csr_mepc_i(csr_mepc_rdat),
     .csr_mcause_i(csr_mcause_rdat),
     .csr_mip_i(csr_mip_rdat),
     .csr_mie_i(csr_mie_rdat),
+    .csr_medeleg_i(csr_medeleg_rdat),
+    .csr_mideleg_i(csr_mideleg_rdat),
 
+    .csr_sepc_o(csr_sepc_wdat),
+    .csr_sepc_we_o(csr_sepc_we),
+    .csr_scause_o(csr_scause_wdat),
+    .csr_scause_we_o(csr_scause_we),
+    .csr_stval_o(csr_stval_wdat),
+    .csr_stval_we_o(csr_stval_we),
     .csr_mstatus_o(csr_mstatus_wdat),
     .csr_mstatus_we_o(csr_mstatus_we),
     .csr_mtvec_o(csr_mtvec_wdat),
@@ -889,6 +980,8 @@ module thinpad_top #(
     .csr_mepc_we_o(csr_mepc_we),
     .csr_mcause_o(csr_mcause_wdat),
     .csr_mcause_we_o(csr_mcause_we),
+    .csr_mtval_o(csr_mtval_wdat),
+    .csr_mtval_we_o(csr_mtval_we),
     .csr_mip_o(csr_mip_wdat),
     .csr_mip_we_o(csr_mip_we),
     .csr_mie_o(csr_mie_wdat),
@@ -905,9 +998,13 @@ module thinpad_top #(
 
     .exception_occured_i(exception_occured_real),
     .exception_cause_i(exception_cause_real),
+    .exception_val_i(exception_val_real),
     .exception_pc_i(exception_pc_real)
   );
   
+  logic [DATA_WIDTH-1:0] mtime_h_rdat;
+  logic [DATA_WIDTH-1:0] mtime_l_rdat;
+
   CSR_reg CSR_reg_u(
     .clk(sys_clk),
     .rst(sys_rst),
@@ -917,6 +1014,12 @@ module thinpad_top #(
     .csr_we_i(csr_we),
     .csr_o(csr_dat),
 
+    .csr_sepc_i(csr_sepc_wdat),
+    .csr_sepc_we_i(csr_sepc_we),
+    .csr_scause_i(csr_scause_wdat),
+    .csr_scause_we_i(csr_scause_we),
+    .csr_stval_i(csr_stval_wdat),
+    .csr_stval_we_i(csr_stval_we),
     .csr_mstatus_i(csr_mstatus_wdat),
     .csr_mstatus_we_i(csr_mstatus_we),
     .csr_mtvec_i(csr_mtvec_wdat),
@@ -925,18 +1028,31 @@ module thinpad_top #(
     .csr_mepc_we_i(csr_mepc_we),
     .csr_mcause_i(csr_mcause_wdat),
     .csr_mcause_we_i(csr_mcause_we),
+    .csr_mtval_i(csr_mtval_wdat),
+    .csr_mtval_we_i(csr_mtval_we),
     .csr_mip_i(csr_mip_wdat),
     .csr_mip_we_i(csr_mip_we),
     .csr_mie_i(csr_mie_wdat),
     .csr_mie_we_i(csr_mie_we),
 
+    .csr_sepc_o(csr_sepc_rdat),
+    .csr_stvec_o(csr_stvec_rdat),
+    .csr_stval_o(csr_stval_rdat),
+    .csr_sip_o(csr_sip_rdat),
+    .csr_sie_o(csr_sie_rdat),
     .csr_satp_o(csr_satp),
     .csr_mstatus_o(csr_mstatus_rdat),
     .csr_mtvec_o(csr_mtvec_rdat),
+    .csr_mtval_o(csr_mtval_rdat),
     .csr_mepc_o(csr_mepc_rdat),
     .csr_mcause_o(csr_mcause_rdat),
     .csr_mip_o(csr_mip_rdat),
     .csr_mie_o(csr_mie_rdat),
+    .csr_medeleg_o(csr_medeleg_rdat),
+    .csr_mideleg_o(csr_mideleg_rdat),
+
+    .mtime_h_i(mtime_h_rdat),
+    .mtime_l_i(mtime_l_rdat),
 
     .priv_level_i(priv_level_wdat),
     .priv_level_we_i(priv_level_we),
@@ -1303,6 +1419,9 @@ module thinpad_top #(
       .wb_dat_o(wbs3_dat_i),
       .wb_sel_i(wbs3_sel_o),
       .wb_we_i (wbs3_we_o),
+
+      .mtime_h_o(mtime_h_rdat),
+      .mtime_l_o(mtime_l_rdat),
 
       .time_interrupt_o(time_interrupt)
   );

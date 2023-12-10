@@ -39,9 +39,11 @@ module EXE_MEM_reg #(
     input wire [4:0] rd_i,
     input wire [DATA_WIDTH-1:0] rs1_dat_i,
     input wire [DATA_WIDTH-1:0] rs2_dat_i,
+    input wire [DATA_WIDTH-1:0] imm_dat_i,
     input wire mem_en_i,
     input wire rf_wen_i,
     input wire [3:0] sel_i,
+    input wire signed_ext_i,
     input wire we_i,
     input wire [3:0] wb_if_mem_i,
     input wire csr_we_i,
@@ -53,9 +55,11 @@ module EXE_MEM_reg #(
     output reg [4:0] rd_o,
     output reg [DATA_WIDTH-1:0] rs1_dat_o,
     output reg [DATA_WIDTH-1:0] rs2_dat_o,
+    output reg [DATA_WIDTH-1:0] imm_dat_o,
     output reg mem_en_o,
     output reg rf_wen_o,
     output reg [3:0] sel_o,
+    output reg signed_ext_o,
     output reg we_o,
     output reg [3:0] wb_if_mem_o,
     output reg csr_we_o,
@@ -77,8 +81,10 @@ module EXE_MEM_reg #(
     // exception
     input wire exception_occured_i,
     input wire [DATA_WIDTH-1:0] exception_cause_i,
+    input wire [DATA_WIDTH-1:0] exception_val_i,
     output reg exception_occured_o,
-    output reg [DATA_WIDTH-1:0] exception_cause_o
+    output reg [DATA_WIDTH-1:0] exception_cause_o,
+    output reg [DATA_WIDTH-1:0] exception_val_o
     );
 
     always_ff @(posedge clk)begin
@@ -88,9 +94,11 @@ module EXE_MEM_reg #(
             rd_o <= 0;
             rs1_dat_o <= 0;
             rs2_dat_o <= 0;
+            imm_dat_o <= 0;
             mem_en_o <= 0;
             we_o <= 0;
             sel_o <= 4'b0000;
+            signed_ext_o <= 0;
             rf_wen_o <= 0;
             wdata_o <= 0;
             wb_if_mem_o <= 0;
@@ -102,6 +110,7 @@ module EXE_MEM_reg #(
             use_mem_dat_b_o <= 0;
             exception_occured_o <= 0;
             exception_cause_o <= 0;
+            exception_val_o <= 0;
             flush_tlb_o <= 0;
         end else begin
             if(!stall)begin
@@ -111,9 +120,11 @@ module EXE_MEM_reg #(
                     rd_o <= 0;
                     rs1_dat_o <= 0;
                     rs2_dat_o <= 0;
+                    imm_dat_o <= 0;
                     mem_en_o <= 0;
                     we_o <= 0;
                     sel_o <= 4'b0000;
+                    signed_ext_o <= 0;
                     rf_wen_o <= 0;
                     wdata_o <= 0;
                     wb_if_mem_o <= 0;
@@ -125,6 +136,7 @@ module EXE_MEM_reg #(
                     use_mem_dat_b_o <= 0;
                     exception_occured_o <= 0;
                     exception_cause_o <= 0;
+                    exception_val_o <= 0;
                     flush_tlb_o <= 0;
                 end else begin
                     instr_o <= instr_i;
@@ -132,9 +144,11 @@ module EXE_MEM_reg #(
                     rd_o <= rd_i;
                     rs1_dat_o <= rs1_dat_i;
                     rs2_dat_o <= rs2_dat_i;
+                    imm_dat_o <= imm_dat_i;
                     mem_en_o <= mem_en_i;
                     we_o <= we_i;
                     sel_o <= sel_i;
+                    signed_ext_o <= signed_ext_i;
                     rf_wen_o <= rf_wen_i;
                     wdata_o <= wdata_i;
                     wb_if_mem_o <= wb_if_mem_i;
@@ -146,6 +160,7 @@ module EXE_MEM_reg #(
                     use_mem_dat_b_o <= use_mem_dat_b_i;
                     exception_occured_o <= exception_occured_i;
                     exception_cause_o <= exception_cause_i;
+                    exception_val_o <= exception_val_i;
                     flush_tlb_o <= flush_tlb_i;
                 end
             end
