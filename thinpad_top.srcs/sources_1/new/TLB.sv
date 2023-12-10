@@ -102,16 +102,31 @@ module TLB #(
         endcase
     end
 
-    assign tlb_ready = (state == STATE_IDLE && !tlb_en) || (state == STATE_DONE);
+    assign tlb_ready = (state == STATE_IDLE && (!tlb_en || tlb_pre_hit)) || (state == STATE_DONE);
+
+    // TLB数据缓存
+    reg [ADDR_WIDTH-1:0] pre_addr;
+    always_ff @(posedge clk) begin
+        if(rst || flush_tlb)begin
+            pre_addr <= 0;
+        end else begin
+            if(tlb_ready)begin
+                pre_addr <= query_addr;
+            end
+        end
+    end
+
+    logic tlb_pre_hit;
+    assign tlb_pre_hit = (query_addr == pre_addr) && !query_write_en;
 
     always_comb begin
-        if((state == STATE_IDLE && tlb_en && !tlb_hit) || (state == STATE_TRANSLATE))begin
+        if((state == STATE_IDLE && tlb_en && !tlb_pre_hit && !tlb_hit) || (state == STATE_TRANSLATE))begin
             translation_en = 1;
         end else begin
             translation_en = 0;
         end
 
-        if((state == STATE_IDLE && tlb_en && tlb_hit) || (state == STATE_TRANSLATE && translation_ready && !translation_error) || (state == STATE_READ_DATA))begin
+        if((state == STATE_IDLE && tlb_en && !tlb_pre_hit && tlb_hit) || (state == STATE_TRANSLATE && translation_ready && !translation_error) || (state == STATE_READ_DATA))begin
             cache_mem_en = 1;
         end else begin
             cache_mem_en = 0;
@@ -132,7 +147,7 @@ module TLB #(
                             tlb_table[i] <= 0;
                         end
                     end
-                    if(tlb_en)begin
+                    if(tlb_en && !tlb_pre_hit)begin
                         if(tlb_hit)begin
                             state <= STATE_READ_DATA;
                         end else begin
