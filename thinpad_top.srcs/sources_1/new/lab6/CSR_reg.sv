@@ -1,5 +1,5 @@
 `timescale 1ns / 1ps
-`include "../header/csr.sv"
+`include "../header/csr.svh"
 
 module CSR_reg #(
     parameter ADDR_WIDTH = 32,

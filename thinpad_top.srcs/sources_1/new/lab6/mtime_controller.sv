@@ -1,4 +1,4 @@
-`include "../header/csr.sv"
+`include "../header/csr.svh"
 
 module mtime_controller #(
     parameter ADDR_WIDTH = 32,

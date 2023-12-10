@@ -1,5 +1,5 @@
 `timescale 1ns / 1ps
-`include "../header/opcode.sv"
+`include "../header/opcode.svh"
 //////////////////////////////////////////////////////////////////////////////////
 // Company: 
 // Engineer: 

@@ -1,6 +1,6 @@
 `timescale 1ns / 1ps
-`include "header/page_table_code.sv"
-`include "header/csr.sv"
+`include "header/page_table_code.svh"
+`include "header/csr.svh"
 
 module IF_MMU #(
     parameter ADDR_WIDTH = 32,

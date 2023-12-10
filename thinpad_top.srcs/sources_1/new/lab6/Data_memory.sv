@@ -1,5 +1,5 @@
 `timescale 1ns / 1ps
-`include "../header/opcode.sv"
+`include "../header/opcode.svh"
 //////////////////////////////////////////////////////////////////////////////////
 // Company: 
 // Engineer: 
@@ -86,7 +86,7 @@ module Data_memory #(
     reg [DATA_WIDTH-1:0] data_out_raw;
     logic [DATA_WIDTH-1:0] data_out_shift;
 
-    //符号位拓�?
+    //符号位拓�?
     logic sign_bit;
     always_comb begin
         case (sel)

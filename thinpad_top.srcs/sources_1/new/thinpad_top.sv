@@ -1,5 +1,5 @@
 `default_nettype none
-`include "header/opcode.sv"
+`include "header/opcode.svh"
 
 module thinpad_top #(
     parameter ADDR_WIDTH = 32,

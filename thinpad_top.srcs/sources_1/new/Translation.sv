@@ -1,5 +1,5 @@
 `timescale 1ns / 1ps
-`include "header/page_table_code.sv"
+`include "header/page_table_code.svh"
 
 module Translation #(
     parameter ADDR_WIDTH = 32,

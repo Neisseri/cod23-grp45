@@ -46,8 +46,8 @@ module tb;
   wire uart_tsre;  // ���ݷ�����ϱ��?
 
   // Windows ��Ҫע��·���ָ�����ת�壬���� "D:\\foo\\bar.bin"
-  parameter BASE_RAM_INIT_FILE = "C:\\tep\\homework\\ComputerPrinciple\\rv-2023\\supervisor-rv\\kernel\\kernel.bin"; // BaseRAM ��ʼ���ļ������޸�Ϊʵ�ʵľ���·��
-  parameter EXT_RAM_INIT_FILE = "/tmp/eram.bin";  // ExtRAM ��ʼ���ļ������޸�Ϊʵ�ʵľ���·��
+  parameter BASE_RAM_INIT_FILE = "C:\\tep\\homework\\ComputerPrinciple\\ucore\\bin\\rbl.img"; // BaseRAM ��ʼ���ļ������޸�Ϊʵ�ʵľ���·��
+  parameter EXT_RAM_INIT_FILE = "C:\\tep\\homework\\ComputerPrinciple\\ucore\\bin\\ucore.img";  // ExtRAM ��ʼ���ļ������޸�Ϊʵ�ʵľ���·��
   parameter FLASH_INIT_FILE = "/tmp/kernel.elf";  // Flash ��ʼ���ļ������޸�Ϊʵ�ʵľ���·��
 
   initial begin
@@ -68,23 +68,23 @@ module tb;
     end
 
     // ģ�� PC ͨ��ֱ�����ڣ��� FPGA �����ַ�
-    #4000000;
-    $display("sending G");
-    uart.pc_send_byte(8'h47); // ASCII 'G'
-    #10000;
-    #10000;
-    uart.pc_send_byte(8'hc4);
-    #10000;
-    uart.pc_send_byte(8'h10);
-    #10000;
-    uart.pc_send_byte(8'h00);
-    #10000;
-    uart.pc_send_byte(8'h80);
+//    #4000000;
+//    $display("sending G");
+//    uart.pc_send_byte(8'h47); // ASCII 'G'
+//    #10000;
+//    #10000;
+//    uart.pc_send_byte(8'hc4);
+//    #10000;
+//    uart.pc_send_byte(8'h10);
+//    #10000;
+//    uart.pc_send_byte(8'h00);
+//    #10000;
+//    uart.pc_send_byte(8'h80);
     #10000; // 80001170
 
   end
 
-  // �������û����???
+  // �������û����????
   thinpad_top dut (
       .clk_50M(clk_50M),
       .clk_11M0592(clk_11M0592),

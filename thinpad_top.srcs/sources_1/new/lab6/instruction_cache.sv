@@ -1,5 +1,5 @@
 `timescale 1ns / 1ps
-`include "../header/opcode.sv"
+`include "../header/opcode.svh"
 
 module instruction_cache #(
     parameter ADDR_WIDTH = 32,

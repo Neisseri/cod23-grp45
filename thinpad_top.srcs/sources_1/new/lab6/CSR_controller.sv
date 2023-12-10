@@ -1,6 +1,6 @@
 `timescale 1ns/1ps
-`include "../header/opcode.sv"
-`include "../header/csr.sv"
+`include "../header/opcode.svh"
+`include "../header/csr.svh"
 
 module CSR_controller #(
     parameter ADDR_WIDTH = 32,
