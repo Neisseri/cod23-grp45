@@ -277,7 +277,7 @@ module ID(
             OP_BEQ, OP_BNE: begin // B-type
                 imm = {{19{sign_bit}}, instr[31], instr[7], instr[30:25], instr[11:8], 1'b0};
             end
-            OP_LB, OP_ADDI, OP_ANDI, OP_JALR, OP_LW, OP_ORI, OP_SLLI, OP_SRLI: begin  // I-type
+            OP_LB, OP_ADDI, OP_ANDI, OP_JALR, OP_LW, OP_ORI: begin  // I-type
                 imm = {{20{sign_bit}}, instr[31:20]};
             end
             OP_SB, OP_SW: begin // S-type
@@ -285,6 +285,9 @@ module ID(
             end
             OP_JAL: begin // J-type
                 imm = {{11{sign_bit}}, instr[31], instr[19:12], instr[20], instr[30:21], 1'b0};
+            end
+            OP_SLLI, OP_SRLI: begin
+                imm = {{27{sign_bit}}, instr[24:20]};
             end
             default: begin  // unknown or no need of imm
                 imm = 0;
