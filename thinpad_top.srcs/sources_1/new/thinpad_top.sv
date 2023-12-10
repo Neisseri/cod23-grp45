@@ -989,11 +989,30 @@ module thinpad_top #(
 
   // Forward Unit
   logic exe_is_load;
-  assign exe_is_load = id_exe_mem_en && id_exe_rf_wen;
+  assign exe_is_load = (id_exe_mem_en || (id_exe_csr_op < 4'd7 && id_exe_csr_op > 4'd0)) && id_exe_rf_wen;
   logic mem_is_load;
-  assign mem_is_load = exe_mem_mem_en && exe_mem_rf_wen;
+  assign mem_is_load = (exe_mem_mem_en || (exe_mem_csr_op < 4'd7 && exe_mem_csr_op > 4'd0)) && exe_mem_rf_wen;
   logic wb_is_load;
-  assign wb_is_load = mem_wb_wb_if_mem && wb_rf_we;
+  assign wb_is_load = (mem_wb_wb_if_mem == 1 || mem_wb_wb_if_mem == 2) && wb_rf_we;
+
+  
+  // hazard 5
+  logic [DATA_WIDTH-1:0] mem_dat_out;
+  // hazard 6
+  logic [DATA_WIDTH-1:0] mem_wb_forward_data;
+  always_comb begin
+    if ((exe_mem_csr_op < 4'd7 && exe_mem_csr_op > 4'd0) && exe_mem_rf_wen) begin
+      mem_dat_out = mem_csr_dat;
+    end else begin
+      mem_dat_out = dm_data_out;
+    end
+
+    if (mem_wb_wb_if_mem == 2 && wb_rf_we) begin
+      mem_wb_forward_data = mem_wb_csr_dat;
+    end else begin
+      mem_wb_forward_data = mem_wb_mem_data;
+    end
+  end
 
   Forward_Unit FU_u(
     .id_exe_rs1(id_exe_rs1),
@@ -1014,8 +1033,8 @@ module thinpad_top #(
     .mem_wb_is_load(wb_is_load),
     .wb_dat(wb_wdata),
     .id_exe_dat(alu_y),
-    .mem_dat(dm_data_out),
-    .mem_wb_mem_dat(mem_wb_mem_data),
+    .mem_dat(mem_dat_out),
+    .mem_wb_mem_dat(mem_wb_forward_data),
 
     // hazard 3 signals
     .rs1_forward_o(rs1_forward),

@@ -68,12 +68,12 @@ module tb;
     end
 
     // ģ�� PC ͨ��ֱ�����ڣ��� FPGA �����ַ�
-    #5500000;
+    #4000000;
     $display("sending G");
     uart.pc_send_byte(8'h47); // ASCII 'G'
     #10000;
     #10000;
-    uart.pc_send_byte(8'hc4);
+    uart.pc_send_byte(8'h00);
     #10000;
     uart.pc_send_byte(8'h10);
     #10000;
@@ -84,7 +84,7 @@ module tb;
 
   end
 
-  // �������û����??
+  // �������û����???
   thinpad_top dut (
       .clk_50M(clk_50M),
       .clk_11M0592(clk_11M0592),

@@ -12,15 +12,15 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="6144233084fs"></ZoomStartTime>
-      <ZoomEndTime time="6144964585fs"></ZoomEndTime>
-      <Cursor1Time time="6144430000fs"></Cursor1Time>
+      <ZoomStartTime time="8091023916fs"></ZoomStartTime>
+      <ZoomEndTime time="8091755417fs"></ZoomEndTime>
+      <Cursor1Time time="8091633500fs"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
       <NameColumnWidth column_width="246"></NameColumnWidth>
       <ValueColumnWidth column_width="165"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="98" />
+   <WVObjectSize size="173" />
    <wave_markers>
       <marker time="6008370000" label="" />
       <marker time="6147050000" label="" />
@@ -415,6 +415,306 @@
       <obj_property name="ObjectShortName">ADDR_WIDTH[31:0]</obj_property>
    </wvobject>
    <wvobject fp_name="/tb/dut/mem_mmu_u/translation_u/DATA_WIDTH" type="array">
+      <obj_property name="ElementShortName">DATA_WIDTH[31:0]</obj_property>
+      <obj_property name="ObjectShortName">DATA_WIDTH[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/sram_controller_ext/clk_i" type="logic">
+      <obj_property name="ElementShortName">clk_i</obj_property>
+      <obj_property name="ObjectShortName">clk_i</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/sram_controller_ext/rst_i" type="logic">
+      <obj_property name="ElementShortName">rst_i</obj_property>
+      <obj_property name="ObjectShortName">rst_i</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/sram_controller_ext/wb_cyc_i" type="logic">
+      <obj_property name="ElementShortName">wb_cyc_i</obj_property>
+      <obj_property name="ObjectShortName">wb_cyc_i</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/sram_controller_ext/wb_stb_i" type="logic">
+      <obj_property name="ElementShortName">wb_stb_i</obj_property>
+      <obj_property name="ObjectShortName">wb_stb_i</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/sram_controller_ext/wb_ack_o" type="logic">
+      <obj_property name="ElementShortName">wb_ack_o</obj_property>
+      <obj_property name="ObjectShortName">wb_ack_o</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/sram_controller_ext/wb_adr_i" type="array">
+      <obj_property name="ElementShortName">wb_adr_i[31:0]</obj_property>
+      <obj_property name="ObjectShortName">wb_adr_i[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/sram_controller_ext/wb_dat_i" type="array">
+      <obj_property name="ElementShortName">wb_dat_i[31:0]</obj_property>
+      <obj_property name="ObjectShortName">wb_dat_i[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/sram_controller_ext/wb_dat_o" type="array">
+      <obj_property name="ElementShortName">wb_dat_o[31:0]</obj_property>
+      <obj_property name="ObjectShortName">wb_dat_o[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/sram_controller_ext/wb_sel_i" type="array">
+      <obj_property name="ElementShortName">wb_sel_i[3:0]</obj_property>
+      <obj_property name="ObjectShortName">wb_sel_i[3:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/sram_controller_ext/wb_we_i" type="logic">
+      <obj_property name="ElementShortName">wb_we_i</obj_property>
+      <obj_property name="ObjectShortName">wb_we_i</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/sram_controller_ext/sram_addr" type="array">
+      <obj_property name="ElementShortName">sram_addr[19:0]</obj_property>
+      <obj_property name="ObjectShortName">sram_addr[19:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/sram_controller_ext/sram_data" type="array">
+      <obj_property name="ElementShortName">sram_data[31:0]</obj_property>
+      <obj_property name="ObjectShortName">sram_data[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/sram_controller_ext/sram_ce_n" type="logic">
+      <obj_property name="ElementShortName">sram_ce_n</obj_property>
+      <obj_property name="ObjectShortName">sram_ce_n</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/sram_controller_ext/sram_oe_n" type="logic">
+      <obj_property name="ElementShortName">sram_oe_n</obj_property>
+      <obj_property name="ObjectShortName">sram_oe_n</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/sram_controller_ext/sram_we_n" type="logic">
+      <obj_property name="ElementShortName">sram_we_n</obj_property>
+      <obj_property name="ObjectShortName">sram_we_n</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/sram_controller_ext/sram_be_n" type="array">
+      <obj_property name="ElementShortName">sram_be_n[3:0]</obj_property>
+      <obj_property name="ObjectShortName">sram_be_n[3:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/sram_controller_ext/state" type="array">
+      <obj_property name="ElementShortName">state[2:0]</obj_property>
+      <obj_property name="ObjectShortName">state[2:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/sram_controller_ext/sram_data_i_comb" type="array">
+      <obj_property name="ElementShortName">sram_data_i_comb[31:0]</obj_property>
+      <obj_property name="ObjectShortName">sram_data_i_comb[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/sram_controller_ext/sram_data_o_reg" type="array">
+      <obj_property name="ElementShortName">sram_data_o_reg[31:0]</obj_property>
+      <obj_property name="ObjectShortName">sram_data_o_reg[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/sram_controller_ext/sram_data_t_reg" type="logic">
+      <obj_property name="ElementShortName">sram_data_t_reg</obj_property>
+      <obj_property name="ObjectShortName">sram_data_t_reg</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/sram_controller_ext/sram_ce_n_reg" type="logic">
+      <obj_property name="ElementShortName">sram_ce_n_reg</obj_property>
+      <obj_property name="ObjectShortName">sram_ce_n_reg</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/sram_controller_ext/sram_oe_n_reg" type="logic">
+      <obj_property name="ElementShortName">sram_oe_n_reg</obj_property>
+      <obj_property name="ObjectShortName">sram_oe_n_reg</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/sram_controller_ext/sram_we_n_reg" type="logic">
+      <obj_property name="ElementShortName">sram_we_n_reg</obj_property>
+      <obj_property name="ObjectShortName">sram_we_n_reg</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/sram_controller_ext/DATA_WIDTH" type="array">
+      <obj_property name="ElementShortName">DATA_WIDTH[31:0]</obj_property>
+      <obj_property name="ObjectShortName">DATA_WIDTH[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/sram_controller_ext/ADDR_WIDTH" type="array">
+      <obj_property name="ElementShortName">ADDR_WIDTH[31:0]</obj_property>
+      <obj_property name="ObjectShortName">ADDR_WIDTH[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/sram_controller_ext/SRAM_ADDR_WIDTH" type="array">
+      <obj_property name="ElementShortName">SRAM_ADDR_WIDTH[31:0]</obj_property>
+      <obj_property name="ObjectShortName">SRAM_ADDR_WIDTH[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/sram_controller_ext/SRAM_DATA_WIDTH" type="array">
+      <obj_property name="ElementShortName">SRAM_DATA_WIDTH[31:0]</obj_property>
+      <obj_property name="ObjectShortName">SRAM_DATA_WIDTH[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/sram_controller_ext/SRAM_BYTES" type="array">
+      <obj_property name="ElementShortName">SRAM_BYTES[31:0]</obj_property>
+      <obj_property name="ObjectShortName">SRAM_BYTES[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/sram_controller_ext/SRAM_BYTE_WIDTH" type="array">
+      <obj_property name="ElementShortName">SRAM_BYTE_WIDTH[31:0]</obj_property>
+      <obj_property name="ObjectShortName">SRAM_BYTE_WIDTH[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/EXE_MEM/clk" type="logic">
+      <obj_property name="ElementShortName">clk</obj_property>
+      <obj_property name="ObjectShortName">clk</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/EXE_MEM/rst" type="logic">
+      <obj_property name="ElementShortName">rst</obj_property>
+      <obj_property name="ObjectShortName">rst</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/EXE_MEM/stall" type="logic">
+      <obj_property name="ElementShortName">stall</obj_property>
+      <obj_property name="ObjectShortName">stall</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/EXE_MEM/bubble" type="logic">
+      <obj_property name="ElementShortName">bubble</obj_property>
+      <obj_property name="ObjectShortName">bubble</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/EXE_MEM/instr_i" type="array">
+      <obj_property name="ElementShortName">instr_i[31:0]</obj_property>
+      <obj_property name="ObjectShortName">instr_i[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/EXE_MEM/instr_o" type="array">
+      <obj_property name="ElementShortName">instr_o[31:0]</obj_property>
+      <obj_property name="ObjectShortName">instr_o[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/EXE_MEM/pc_i" type="array">
+      <obj_property name="ElementShortName">pc_i[31:0]</obj_property>
+      <obj_property name="ObjectShortName">pc_i[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/EXE_MEM/pc_o" type="array">
+      <obj_property name="ElementShortName">pc_o[31:0]</obj_property>
+      <obj_property name="ObjectShortName">pc_o[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/EXE_MEM/rd_i" type="array">
+      <obj_property name="ElementShortName">rd_i[4:0]</obj_property>
+      <obj_property name="ObjectShortName">rd_i[4:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/EXE_MEM/rs1_dat_i" type="array">
+      <obj_property name="ElementShortName">rs1_dat_i[31:0]</obj_property>
+      <obj_property name="ObjectShortName">rs1_dat_i[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/EXE_MEM/rs2_dat_i" type="array">
+      <obj_property name="ElementShortName">rs2_dat_i[31:0]</obj_property>
+      <obj_property name="ObjectShortName">rs2_dat_i[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/EXE_MEM/mem_en_i" type="logic">
+      <obj_property name="ElementShortName">mem_en_i</obj_property>
+      <obj_property name="ObjectShortName">mem_en_i</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/EXE_MEM/rf_wen_i" type="logic">
+      <obj_property name="ElementShortName">rf_wen_i</obj_property>
+      <obj_property name="ObjectShortName">rf_wen_i</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/EXE_MEM/sel_i" type="array">
+      <obj_property name="ElementShortName">sel_i[3:0]</obj_property>
+      <obj_property name="ObjectShortName">sel_i[3:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/EXE_MEM/we_i" type="logic">
+      <obj_property name="ElementShortName">we_i</obj_property>
+      <obj_property name="ObjectShortName">we_i</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/EXE_MEM/wb_if_mem_i" type="array">
+      <obj_property name="ElementShortName">wb_if_mem_i[3:0]</obj_property>
+      <obj_property name="ObjectShortName">wb_if_mem_i[3:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/EXE_MEM/csr_we_i" type="logic">
+      <obj_property name="ElementShortName">csr_we_i</obj_property>
+      <obj_property name="ObjectShortName">csr_we_i</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/EXE_MEM/csr_adr_i" type="array">
+      <obj_property name="ElementShortName">csr_adr_i[11:0]</obj_property>
+      <obj_property name="ObjectShortName">csr_adr_i[11:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/EXE_MEM/csr_op_i" type="array">
+      <obj_property name="ElementShortName">csr_op_i[3:0]</obj_property>
+      <obj_property name="ObjectShortName">csr_op_i[3:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/EXE_MEM/env_op_i" type="array">
+      <obj_property name="ElementShortName">env_op_i[3:0]</obj_property>
+      <obj_property name="ObjectShortName">env_op_i[3:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/EXE_MEM/flush_tlb_i" type="logic">
+      <obj_property name="ElementShortName">flush_tlb_i</obj_property>
+      <obj_property name="ObjectShortName">flush_tlb_i</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/EXE_MEM/rd_o" type="array">
+      <obj_property name="ElementShortName">rd_o[4:0]</obj_property>
+      <obj_property name="ObjectShortName">rd_o[4:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/EXE_MEM/rs1_dat_o" type="array">
+      <obj_property name="ElementShortName">rs1_dat_o[31:0]</obj_property>
+      <obj_property name="ObjectShortName">rs1_dat_o[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/EXE_MEM/rs2_dat_o" type="array">
+      <obj_property name="ElementShortName">rs2_dat_o[31:0]</obj_property>
+      <obj_property name="ObjectShortName">rs2_dat_o[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/EXE_MEM/mem_en_o" type="logic">
+      <obj_property name="ElementShortName">mem_en_o</obj_property>
+      <obj_property name="ObjectShortName">mem_en_o</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/EXE_MEM/rf_wen_o" type="logic">
+      <obj_property name="ElementShortName">rf_wen_o</obj_property>
+      <obj_property name="ObjectShortName">rf_wen_o</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/EXE_MEM/sel_o" type="array">
+      <obj_property name="ElementShortName">sel_o[3:0]</obj_property>
+      <obj_property name="ObjectShortName">sel_o[3:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/EXE_MEM/we_o" type="logic">
+      <obj_property name="ElementShortName">we_o</obj_property>
+      <obj_property name="ObjectShortName">we_o</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/EXE_MEM/wb_if_mem_o" type="array">
+      <obj_property name="ElementShortName">wb_if_mem_o[3:0]</obj_property>
+      <obj_property name="ObjectShortName">wb_if_mem_o[3:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/EXE_MEM/csr_we_o" type="logic">
+      <obj_property name="ElementShortName">csr_we_o</obj_property>
+      <obj_property name="ObjectShortName">csr_we_o</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/EXE_MEM/csr_adr_o" type="array">
+      <obj_property name="ElementShortName">csr_adr_o[11:0]</obj_property>
+      <obj_property name="ObjectShortName">csr_adr_o[11:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/EXE_MEM/csr_op_o" type="array">
+      <obj_property name="ElementShortName">csr_op_o[3:0]</obj_property>
+      <obj_property name="ObjectShortName">csr_op_o[3:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/EXE_MEM/env_op_o" type="array">
+      <obj_property name="ElementShortName">env_op_o[3:0]</obj_property>
+      <obj_property name="ObjectShortName">env_op_o[3:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/EXE_MEM/flush_tlb_o" type="logic">
+      <obj_property name="ElementShortName">flush_tlb_o</obj_property>
+      <obj_property name="ObjectShortName">flush_tlb_o</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/EXE_MEM/wdata_i" type="array">
+      <obj_property name="ElementShortName">wdata_i[31:0]</obj_property>
+      <obj_property name="ObjectShortName">wdata_i[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/EXE_MEM/wdata_o" type="array">
+      <obj_property name="ElementShortName">wdata_o[31:0]</obj_property>
+      <obj_property name="ObjectShortName">wdata_o[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/EXE_MEM/use_mem_dat_a_i" type="logic">
+      <obj_property name="ElementShortName">use_mem_dat_a_i</obj_property>
+      <obj_property name="ObjectShortName">use_mem_dat_a_i</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/EXE_MEM/use_mem_dat_b_i" type="logic">
+      <obj_property name="ElementShortName">use_mem_dat_b_i</obj_property>
+      <obj_property name="ObjectShortName">use_mem_dat_b_i</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/EXE_MEM/use_mem_dat_a_o" type="logic">
+      <obj_property name="ElementShortName">use_mem_dat_a_o</obj_property>
+      <obj_property name="ObjectShortName">use_mem_dat_a_o</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/EXE_MEM/use_mem_dat_b_o" type="logic">
+      <obj_property name="ElementShortName">use_mem_dat_b_o</obj_property>
+      <obj_property name="ObjectShortName">use_mem_dat_b_o</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/EXE_MEM/exception_occured_i" type="logic">
+      <obj_property name="ElementShortName">exception_occured_i</obj_property>
+      <obj_property name="ObjectShortName">exception_occured_i</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/EXE_MEM/exception_cause_i" type="array">
+      <obj_property name="ElementShortName">exception_cause_i[31:0]</obj_property>
+      <obj_property name="ObjectShortName">exception_cause_i[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/EXE_MEM/exception_occured_o" type="logic">
+      <obj_property name="ElementShortName">exception_occured_o</obj_property>
+      <obj_property name="ObjectShortName">exception_occured_o</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/EXE_MEM/exception_cause_o" type="array">
+      <obj_property name="ElementShortName">exception_cause_o[31:0]</obj_property>
+      <obj_property name="ObjectShortName">exception_cause_o[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/EXE_MEM/ADDR_WIDTH" type="array">
+      <obj_property name="ElementShortName">ADDR_WIDTH[31:0]</obj_property>
+      <obj_property name="ObjectShortName">ADDR_WIDTH[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/EXE_MEM/DATA_WIDTH" type="array">
       <obj_property name="ElementShortName">DATA_WIDTH[31:0]</obj_property>
       <obj_property name="ObjectShortName">DATA_WIDTH[31:0]</obj_property>
    </wvobject>
