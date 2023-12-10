@@ -76,25 +76,25 @@
       <obj_property name="ElementShortName">id_rd[4:0]</obj_property>
       <obj_property name="ObjectShortName">id_rd[4:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb/dut/id_rs1" type="array">
-      <obj_property name="ElementShortName">id_rs1[4:0]</obj_property>
-      <obj_property name="ObjectShortName">id_rs1[4:0]</obj_property>
+   <wvobject fp_name="/tb/dut/IM/cache_hit" type="logic">
+      <obj_property name="ElementShortName">cache_hit</obj_property>
+      <obj_property name="ObjectShortName">cache_hit</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb/dut/id_rs2" type="array">
-      <obj_property name="ElementShortName">id_rs2[4:0]</obj_property>
-      <obj_property name="ObjectShortName">id_rs2[4:0]</obj_property>
+   <wvobject fp_name="/tb/dut/IM/selected_way" type="array">
+      <obj_property name="ElementShortName">selected_way[2:0]</obj_property>
+      <obj_property name="ObjectShortName">selected_way[2:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb/dut/id_imm" type="array">
-      <obj_property name="ElementShortName">id_imm[31:0]</obj_property>
-      <obj_property name="ObjectShortName">id_imm[31:0]</obj_property>
+   <wvobject fp_name="/tb/dut/IM/wb_adr_o" type="array">
+      <obj_property name="ElementShortName">wb_adr_o[31:0]</obj_property>
+      <obj_property name="ObjectShortName">wb_adr_o[31:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb/dut/id_op_type_out" type="array">
-      <obj_property name="ElementShortName">id_op_type_out[7:0]</obj_property>
-      <obj_property name="ObjectShortName">id_op_type_out[7:0]</obj_property>
+   <wvobject fp_name="/tb/dut/IM/wb_dat_i" type="array">
+      <obj_property name="ElementShortName">wb_dat_i[31:0]</obj_property>
+      <obj_property name="ObjectShortName">wb_dat_i[31:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb/dut/id_alu_op" type="array">
-      <obj_property name="ElementShortName">id_alu_op[3:0]</obj_property>
-      <obj_property name="ObjectShortName">id_alu_op[3:0]</obj_property>
+   <wvobject fp_name="/tb/dut/IM/state" type="array">
+      <obj_property name="ElementShortName">state[3:0]</obj_property>
+      <obj_property name="ObjectShortName">state[3:0]</obj_property>
    </wvobject>
    <wvobject fp_name="/tb/dut/id_exe_instr" type="array">
       <obj_property name="ElementShortName">id_exe_instr[31:0]</obj_property>
