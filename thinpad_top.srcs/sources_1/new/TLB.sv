@@ -110,7 +110,7 @@ module TLB #(
         if(rst || flush_tlb || query_write_en)begin
             pre_addr <= 0;
         end else begin
-            if(tlb_ready)begin
+            if(tlb_ready && tlb_en)begin
                 pre_addr <= query_addr;
             end
         end
