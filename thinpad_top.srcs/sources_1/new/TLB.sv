@@ -107,7 +107,7 @@ module TLB #(
     // TLB数据缓存
     reg [ADDR_WIDTH-1:0] pre_addr;
     always_ff @(posedge clk) begin
-        if(rst || flush_tlb)begin
+        if(rst || flush_tlb || query_write_en)begin
             pre_addr <= 0;
         end else begin
             if(tlb_ready)begin
