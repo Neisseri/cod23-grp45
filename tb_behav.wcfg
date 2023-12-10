@@ -11,17 +11,17 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="5123219250fs"></ZoomStartTime>
-      <ZoomEndTime time="5123417251fs"></ZoomEndTime>
-      <Cursor1Time time="5123410000fs"></Cursor1Time>
+      <ZoomStartTime time="2769500fs"></ZoomStartTime>
+      <ZoomEndTime time="5064501fs"></ZoomEndTime>
+      <Cursor1Time time="3152000fs"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
       <NameColumnWidth column_width="294"></NameColumnWidth>
-      <ValueColumnWidth column_width="238"></ValueColumnWidth>
+      <ValueColumnWidth column_width="232"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="76" />
+   <WVObjectSize size="58" />
    <wave_markers>
-      <marker time="2778048" label="" />
+      <marker time="3152000" label="" />
    </wave_markers>
    <wvobject fp_name="/tb/dut/sys_clk" type="logic">
       <obj_property name="ElementShortName">sys_clk</obj_property>
@@ -63,34 +63,6 @@
       <obj_property name="ElementShortName">rf_rdata_b[31:0]</obj_property>
       <obj_property name="ObjectShortName">rf_rdata_b[31:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb/dut/rf_rdata_a_tmp" type="array">
-      <obj_property name="ElementShortName">rf_rdata_a_tmp[31:0]</obj_property>
-      <obj_property name="ObjectShortName">rf_rdata_a_tmp[31:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb/dut/rf_rdata_b_tmp" type="array">
-      <obj_property name="ElementShortName">rf_rdata_b_tmp[31:0]</obj_property>
-      <obj_property name="ObjectShortName">rf_rdata_b_tmp[31:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb/dut/rs1_forward" type="logic">
-      <obj_property name="ElementShortName">rs1_forward</obj_property>
-      <obj_property name="ObjectShortName">rs1_forward</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb/dut/rs2_forward" type="logic">
-      <obj_property name="ElementShortName">rs2_forward</obj_property>
-      <obj_property name="ObjectShortName">rs2_forward</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb/dut/rs1_forward_dat" type="array">
-      <obj_property name="ElementShortName">rs1_forward_dat[31:0]</obj_property>
-      <obj_property name="ObjectShortName">rs1_forward_dat[31:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb/dut/FU_u/rs1_forward_dat_o" type="array">
-      <obj_property name="ElementShortName">rs1_forward_dat_o[31:0]</obj_property>
-      <obj_property name="ObjectShortName">rs1_forward_dat_o[31:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb/dut/rs2_forward_dat" type="array">
-      <obj_property name="ElementShortName">rs2_forward_dat[31:0]</obj_property>
-      <obj_property name="ObjectShortName">rs2_forward_dat[31:0]</obj_property>
-   </wvobject>
    <wvobject fp_name="/tb/dut/id_exe_pc" type="array">
       <obj_property name="ElementShortName">id_exe_pc[31:0]</obj_property>
       <obj_property name="ObjectShortName">id_exe_pc[31:0]</obj_property>
@@ -107,10 +79,6 @@
       <obj_property name="ElementShortName">id_exe_rs2[4:0]</obj_property>
       <obj_property name="ObjectShortName">id_exe_rs2[4:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb/dut/FU_u/id_exe_is_load" type="logic">
-      <obj_property name="ElementShortName">id_exe_is_load</obj_property>
-      <obj_property name="ObjectShortName">id_exe_is_load</obj_property>
-   </wvobject>
    <wvobject fp_name="/tb/dut/alu_u/alu_a" type="array">
       <obj_property name="ElementShortName">alu_a[31:0]</obj_property>
       <obj_property name="ObjectShortName">alu_a[31:0]</obj_property>
@@ -120,8 +88,8 @@
       <obj_property name="ObjectShortName">alu_b[31:0]</obj_property>
    </wvobject>
    <wvobject fp_name="/tb/dut/alu_u/alu_op" type="array">
-      <obj_property name="ElementShortName">alu_op[3:0]</obj_property>
-      <obj_property name="ObjectShortName">alu_op[3:0]</obj_property>
+      <obj_property name="ElementShortName">alu_op[5:0]</obj_property>
+      <obj_property name="ObjectShortName">alu_op[5:0]</obj_property>
    </wvobject>
    <wvobject fp_name="/tb/dut/alu_y" type="array">
       <obj_property name="ElementShortName">alu_y[31:0]</obj_property>
@@ -130,10 +98,6 @@
    <wvobject fp_name="/tb/dut/exe_mem_instr" type="array">
       <obj_property name="ElementShortName">exe_mem_instr[31:0]</obj_property>
       <obj_property name="ObjectShortName">exe_mem_instr[31:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb/dut/FU_u/exe_mem_is_load" type="logic">
-      <obj_property name="ElementShortName">exe_mem_is_load</obj_property>
-      <obj_property name="ObjectShortName">exe_mem_is_load</obj_property>
    </wvobject>
    <wvobject fp_name="/tb/dut/exe_mem_wdata" type="array">
       <obj_property name="ElementShortName">exe_mem_wdata[31:0]</obj_property>
@@ -203,10 +167,6 @@
       <obj_property name="ElementShortName">dm_data_out[31:0]</obj_property>
       <obj_property name="ObjectShortName">dm_data_out[31:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/tb/dut/FU_u/mem_dat" type="array">
-      <obj_property name="ElementShortName">mem_dat[31:0]</obj_property>
-      <obj_property name="ObjectShortName">mem_dat[31:0]</obj_property>
-   </wvobject>
    <wvobject fp_name="/tb/dut/DM_u/wb_we_o" type="logic">
       <obj_property name="ElementShortName">wb_we_o</obj_property>
       <obj_property name="ObjectShortName">wb_we_o</obj_property>
@@ -214,10 +174,6 @@
    <wvobject fp_name="/tb/dut/FU_u/mem_wb_dat" type="array">
       <obj_property name="ElementShortName">mem_wb_dat[31:0]</obj_property>
       <obj_property name="ObjectShortName">mem_wb_dat[31:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb/dut/FU_u/mem_wb_is_load" type="logic">
-      <obj_property name="ElementShortName">mem_wb_is_load</obj_property>
-      <obj_property name="ObjectShortName">mem_wb_is_load</obj_property>
    </wvobject>
    <wvobject fp_name="/tb/dut/mem_wb_wdata" type="array">
       <obj_property name="ElementShortName">mem_wb_wdata[31:0]</obj_property>
@@ -227,6 +183,26 @@
       <obj_property name="ElementShortName">mem_wb_mem_data[31:0]</obj_property>
       <obj_property name="ObjectShortName">mem_wb_mem_data[31:0]</obj_property>
    </wvobject>
+   <wvobject fp_name="/tb/dut/DM_u/signed_ext_i" type="logic">
+      <obj_property name="ElementShortName">signed_ext_i</obj_property>
+      <obj_property name="ObjectShortName">signed_ext_i</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/DM_u/sign_bit" type="logic">
+      <obj_property name="ElementShortName">sign_bit</obj_property>
+      <obj_property name="ObjectShortName">sign_bit</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/DM_u/data_out" type="array">
+      <obj_property name="ElementShortName">data_out[31:0]</obj_property>
+      <obj_property name="ObjectShortName">data_out[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/DM_u/data_out_raw" type="array">
+      <obj_property name="ElementShortName">data_out_raw[31:0]</obj_property>
+      <obj_property name="ObjectShortName">data_out_raw[31:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/tb/dut/DM_u/data_out_shift" type="array">
+      <obj_property name="ElementShortName">data_out_shift[31:0]</obj_property>
+      <obj_property name="ObjectShortName">data_out_shift[31:0]</obj_property>
+   </wvobject>
    <wvobject fp_name="/tb/dut/RF_u/regs" type="array">
       <obj_property name="ElementShortName">regs[0:31][31:0]</obj_property>
       <obj_property name="ObjectShortName">regs[0:31][31:0]</obj_property>
@@ -235,54 +211,6 @@
    <wvobject fp_name="/tb/dut/wb_wdata" type="array">
       <obj_property name="ElementShortName">wb_wdata[31:0]</obj_property>
       <obj_property name="ObjectShortName">wb_wdata[31:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb/dut/FU_u/hazard1_a" type="logic">
-      <obj_property name="ElementShortName">hazard1_a</obj_property>
-      <obj_property name="ObjectShortName">hazard1_a</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb/dut/FU_u/hazard1_b" type="logic">
-      <obj_property name="ElementShortName">hazard1_b</obj_property>
-      <obj_property name="ObjectShortName">hazard1_b</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb/dut/FU_u/hazard2_a" type="logic">
-      <obj_property name="ElementShortName">hazard2_a</obj_property>
-      <obj_property name="ObjectShortName">hazard2_a</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb/dut/FU_u/hazard2_b" type="logic">
-      <obj_property name="ElementShortName">hazard2_b</obj_property>
-      <obj_property name="ObjectShortName">hazard2_b</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb/dut/FU_u/hazard3_a" type="logic">
-      <obj_property name="ElementShortName">hazard3_a</obj_property>
-      <obj_property name="ObjectShortName">hazard3_a</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb/dut/FU_u/hazard3_b" type="logic">
-      <obj_property name="ElementShortName">hazard3_b</obj_property>
-      <obj_property name="ObjectShortName">hazard3_b</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb/dut/FU_u/hazard4_a" type="logic">
-      <obj_property name="ElementShortName">hazard4_a</obj_property>
-      <obj_property name="ObjectShortName">hazard4_a</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb/dut/FU_u/hazard4_b" type="logic">
-      <obj_property name="ElementShortName">hazard4_b</obj_property>
-      <obj_property name="ObjectShortName">hazard4_b</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb/dut/FU_u/hazard5_a" type="logic">
-      <obj_property name="ElementShortName">hazard5_a</obj_property>
-      <obj_property name="ObjectShortName">hazard5_a</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb/dut/FU_u/hazard5_b" type="logic">
-      <obj_property name="ElementShortName">hazard5_b</obj_property>
-      <obj_property name="ObjectShortName">hazard5_b</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb/dut/FU_u/hazard6_a" type="logic">
-      <obj_property name="ElementShortName">hazard6_a</obj_property>
-      <obj_property name="ObjectShortName">hazard6_a</obj_property>
-   </wvobject>
-   <wvobject fp_name="/tb/dut/FU_u/hazard6_b" type="logic">
-      <obj_property name="ElementShortName">hazard6_b</obj_property>
-      <obj_property name="ObjectShortName">hazard6_b</obj_property>
    </wvobject>
    <wvobject fp_name="/tb/dut/FU_u/use_mem_dat_a" type="logic">
       <obj_property name="ElementShortName">use_mem_dat_a</obj_property>
