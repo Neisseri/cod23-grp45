@@ -99,13 +99,17 @@ module TLB #(
             STATE_TRANSLATE: wishbone_owner = `TRANSLATE_OWN;
             STATE_READ_DATA: wishbone_owner = `CACHE_OWN;
             STATE_DONE: wishbone_owner = `TLB_OWN;
+            default: wishbone_owner = `TLB_OWN;
         endcase
     end
+
+    logic tlb_pre_hit;
+    reg [ADDR_WIDTH-1:0] pre_addr;
+    assign tlb_pre_hit = (query_addr == pre_addr) && !query_write_en;
 
     assign tlb_ready = (state == STATE_IDLE && (!tlb_en || tlb_pre_hit)) || (state == STATE_DONE);
 
     // TLB数据缓存
-    reg [ADDR_WIDTH-1:0] pre_addr;
     always_ff @(posedge clk) begin
         if(rst || flush_tlb || query_write_en)begin
             pre_addr <= 0;
@@ -115,9 +119,6 @@ module TLB #(
             end
         end
     end
-
-    logic tlb_pre_hit;
-    assign tlb_pre_hit = (query_addr == pre_addr) && !query_write_en;
 
     always_comb begin
         if((state == STATE_IDLE && tlb_en && !tlb_pre_hit && !tlb_hit) || (state == STATE_TRANSLATE))begin

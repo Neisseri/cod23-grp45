@@ -758,7 +758,7 @@ module thinpad_top #(
   
   //MEM
   logic cpu_to_mmu_mem_en;
-  assign cpu_to_mmu_mem_en = exe_mem_mem_en && !exe_mem_exception_occured;
+  assign cpu_to_mmu_mem_en = exe_mem_mem_en; // TODO
   logic dm_master_ready_o;
   logic dm_to_mmu_master_ready;
   assign mem_stall_req = ~dm_master_ready_o; //dm_to_mmu_master_ready;
@@ -812,9 +812,6 @@ module thinpad_top #(
   logic [DATA_WIDTH-1:0] dm_wb_dat_i;
   logic [DATA_WIDTH/8-1:0] dm_wb_sel_o;
   logic dm_wb_we_o;
-  logic dm_master_ready_o;
-  assign mem_stall_req = ~dm_master_ready_o;
-  logic [DATA_WIDTH-1:0] dm_data_out;
   logic [ADDR_WIDTH-1:0] dm_exception_pc;
   always_ff @ (posedge sys_clk) begin
     if (sys_rst) begin
