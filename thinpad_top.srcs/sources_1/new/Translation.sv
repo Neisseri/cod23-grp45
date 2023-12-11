@@ -93,10 +93,10 @@ typedef enum logic [2:0] {
         end else begin
             case (state)
                 STATE_IDLE: begin
+                    instruction_page_fault <= 0;
+                    load_page_fault <= 0;
+                    store_page_fault <= 0;
                     if(translation_en)begin
-                        instruction_page_fault <= 0;
-                        load_page_fault <= 0;
-                        store_page_fault <= 0;
                         wb_adr_o <= first_table_addr;
                         state <= STATE_FETCH_TABLE;
                     end
