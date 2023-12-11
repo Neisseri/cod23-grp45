@@ -988,6 +988,9 @@ module thinpad_top #(
     .csr_mie_o(csr_mie_wdat),
     .csr_mie_we_o(csr_mie_we),
 
+    .id_exe_pc_i(id_exe_pc),
+    .if_id_pc_i(if_id_pc),
+    .if_pc_i(pc_addr),
     .mem_pc_i(exe_mem_pc),
     .pc_next_exception_o(pc_next_exception),
     .mem_exception_o(mem_exception),

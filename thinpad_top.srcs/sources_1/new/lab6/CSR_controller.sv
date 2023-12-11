@@ -60,6 +60,9 @@ module CSR_controller #(
     output reg [DATA_WIDTH-1:0] csr_mie_o,
     output reg csr_mie_we_o,
 
+    input wire [DATA_WIDTH-1:0] id_exe_pc_i,
+    input wire [DATA_WIDTH-1:0] if_id_pc_i,
+    input wire [DATA_WIDTH-1:0] if_pc_i,
     input wire [ADDR_WIDTH-1:0] mem_pc_i,
     output reg [ADDR_WIDTH-1:0] pc_next_exception_o,
     output reg mem_exception_o,
@@ -76,6 +79,17 @@ module CSR_controller #(
     );
 
     reg exception_idle; // set 1 for idle after handling a exception
+
+    logic [DATA_WIDTH-1:0] next_pc;
+    always_comb begin
+        if (id_exe_pc_i != 0) begin
+            next_pc = id_exe_pc_i;
+        end else if (if_id_pc_i != 0) begin
+            next_pc = if_id_pc_i;
+        end else begin
+            next_pc = if_pc_i;
+        end
+    end
 
     always_comb begin
         csr_adr_o = 0;
@@ -228,7 +242,7 @@ module CSR_controller #(
                         csr_scause_we_o <= 1;
                         csr_stval_o <= csr_stval_i;
                         csr_stval_we_o <= 1;
-                        csr_sepc_o <= mem_pc_i;
+                        csr_sepc_o <= next_pc;
                         csr_sepc_we_o <= 1;
                         csr_mstatus_o <= {
                             csr_mstatus_i[31:9],
@@ -250,7 +264,7 @@ module CSR_controller #(
                         csr_mcause_we_o <= 1;
                         csr_mtval_o <= csr_mtval_i;
                         csr_mtval_we_o <= 1;
-                        csr_mepc_o <= mem_pc_i;
+                        csr_mepc_o <= next_pc;
                         csr_mepc_we_o <= 1;
                         csr_mstatus_o <= {
                             csr_mstatus_i[31:13],
