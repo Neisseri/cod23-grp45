@@ -33,7 +33,7 @@ typedef struct packed {
     logic [`PAGE_OFFSET-1:0] offset;
 } physical_address_t;
 
-`define ASID_LENGTH 8
+`define ASID_LENGTH 9
 
 typedef struct packed {
     logic mode;
