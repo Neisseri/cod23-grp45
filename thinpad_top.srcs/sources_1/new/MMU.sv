@@ -49,12 +49,21 @@ module IF_MMU #(
     output logic [DATA_WIDTH-1:0] exception_val_o
 );
 
+    satp_t satp;
+    always_comb begin
+        if(satp_update_i)begin
+            satp = update_satp_i;
+        end else begin
+            satp = new_satp_reg_i;
+        end
+    end
+
     logic [1:0] wishbone_owner;
     logic [1:0] tlb_wishbone_owner;
     logic tlb_en;
     logic permit_cache;
     logic access_user_page_table;
-    assign access_user_page_table = (priv_level_i == `PRIV_U_LEVEL) || ((priv_level_i == `PRIV_S_LEVEL && mstatus_sum));
+    assign access_user_page_table = (satp.mode != 1'b0);//(priv_level_i == `PRIV_U_LEVEL) || ((priv_level_i == `PRIV_S_LEVEL && mstatus_sum));
     always_comb begin
         // judge wishbone_owner
         if(access_user_page_table && !mem_exception_i && mmu_mem_en)begin
@@ -88,15 +97,6 @@ module IF_MMU #(
     logic [DATA_WIDTH/8-1:0] tlb_cache_mem_sel_o;
     logic tlb_cache_ready;
     logic [DATA_WIDTH-1:0] tlb_cache_result;
-
-    satp_t satp;
-    always_comb begin
-        if(satp_update_i)begin
-            satp = update_satp_i;
-        end else begin
-            satp = new_satp_reg_i;
-        end
-    end
 
     logic to_trans_query_write_en;
 
@@ -186,6 +186,11 @@ module IF_MMU #(
         .store_page_fault(store_page_fault)
     );
 
+    logic valid_phy_addr;
+    assign valid_phy_addr = (mmu_addr >= 32'h8000_0000 && mmu_addr <= 32'h807f_ffff) || (mmu_addr >= 32'h1000_0000 && mmu_addr <= 32'h1000_ffff) || (mmu_addr >= 32'h0200_0000 && mmu_addr <= 32'h0200_ffff);
+    logic invalid_phy_addr_fault;
+    assign invalid_phy_addr_fault = !access_user_page_table && mmu_mem_en && !valid_phy_addr;
+
     logic [30:0] exception_code;
     always_comb begin
         if(instruction_page_fault)begin
@@ -194,12 +199,18 @@ module IF_MMU #(
             exception_code = 13;
         end else if(store_page_fault) begin
             exception_code = 15;
+        end else if(invalid_phy_addr_fault) begin
+            if(mmu_write_en)begin
+                exception_code = 15;
+            end else begin
+                exception_code = 13;
+            end
         end else begin
             exception_code = 0;
         end
-        exception_occured_o = instruction_page_fault | load_page_fault | store_page_fault;
+        exception_occured_o = instruction_page_fault | load_page_fault | store_page_fault | invalid_phy_addr_fault;
         exception_cause_o = {1'b0, exception_code};
-        exception_val_o = 0;
+        exception_val_o = mmu_addr;
     end
 
     logic s_cache_ready;
@@ -266,7 +277,11 @@ module IF_MMU #(
     always_comb begin
         case (wishbone_owner)
             `MMU_OWN: begin
-                mem_en = mmu_mem_en;
+                if(invalid_phy_addr_fault)begin
+                    mem_en = 0;
+                end else begin
+                    mem_en = mmu_mem_en;
+                end
                 write_en = mmu_write_en;
                 addr = mmu_addr;
                 data_in = mmu_data_in;
@@ -389,12 +404,15 @@ module MEM_MMU #(
     output logic [DATA_WIDTH-1:0] exception_val_o
 );
 
+    satp_t satp;
+    assign satp = satp_i;
+
     logic trans_running;
     logic [1:0] wishbone_owner;
     logic [1:0] tlb_wishbone_owner;
     logic tlb_en;
     logic access_user_page_table;
-    assign access_user_page_table = (priv_level_i == `PRIV_U_LEVEL) || ((priv_level_i == `PRIV_S_LEVEL && mstatus_sum));
+    assign access_user_page_table = (satp.mode != 1'b0);//(priv_level_i == `PRIV_U_LEVEL) || ((priv_level_i == `PRIV_S_LEVEL && mstatus_sum));
     always_comb begin
         // judge wishbone_owner, no cache
         if(access_user_page_table && mmu_mem_en)begin
@@ -422,9 +440,6 @@ module MEM_MMU #(
     logic [DATA_WIDTH/8-1:0] cache_mem_sel_o;
     logic cache_ready;
     logic [DATA_WIDTH-1:0] cache_result;
-
-    satp_t satp;
-    assign satp = satp_i;
 
     logic to_trans_query_write_en;
     TLB tlb_u(
@@ -502,6 +517,11 @@ module MEM_MMU #(
         .store_page_fault(store_page_fault)
     );
 
+    logic valid_phy_addr;
+    assign valid_phy_addr = (mmu_addr >= 32'h8000_0000 && mmu_addr <= 32'h807f_ffff) || (mmu_addr >= 32'h1000_0000 && mmu_addr <= 32'h1000_ffff) || (mmu_addr >= 32'h0200_0000 && mmu_addr <= 32'h0200_ffff);
+    logic invalid_phy_addr_fault;
+    assign invalid_phy_addr_fault = !access_user_page_table && mmu_mem_en && !valid_phy_addr;
+
     logic [30:0] exception_code;
     always_comb begin
         if(instruction_page_fault)begin
@@ -510,12 +530,18 @@ module MEM_MMU #(
             exception_code = 13;
         end else if(store_page_fault) begin
             exception_code = 15;
+        end else if(invalid_phy_addr_fault) begin
+            if(mmu_write_en)begin
+                exception_code = 15;
+            end else begin
+                exception_code = 13;
+            end
         end else begin
             exception_code = 0;
         end
-        exception_occured_o = instruction_page_fault | load_page_fault | store_page_fault;
+        exception_occured_o = instruction_page_fault | load_page_fault | store_page_fault | invalid_phy_addr_fault;
         exception_cause_o = {1'b0, exception_code};
-        exception_val_o = 0;
+        exception_val_o = mmu_addr;
     end
 
     // no cache, connect directly
@@ -560,7 +586,11 @@ module MEM_MMU #(
     always_comb begin
         case (wishbone_owner)
             `MMU_OWN: begin
-                mem_en = mmu_own_work;
+                if(invalid_phy_addr_fault)begin
+                    mem_en = 0;
+                end else begin
+                    mem_en = mmu_own_work;
+                end
                 write_en = mmu_write_en;
                 addr = mmu_addr;
                 data_in = mmu_data_in;

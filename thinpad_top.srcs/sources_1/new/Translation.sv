@@ -78,6 +78,10 @@ typedef enum logic [2:0] {
     logic [ADDR_WIDTH-1:0] second_table_addr;
     assign second_table_addr = {cur_page.PPN1[`PPN1_LENGTH-3:0], cur_page.PPN0[`PPN0_LENGTH-1:0], vir_addr.VPN0[`VPN0_LENGTH-1:0], 2'b00};
     
+    logic [ADDR_WIDTH-1:0] final_phy_addr;
+    assign final_phy_addr = {cur_page.PPN1[`PPN1_LENGTH-3:0], cur_page.PPN0[`PPN0_LENGTH-1:0], vir_addr.offset};
+    logic valid_phy_addr;
+    assign valid_phy_addr = (final_phy_addr >= 32'h8000_0000 && final_phy_addr <= 32'h807f_ffff) || (final_phy_addr >= 32'h1000_0000 && final_phy_addr <= 32'h1000_ffff) || (final_phy_addr >= 32'h0200_0000 && final_phy_addr <= 32'h0200_ffff);
     always_ff @(posedge clk) begin
         if(rst)begin
             instruction_page_fault <= 0;
@@ -153,6 +157,16 @@ typedef enum logic [2:0] {
                                 query_addr_o <= 0;
                                 load_page_fault <= 1;
                                 state <= STATE_DONE;
+                            end else if(!valid_phy_addr) begin
+                                if(query_write_en)begin
+                                    query_addr_o <= 0;
+                                    store_page_fault <= 1;
+                                    state <= STATE_DONE;
+                                end else begin
+                                    query_addr_o <= 0;
+                                    load_page_fault <= 1;
+                                    state <= STATE_DONE;
+                                end
                             end else begin
                                 query_addr_o <= cur_page;
                                 state <= STATE_DONE;
