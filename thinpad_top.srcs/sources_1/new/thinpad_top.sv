@@ -260,12 +260,14 @@ module thinpad_top #(
   logic mem_wb_stall;
   logic mem_wb_bubble;
   logic pipeline_stall;
+  logic satp_update;
   controller_pipeline controller_pipeline_u(
     .if_stall_req(if_stall_req),
     .mem_stall_req(mem_stall_req),
     .id_flush_req(id_flush_req),
     .mem_flush_req(mem_exception),
     .exe_stall_req(exe_stall_req),
+    .id_stall_req(satp_update),
     .pc_stall(pc_stall),
     .if_id_stall(if_id_stall),
     .if_id_bubble(if_id_bubble),
@@ -321,7 +323,6 @@ module thinpad_top #(
   logic [DATA_WIDTH-1:0] csr_satp;
   logic [DATA_WIDTH-1:0] rf_rdata_a;
   logic [DATA_WIDTH-1:0] rf_rdata_b;
-  logic satp_update;
   always_comb begin
     case (id_csr_op)
       `CSR_CSRRC: new_satp = csr_satp & ~rf_rdata_a;
@@ -360,6 +361,14 @@ module thinpad_top #(
   logic im_exception_occured;
   logic [DATA_WIDTH-1:0] im_exception_cause;
   logic [DATA_WIDTH-1:0] im_exception_val;
+  logic if_mmu_mem_en;
+  always_comb begin
+    if(satp_update)begin
+      if_mmu_mem_en = 0;
+    end else begin
+      if_mmu_mem_en = 1;
+    end
+  end
   IF_MMU if_mmu_u(
     .clk(sys_clk),
     .rst(sys_rst),
@@ -371,7 +380,7 @@ module thinpad_top #(
     .if_fetch_instruction(1),
     .priv_level_i(priv_level_rdat),
     .mstatus_sum(mstatus_sum),
-    .mmu_mem_en(1'b1),
+    .mmu_mem_en(if_mmu_mem_en),
     .mmu_write_en(1'b0),
     .mmu_addr(pc_addr),
     .mmu_data_in(0),

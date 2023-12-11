@@ -50,13 +50,14 @@ module IF_MMU #(
 );
 
     satp_t satp;
-    always_comb begin
-        if(satp_update_i)begin
-            satp = update_satp_i;
-        end else begin
-            satp = new_satp_reg_i;
-        end
-    end
+    // always_comb begin
+    //     if(satp_update_i)begin
+    //         satp = update_satp_i;
+    //     end else begin
+    //         satp = new_satp_reg_i;
+    //     end
+    // end
+    assign satp = new_satp_reg_i;
 
     logic [1:0] wishbone_owner;
     logic [1:0] tlb_wishbone_owner;
