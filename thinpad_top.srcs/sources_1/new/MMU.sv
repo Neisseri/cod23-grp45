@@ -350,7 +350,7 @@ module IF_MMU #(
             mmu_data_out = query_data_o;
         end else begin
             if(permit_cache)begin
-                mmu_ready_o = s_cache_ready;
+                mmu_ready_o = s_cache_ready || !s_cache_mem_en;
                 mmu_data_out = s_cache_dat_out;
             end else begin
                 mmu_ready_o = !mem_en || master_ready_o;
