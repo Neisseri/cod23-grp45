@@ -17,6 +17,7 @@ module IF_MMU #(
 
     input wire if_fetch_instruction, //identify IF or MEM
     input wire [1:0] priv_level_i, // identify user mode
+    input wire mstatus_sum,
 
     // CPU to MMU
     input wire mmu_mem_en,
@@ -52,9 +53,11 @@ module IF_MMU #(
     logic [1:0] tlb_wishbone_owner;
     logic tlb_en;
     logic permit_cache;
+    logic access_user_page_table;
+    assign access_user_page_table = (priv_level_i == `PRIV_U_LEVEL) || ((priv_level_i == `PRIV_S_LEVEL && mstatus_sum));
     always_comb begin
         // judge wishbone_owner
-        if(priv_level_i != `PRIV_M_LEVEL && !mem_exception_i && mmu_mem_en)begin
+        if(access_user_page_table && !mem_exception_i && mmu_mem_en)begin
             wishbone_owner = tlb_wishbone_owner;
             tlb_en = 1;
             permit_cache = 0;
@@ -354,6 +357,7 @@ module MEM_MMU #(
 
     input wire if_fetch_instruction, //identify IF or MEM
     input wire [1:0] priv_level_i, // identify user mode
+    input wire mstatus_sum,
 
     // CPU to MMU
     input wire mmu_mem_en,
@@ -389,9 +393,11 @@ module MEM_MMU #(
     logic [1:0] wishbone_owner;
     logic [1:0] tlb_wishbone_owner;
     logic tlb_en;
+    logic access_user_page_table;
+    assign access_user_page_table = (priv_level_i == `PRIV_U_LEVEL) || ((priv_level_i == `PRIV_S_LEVEL && mstatus_sum));
     always_comb begin
         // judge wishbone_owner, no cache
-        if(priv_level_i != `PRIV_M_LEVEL && mmu_mem_en)begin
+        if(access_user_page_table && mmu_mem_en)begin
             wishbone_owner = tlb_wishbone_owner;
             tlb_en = 1;
         end else begin

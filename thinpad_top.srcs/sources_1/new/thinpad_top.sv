@@ -301,6 +301,21 @@ module thinpad_top #(
     .next_pc(pc_next_pc)
   );
 
+  logic [DATA_WIDTH-1:0] csr_sepc_rdat;
+  logic [DATA_WIDTH-1:0] csr_stvec_rdat;
+  logic [DATA_WIDTH-1:0] csr_stval_rdat;
+  logic [DATA_WIDTH-1:0] csr_sip_rdat;
+  logic [DATA_WIDTH-1:0] csr_sie_rdat;
+  logic [DATA_WIDTH-1:0] csr_mstatus_rdat;
+  logic [DATA_WIDTH-1:0] csr_mtvec_rdat;
+  logic [DATA_WIDTH-1:0] csr_mtval_rdat;
+  logic [DATA_WIDTH-1:0] csr_mepc_rdat;
+  logic [DATA_WIDTH-1:0] csr_mcause_rdat;
+  logic [DATA_WIDTH-1:0] csr_mip_rdat;
+  logic [DATA_WIDTH-1:0] csr_mie_rdat;
+  logic [DATA_WIDTH-1:0] csr_medeleg_rdat;
+  logic [DATA_WIDTH-1:0] csr_mideleg_rdat;
+
   logic [3:0] id_csr_op;
   logic [DATA_WIDTH-1:0] new_satp;
   logic [DATA_WIDTH-1:0] csr_satp;
@@ -327,6 +342,8 @@ module thinpad_top #(
     end
   end
 
+  logic mstatus_sum;
+  assign mstatus_sum = csr_mstatus_rdat[18];
   logic id_flush_tlb;
   logic im_master_ready_o;
   logic im_to_mmu_master_ready;
@@ -353,6 +370,7 @@ module thinpad_top #(
     .mem_exception_i(mem_exception),
     .if_fetch_instruction(1),
     .priv_level_i(priv_level_rdat),
+    .mstatus_sum(mstatus_sum),
     .mmu_mem_en(1'b1),
     .mmu_write_en(1'b0),
     .mmu_addr(pc_addr),
@@ -781,6 +799,7 @@ module thinpad_top #(
     .flush_tlb(exe_mem_flush_tlb),
     .if_fetch_instruction(0),
     .priv_level_i(priv_level_rdat),
+    .mstatus_sum(mstatus_sum),
     .mmu_mem_en(cpu_to_mmu_mem_en),
     .mmu_write_en(exe_mem_we),
     .mmu_addr(exe_mem_wdata),
@@ -910,21 +929,6 @@ module thinpad_top #(
   logic csr_mip_we;
   logic [DATA_WIDTH-1:0] csr_mie_wdat;
   logic csr_mie_we;
-
-  logic [DATA_WIDTH-1:0] csr_sepc_rdat;
-  logic [DATA_WIDTH-1:0] csr_stvec_rdat;
-  logic [DATA_WIDTH-1:0] csr_stval_rdat;
-  logic [DATA_WIDTH-1:0] csr_sip_rdat;
-  logic [DATA_WIDTH-1:0] csr_sie_rdat;
-  logic [DATA_WIDTH-1:0] csr_mstatus_rdat;
-  logic [DATA_WIDTH-1:0] csr_mtvec_rdat;
-  logic [DATA_WIDTH-1:0] csr_mtval_rdat;
-  logic [DATA_WIDTH-1:0] csr_mepc_rdat;
-  logic [DATA_WIDTH-1:0] csr_mcause_rdat;
-  logic [DATA_WIDTH-1:0] csr_mip_rdat;
-  logic [DATA_WIDTH-1:0] csr_mie_rdat;
-  logic [DATA_WIDTH-1:0] csr_medeleg_rdat;
-  logic [DATA_WIDTH-1:0] csr_mideleg_rdat;
 
   logic [1:0] priv_level_wdat;
   logic priv_level_we;
