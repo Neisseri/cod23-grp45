@@ -64,7 +64,7 @@ module IF_MMU #(
     logic tlb_en;
     logic permit_cache;
     logic access_user_page_table;
-    assign access_user_page_table = (satp.mode != 1'b0);//(priv_level_i == `PRIV_U_LEVEL) || ((priv_level_i == `PRIV_S_LEVEL && mstatus_sum));
+    assign access_user_page_table = (satp.mode != 1'b0) && (priv_level_i != `PRIV_M_LEVEL);//(priv_level_i == `PRIV_U_LEVEL) || ((priv_level_i == `PRIV_S_LEVEL && mstatus_sum));
     always_comb begin
         // judge wishbone_owner
         if(access_user_page_table && !mem_exception_i && mmu_mem_en)begin
@@ -413,7 +413,7 @@ module MEM_MMU #(
     logic [1:0] tlb_wishbone_owner;
     logic tlb_en;
     logic access_user_page_table;
-    assign access_user_page_table = (satp.mode != 1'b0);//(priv_level_i == `PRIV_U_LEVEL) || ((priv_level_i == `PRIV_S_LEVEL && mstatus_sum));
+    assign access_user_page_table = (satp.mode != 1'b0) && (priv_level_i != `PRIV_M_LEVEL);//(priv_level_i == `PRIV_U_LEVEL) || ((priv_level_i == `PRIV_S_LEVEL && mstatus_sum));
     always_comb begin
         // judge wishbone_owner, no cache
         if(access_user_page_table && mmu_mem_en)begin
