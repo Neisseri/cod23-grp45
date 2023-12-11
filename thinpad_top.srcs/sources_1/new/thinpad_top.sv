@@ -261,11 +261,15 @@ module thinpad_top #(
   logic mem_wb_bubble;
   logic pipeline_stall;
   logic satp_update;
+  logic wb_flush_req;
+  logic dm_exception_occured;
+  assign wb_flush_req = dm_exception_occured;
   controller_pipeline controller_pipeline_u(
     .if_stall_req(if_stall_req),
     .mem_stall_req(mem_stall_req),
     .id_flush_req(id_flush_req),
     .mem_flush_req(mem_exception),
+    .wb_flush_req(wb_flush_req),
     .exe_stall_req(exe_stall_req),
     .id_stall_req(satp_update),
     .pc_stall(pc_stall),
@@ -380,6 +384,7 @@ module thinpad_top #(
     .if_fetch_instruction(1),
     .priv_level_i(priv_level_rdat),
     .mstatus_sum(mstatus_sum),
+    .pc_stall(pc_stall),
     .mmu_mem_en(if_mmu_mem_en),
     .mmu_write_en(1'b0),
     .mmu_addr(pc_addr),
@@ -798,7 +803,6 @@ module thinpad_top #(
   logic mmu_to_dm_trans_req;
   logic [DATA_WIDTH-1:0] dm_to_mmu_data_out; 
   logic dm_to_mmu_ack;
-  logic dm_exception_occured;
   logic [DATA_WIDTH-1:0] dm_exception_cause;
   logic [DATA_WIDTH-1:0] dm_exception_val;
   MEM_MMU mem_mmu_u (
@@ -809,6 +813,8 @@ module thinpad_top #(
     .if_fetch_instruction(0),
     .priv_level_i(priv_level_rdat),
     .mstatus_sum(mstatus_sum),
+    .exe_mem_stall(exe_mem_stall),
+    .exe_mem_bubble(exe_mem_bubble),
     .mmu_mem_en(cpu_to_mmu_mem_en),
     .mmu_write_en(exe_mem_we),
     .mmu_addr(exe_mem_wdata),

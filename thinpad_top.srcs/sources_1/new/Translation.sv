@@ -35,6 +35,8 @@ module Translation #(
 
     // CSR to Translation
     input wire satp_t satp_i,
+    input wire bubble,
+    input wire stall,
 
     // Translation to CSR
     output reg instruction_page_fault,
@@ -93,9 +95,11 @@ typedef enum logic [2:0] {
         end else begin
             case (state)
                 STATE_IDLE: begin
-                    instruction_page_fault <= 0;
-                    load_page_fault <= 0;
-                    store_page_fault <= 0;
+                    if(!stall && !bubble)begin
+                        instruction_page_fault <= 0;
+                        load_page_fault <= 0;
+                        store_page_fault <= 0;
+                    end
                     if(translation_en)begin
                         wb_adr_o <= first_table_addr;
                         state <= STATE_FETCH_TABLE;

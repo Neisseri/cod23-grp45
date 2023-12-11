@@ -18,6 +18,7 @@ module IF_MMU #(
     input wire if_fetch_instruction, //identify IF or MEM
     input wire [1:0] priv_level_i, // identify user mode
     input wire mstatus_sum,
+    input wire pc_stall,
 
     // CPU to MMU
     input wire mmu_mem_en,
@@ -182,6 +183,8 @@ module IF_MMU #(
         .wb_we_o(trans_we_o),
         .trans_running(trans_running),
         .satp_i(satp),
+        .bubble(1'b0),
+        .stall(pc_stall),
         .instruction_page_fault(instruction_page_fault),
         .load_page_fault(load_page_fault),
         .store_page_fault(store_page_fault)
@@ -374,6 +377,8 @@ module MEM_MMU #(
     input wire if_fetch_instruction, //identify IF or MEM
     input wire [1:0] priv_level_i, // identify user mode
     input wire mstatus_sum,
+    input wire exe_mem_stall,
+    input wire exe_mem_bubble,
 
     // CPU to MMU
     input wire mmu_mem_en,
@@ -513,6 +518,8 @@ module MEM_MMU #(
         .wb_we_o(trans_we_o),
         .trans_running(trans_running),
         .satp_i(satp),
+        .bubble(exe_mem_bubble),
+        .stall(exe_mem_stall),
         .instruction_page_fault(instruction_page_fault),
         .load_page_fault(load_page_fault),
         .store_page_fault(store_page_fault)

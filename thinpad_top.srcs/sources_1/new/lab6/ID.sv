@@ -301,6 +301,9 @@ module ID(
                                     12'b001100000010: begin // MRET
                                         op_type = OP_MRET;
                                     end
+                                    12'b000100000010: begin // SRET
+                                        op_type = OP_SRET;
+                                    end
                                     default: op_type = OP_UNKNOWN;
                                 endcase
                             end
@@ -889,6 +892,18 @@ module ID(
                 wb_if_mem = 0;
                 id_exception_o = 1;
                 csr_op_o = `ENV_MRET;
+            end
+            OP_SRET: begin
+                alu_op = `ALU_ADD;
+                alu_mux_a = `ALU_MUX_DATA;
+                alu_mux_b = `ALU_MUX_ZERO;
+                mem_en = 0;
+                we = 0;
+                sel = 4'b0000;
+                rf_wen = 0;
+                wb_if_mem = 0;
+                id_exception_o = 1;
+                csr_op_o = `ENV_SRET;
             end
             OP_NOP: begin // actually addi zero, zero, 0
                 alu_op = `ALU_ADD;
