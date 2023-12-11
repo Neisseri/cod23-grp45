@@ -848,11 +848,11 @@ module thinpad_top #(
     dm_to_mmu_master_ready = dm_wb_ack_i;
     dm_to_mmu_ack = dm_wb_ack_i;
     dm_wb_adr_o = mmu_to_dm_addr;
-    dm_wb_dat_o = mmu_to_dm_data_in;
     dm_to_mmu_data_out = dm_wb_dat_i;
     case (mmu_to_dm_sel)
       4'b0001: begin
         dm_wb_sel_o = mmu_to_dm_sel << (mmu_to_dm_addr & 3);
+        dm_wb_dat_o = mmu_to_dm_data_in << ((mmu_to_dm_addr & 3) * 8);
         if(exe_mem_signed_ext)begin
           data_out_shift = dm_wb_dat_i >> ((mmu_to_dm_addr & 3) * 8);
           sign_bit = data_out_shift[7];
@@ -865,6 +865,7 @@ module thinpad_top #(
       end
       4'b0011: begin
         dm_wb_sel_o = mmu_to_dm_sel << (mmu_to_dm_addr & 3); // if addr % 3 == 3, exception occurs in ID
+        dm_wb_dat_o = mmu_to_dm_data_in << ((mmu_to_dm_addr & 3) * 8);
         if(exe_mem_signed_ext)begin
           data_out_shift = dm_wb_dat_i >> ((mmu_to_dm_addr & 3) * 8);
           sign_bit = data_out_shift[15];
@@ -876,6 +877,7 @@ module thinpad_top #(
         end
       end
       default: begin
+        dm_wb_dat_o = mmu_to_dm_data_in;
         dm_wb_sel_o = mmu_to_dm_sel;
         data_out_shift = dm_wb_dat_i;
         sign_bit = 0;
