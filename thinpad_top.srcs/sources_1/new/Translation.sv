@@ -110,6 +110,7 @@ typedef enum logic [2:0] {
                     if(cur_page.V == 0 || (cur_page.R == 0 && cur_page.W == 1))begin
                         query_addr_o <= 0;
                         if(if_fetch_instruction) instruction_page_fault <= 1;
+                        else if (query_write_en) store_page_fault <= 1;
                         else load_page_fault <= 1;
                         state <= STATE_DONE;
                     end else begin
