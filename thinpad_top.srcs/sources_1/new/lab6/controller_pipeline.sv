@@ -56,7 +56,7 @@ module controller_pipeline(
             exe_mem_bubble = 0;
             mem_wb_stall = 1;
             mem_wb_bubble = 0;
-        end else if(wb_flush_req)begin
+        end else if(mem_flush_req)begin
             pc_stall = 0;
             if_id_stall = 0;
             if_id_bubble = 1;
@@ -65,8 +65,8 @@ module controller_pipeline(
             exe_mem_stall = 0;
             exe_mem_bubble = 0;
             mem_wb_stall = 0;
-            mem_wb_bubble = 1;
-        end else if(mem_flush_req)begin
+            mem_wb_bubble = 0;
+        end else if(wb_flush_req)begin
             pc_stall = 0;
             if_id_stall = 0;
             if_id_bubble = 1;
@@ -75,7 +75,7 @@ module controller_pipeline(
             exe_mem_stall = 0;
             exe_mem_bubble = 1;
             mem_wb_stall = 0;
-            mem_wb_bubble = 0;
+            mem_wb_bubble = 1;
         end else if(id_stall_req)begin
             pc_stall = 1;
             if_id_stall = 0;

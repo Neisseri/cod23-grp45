@@ -263,12 +263,12 @@ module thinpad_top #(
   logic satp_update;
   logic wb_flush_req;
   logic dm_exception_occured;
-  assign wb_flush_req = dm_exception_occured;
+  assign wb_flush_req = dm_exception_occured || mem_exception;
   controller_pipeline controller_pipeline_u(
     .if_stall_req(if_stall_req),
     .mem_stall_req(mem_stall_req),
     .id_flush_req(id_flush_req),
-    .mem_flush_req(mem_exception),
+    .mem_flush_req(dm_exception_occured),
     .wb_flush_req(wb_flush_req),
     .exe_stall_req(exe_stall_req),
     .id_stall_req(satp_update),

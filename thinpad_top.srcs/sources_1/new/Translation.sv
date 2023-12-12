@@ -147,13 +147,13 @@ typedef enum logic [2:0] {
                             else load_page_fault <= 1;
                             state <= STATE_DONE;
                         end else begin
-                            if(cur_page.U && !if_user_mode)begin
-                                query_addr_o <= 0;
-                                if(if_fetch_instruction) instruction_page_fault <= 1;
-                                else if (query_write_en) store_page_fault <= 1;
-                                else load_page_fault <= 1;
-                                state <= STATE_DONE;
-                            end else if(!cur_page.X && if_fetch_instruction)begin
+                            // if(cur_page.U && !if_user_mode)begin
+                            //     query_addr_o <= 0;
+                            //     if(if_fetch_instruction) instruction_page_fault <= 1;
+                            //     else if (query_write_en) store_page_fault <= 1;
+                            //     else load_page_fault <= 1;
+                            //     state <= STATE_DONE;
+                            if(!cur_page.X && if_fetch_instruction)begin
                                 query_addr_o <= 0;
                                 instruction_page_fault <= 1;
                                 state <= STATE_DONE;
