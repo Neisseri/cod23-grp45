@@ -7,6 +7,7 @@ module CSR_reg #(
 )(
     input wire clk,
     input wire rst,
+    input wire stall,
     input wire  [11:0]  csr_adr_i,
     input wire  [11:0]  csr_wadr_i,
     input wire  [DATA_WIDTH-1:0] csr_wdat_i,
@@ -156,6 +157,7 @@ module CSR_reg #(
             medeleg <= 0;
             mtval <= 0;
         end else begin
+            if(!stall)begin
             if (csr_we_i) begin
                 case(csr_wadr_i)
                     12'h100: sstatus <= csr_wdat_i;
@@ -213,6 +215,7 @@ module CSR_reg #(
                 if (priv_level_we_i) begin
                     priv_level <= priv_level_i;
                 end
+            end
             end
         end
     end

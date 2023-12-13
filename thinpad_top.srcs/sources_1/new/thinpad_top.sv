@@ -1032,6 +1032,7 @@ module thinpad_top #(
   CSR_reg CSR_reg_u(
     .clk(sys_clk),
     .rst(sys_rst),
+    .stall(exe_mem_stall),
     .csr_adr_i(csr_adr),
     .csr_wadr_i(csr_adr),
     .csr_wdat_i(csr_wdat),
