@@ -80,7 +80,20 @@ module CSR_controller #(
     output wire csr_stall_req
     );
 
-    assign csr_stall_req = exception_occured_i && !mem_exception_o;
+    logic [DATA_WIDTH-2:0] exc_cause;
+    assign exc_cause = exception_cause_i[DATA_WIDTH-2:0];
+    logic mission_to_s;
+    assign mission_to_s = (priv_level_i == `PRIV_U_LEVEL || priv_level_i == `PRIV_S_LEVEL) && csr_medeleg_i[exc_cause];
+    logic s_time_interrupt;
+    assign s_time_interrupt = csr_sip_i[5] && csr_sie_i[5] && (priv_level_i == `PRIV_U_LEVEL || (priv_level_i == `PRIV_S_LEVEL && csr_mstatus_i[1]));
+    logic m_time_interrupt;
+    assign m_time_interrupt = csr_mip_i[7] && csr_mie_i[7] && (priv_level_i == `PRIV_U_LEVEL || priv_level_i == `PRIV_S_LEVEL || (priv_level_i == `PRIV_M_LEVEL && csr_mstatus_i[3]));
+    logic system_call;
+    assign system_call = (csr_op_i == `ENV_MRET) || (csr_op_i == `ENV_ECALL) || (csr_op_i == `ENV_EBREAK) || (csr_op_i == `ENV_SRET);
+    logic exception_occur_real;
+    assign exception_occur_real = exception_occured_i || s_time_interrupt || m_time_interrupt || system_call;
+
+    assign csr_stall_req = exception_occur_real && !mem_exception_o;
 
     logic [DATA_WIDTH-1:0] next_pc;
     always_comb begin
@@ -162,7 +175,7 @@ module CSR_controller #(
             mem_exception_o <= 0;
             exception_idle <= 0;
         end else begin
-            if(exception_occured_i || (csr_sip_i[5] && csr_sie_i[5] && (priv_level_i == `PRIV_U_LEVEL || (priv_level_i == `PRIV_S_LEVEL && csr_mstatus_i[1]))) || (csr_mip_i[7] && csr_mie_i[7] && (priv_level_i == `PRIV_U_LEVEL || priv_level_i == `PRIV_S_LEVEL || (priv_level_i == `PRIV_M_LEVEL && csr_mstatus_i[3]))) || (csr_op_i == `ENV_MRET) || (csr_op_i == `ENV_ECALL) || (csr_op_i == `ENV_EBREAK) || (csr_op_i == `ENV_SRET)) begin
+            if(exception_occur_real) begin
                 mem_exception_o <= 1;
                 exception_idle <= 1;
             end else begin
@@ -204,9 +217,7 @@ module CSR_controller #(
                     csr_mtvec_we_o <= 0;
                     csr_mie_we_o <= 0;
                     if (exception_occured_i) begin // exception
-                        logic [DATA_WIDTH-2:0] exc_cause;
-                        exc_cause = exception_cause_i[DATA_WIDTH-2:0];
-                        if ((priv_level_i == `PRIV_U_LEVEL || priv_level_i == `PRIV_S_LEVEL) && csr_medeleg_i[exc_cause]) begin // to S-level
+                        if (mission_to_s) begin // to S-level
                             csr_scause_o <= exception_cause_i;
                             csr_scause_we_o <= 1;
                             csr_stval_o <= exception_val_i;
@@ -247,7 +258,7 @@ module CSR_controller #(
                             priv_level_o <= `PRIV_M_LEVEL;
                             priv_level_we_o <= 1;
                         end
-                    end else if (csr_sip_i[5] && csr_sie_i[5] && (priv_level_i == `PRIV_U_LEVEL || (priv_level_i == `PRIV_S_LEVEL && csr_mstatus_i[1]))) begin
+                    end else if (s_time_interrupt) begin
                         csr_scause_o <= {1'b1, `SUPERVISOR_TIMER_INTERRUPT};
                         csr_scause_we_o <= 1;
                         csr_stval_o <= csr_stval_i;
@@ -267,7 +278,7 @@ module CSR_controller #(
                         pc_next_exception_o <= csr_stvec_i;
                         priv_level_o <= `PRIV_S_LEVEL;
                         priv_level_we_o <= 1;
-                    end else if (csr_mip_i[7] && csr_mie_i[7] && (priv_level_i == `PRIV_U_LEVEL || priv_level_i == `PRIV_S_LEVEL || (priv_level_i == `PRIV_M_LEVEL && csr_mstatus_i[3]))) begin // time_interrupt
+                    end else if (m_time_interrupt) begin // m time_interrupt
                         csr_mcause_o <= {1'b1, `MACHINE_TIMER_INTERRUPT};
                         csr_mcause_we_o <= 1;
                         csr_mtval_o <= csr_mtval_i;
