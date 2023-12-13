@@ -499,6 +499,9 @@ module thinpad_top #(
   logic wb_rf_we;
   logic [DATA_WIDTH-1:0] rf_rdata_a_tmp;
   logic [DATA_WIDTH-1:0] rf_rdata_b_tmp;
+  logic wb_exception;
+  logic real_rf_we;
+  assign real_rf_we = wb_rf_we & ~wb_exception;
   register_file RF_u(
     .clk(sys_clk),
     .reset(sys_rst),
@@ -508,7 +511,7 @@ module thinpad_top #(
     .rf_rdata_b(rf_rdata_b_tmp),
     .rf_waddr(wb_rd),
     .rf_wdata(wb_wdata),
-    .rf_we(wb_rf_we)
+    .rf_we(real_rf_we)
   );
 
   logic rs1_forward;
@@ -1094,6 +1097,7 @@ module thinpad_top #(
     .rd_i(exe_mem_rd),
     .rf_wen_i(exe_mem_rf_wen),
     .wb_if_mem_i(exe_mem_wb_if_mem),
+    .mem_exception_i(mem_exception),
     .rd_o(wb_rd),
     .rf_wen_o(wb_rf_we),
     .wb_if_mem_o(mem_wb_wb_if_mem),
@@ -1102,7 +1106,8 @@ module thinpad_top #(
     .mem_data_i(dm_data_out),
     .mem_data_o(mem_wb_mem_data),
     .mem_csr_dat_i(mem_csr_dat),
-    .mem_csr_dat_o(mem_wb_csr_dat)
+    .mem_csr_dat_o(mem_wb_csr_dat),
+    .wb_exception_o(wb_exception)
   );
 
   //WB

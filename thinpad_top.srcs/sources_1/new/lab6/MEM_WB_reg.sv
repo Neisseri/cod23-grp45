@@ -49,7 +49,9 @@ module MEM_WB_reg#(
     input wire [DATA_WIDTH-1:0] mem_data_i,
     output reg [DATA_WIDTH-1:0] mem_data_o,
     input wire [DATA_WIDTH-1:0] mem_csr_dat_i,
-    output reg [DATA_WIDTH-1:0] mem_csr_dat_o
+    output reg [DATA_WIDTH-1:0] mem_csr_dat_o,
+    input wire mem_exception_i,
+    output reg wb_exception_o
     );
 
     always_ff @(posedge clk)begin
@@ -60,6 +62,7 @@ module MEM_WB_reg#(
             wb_if_mem_o <= 0;
             mem_data_o <= 0;
             mem_csr_dat_o <= 0;
+            wb_exception_o <= 0;
         end else begin
             if(!stall)begin
                 if(bubble)begin
@@ -69,6 +72,7 @@ module MEM_WB_reg#(
                     wb_if_mem_o <= 0;
                     mem_data_o <= 0;
                     mem_csr_dat_o <= 0;
+                    wb_exception_o <= 0;
                 end else begin
                     rf_wen_o <= rf_wen_i;
                     rd_o <= rd_i;
@@ -76,6 +80,7 @@ module MEM_WB_reg#(
                     wb_if_mem_o <= wb_if_mem_i;
                     mem_data_o <= mem_data_i;
                     mem_csr_dat_o <= mem_csr_dat_i;
+                    wb_exception_o <= mem_exception_i;
                 end
             end
         end
