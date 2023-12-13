@@ -68,7 +68,7 @@ module IF_MMU #(
     assign access_user_page_table = (satp.mode != 1'b0) && (priv_level_i != `PRIV_M_LEVEL);//(priv_level_i == `PRIV_U_LEVEL) || ((priv_level_i == `PRIV_S_LEVEL && mstatus_sum));
     always_comb begin
         // judge wishbone_owner
-        if(access_user_page_table && !mem_exception_i && mmu_mem_en)begin
+        if(access_user_page_table && mmu_mem_en)begin
             wishbone_owner = tlb_wishbone_owner;
             tlb_en = 1;
             permit_cache = 0;

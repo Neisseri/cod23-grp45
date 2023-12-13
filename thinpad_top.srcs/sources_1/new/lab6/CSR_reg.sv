@@ -60,14 +60,14 @@ module CSR_reg #(
     );
     
     reg [DATA_WIDTH-1:0] satp;
-    reg [DATA_WIDTH-1:0] sstatus; // TODO
+    // reg [DATA_WIDTH-1:0] sstatus; // TODO
     reg [DATA_WIDTH-1:0] sepc; // TODO
     reg [DATA_WIDTH-1:0] scause; // TODO
     reg [DATA_WIDTH-1:0] stval; // TODO
     reg [DATA_WIDTH-1:0] stvec; // TODO
     reg [DATA_WIDTH-1:0] sscratch; // TODO
-    reg [DATA_WIDTH-1:0] sie; // TODO
-    reg [DATA_WIDTH-1:0] sip; // TODO
+    // reg [DATA_WIDTH-1:0] sie; // TODO
+    // reg [DATA_WIDTH-1:0] sip; // TODO
     
     reg [DATA_WIDTH-1:0] mstatus; // TODO
     reg [DATA_WIDTH-1:0] mtvec;
@@ -85,14 +85,14 @@ module CSR_reg #(
     
     always_comb begin
         case(csr_adr_i)
-            12'h100: csr_o = sstatus;
-            12'h104: csr_o = sie;
+            12'h100: csr_o = mstatus & `SSTATUS_W_MASK;
+            12'h104: csr_o = mie & `SIE_W_MASK;
             12'h105: csr_o = stvec;
             12'h140: csr_o = sscratch;
             12'h141: csr_o = sepc;
             12'h142: csr_o = scause;
             12'h143: csr_o = stval;
-            12'h144: csr_o = sip;
+            12'h144: csr_o = mip & `SIP_W_MASK;
             12'h180: csr_o = satp;
             12'h300: csr_o = mstatus;
             12'h302: csr_o = medeleg;
@@ -115,8 +115,8 @@ module CSR_reg #(
         csr_satp_o = satp;
         csr_stvec_o = stvec;
         csr_stval_o = stval;
-        csr_sip_o = sip;
-        csr_sie_o = sie;
+        csr_sip_o = mip & `SIP_W_MASK;
+        csr_sie_o = mie & `SIE_W_MASK;
         csr_sepc_o = sepc;
         csr_mstatus_o = mstatus;
         csr_mtvec_o = mtvec;
@@ -136,14 +136,14 @@ module CSR_reg #(
         if(rst) begin
             priv_level <= `PRIV_M_LEVEL;
             satp <= 0;
-            sstatus <= 0;
+            // sstatus <= 0;
             sepc <= 0;
             scause <= 0;
             stval <= 0;
             stvec <= 0;
             sscratch <= 0;
-            sie <= 0;
-            sip <= 0;
+            // sie <= 0;
+            // sip <= 0;
 
             mstatus <= 0;
             mtvec <= 0;
@@ -160,14 +160,14 @@ module CSR_reg #(
             if(!stall)begin
             if (csr_we_i) begin
                 case(csr_wadr_i)
-                    12'h100: sstatus <= csr_wdat_i;
-                    12'h104: sie <= csr_wdat_i;
+                    12'h100: mstatus <= (csr_wdat_i & `SSTATUS_W_MASK) | (mstatus & ~`SSTATUS_W_MASK);
+                    12'h104: mie <= (csr_wdat_i & `SIE_W_MASK) | (mie & ~`SIE_W_MASK);
                     12'h105: stvec <= csr_wdat_i;
                     12'h140: sscratch <= csr_wdat_i;
                     12'h141: sepc <= csr_wdat_i;
                     12'h142: scause <= csr_wdat_i;
                     12'h143: stval <= csr_wdat_i;
-                    12'h144: sip <= csr_wdat_i;
+                    12'h144: mip <= (csr_wdat_i & `SIP_W_MASK) | (mip & ~`SIP_W_MASK);
                     12'h180: satp <= csr_wdat_i;
                     12'h300: mstatus <= csr_wdat_i;
                     12'h302: medeleg <= csr_wdat_i;
