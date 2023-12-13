@@ -75,10 +75,14 @@ module CSR_controller #(
     input wire exception_occured_i,
     input wire [DATA_WIDTH-1:0] exception_cause_i,
     input wire [DATA_WIDTH-1:0] exception_val_i,
-    input wire [ADDR_WIDTH-1:0] exception_pc_i
+    input wire [ADDR_WIDTH-1:0] exception_pc_i,
+
+    output wire csr_stall_req
     );
 
     reg exception_idle; // set 1 for idle after handling a exception
+
+    assign csr_stall_req = exception_occured_i && !mem_exception_o;
 
     logic [DATA_WIDTH-1:0] next_pc;
     always_comb begin
@@ -98,7 +102,7 @@ module CSR_controller #(
         csr_o = 0;
         csr_mip_o = 0;
         csr_mip_we_o = 0;
-        if (!exception_idle && !stall) begin
+        if (!exception_idle) begin
             case(csr_op_i)
                 `CSR_CSRRW: begin
                     csr_adr_o = csr_adr_i;
@@ -168,7 +172,7 @@ module CSR_controller #(
             mem_exception_o <= 0;
             exception_idle <= 0;
         end else begin
-            if (!stall) begin
+            if (1) begin
                 if (bubble || exception_idle) begin
                     csr_sepc_we_o <= 0;
                     csr_scause_we_o <= 0;

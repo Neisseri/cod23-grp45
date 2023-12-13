@@ -793,7 +793,8 @@ module thinpad_top #(
   assign cpu_to_mmu_mem_en = exe_mem_mem_en; // TODO
   logic dm_master_ready_o;
   logic dm_to_mmu_master_ready;
-  assign mem_stall_req = ~dm_master_ready_o; //dm_to_mmu_master_ready;
+  logic csr_stall_req;
+  assign mem_stall_req = ~dm_master_ready_o || csr_stall_req; //dm_to_mmu_master_ready;
   logic [DATA_WIDTH-1:0] dm_data_out;
   logic mmu_to_dm_mem_en;
   logic mmu_to_dm_write_en;
@@ -1020,7 +1021,9 @@ module thinpad_top #(
     .exception_occured_i(exception_occured_real),
     .exception_cause_i(exception_cause_real),
     .exception_val_i(exception_val_real),
-    .exception_pc_i(exception_pc_real)
+    .exception_pc_i(exception_pc_real),
+
+    .csr_stall_req(csr_stall_req)
   );
   
   logic [DATA_WIDTH-1:0] mtime_h_rdat;
