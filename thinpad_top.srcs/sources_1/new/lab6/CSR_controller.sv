@@ -218,47 +218,7 @@ module CSR_controller #(
                 end else begin
                     csr_mtvec_we_o <= 0;
                     csr_mie_we_o <= 0;
-                    if (s_time_interrupt) begin
-                        csr_scause_o <= {1'b1, `SUPERVISOR_TIMER_INTERRUPT};
-                        csr_scause_we_o <= 1;
-                        csr_stval_o <= csr_stval_i;
-                        csr_stval_we_o <= 1;
-                        csr_sepc_o <= next_pc;
-                        csr_sepc_we_o <= 1;
-                        csr_mstatus_o <= {
-                            csr_mstatus_i[31:9],
-                            priv_level_i[0], // spp <= priv_level
-                            csr_mstatus_i[7:6],
-                            csr_mstatus_i[1], // spie <= sie
-                            csr_mstatus_i[4:2],
-                            1'b0, // sie <= 0
-                            csr_mstatus_i[0]
-                        };
-                        csr_mstatus_we_o <= 1;
-                        pc_next_exception_o <= csr_stvec_i;
-                        priv_level_o <= `PRIV_S_LEVEL;
-                        priv_level_we_o <= 1;
-                    end else if (m_time_interrupt) begin // m time_interrupt
-                        csr_mcause_o <= {1'b1, `MACHINE_TIMER_INTERRUPT};
-                        csr_mcause_we_o <= 1;
-                        csr_mtval_o <= csr_mtval_i;
-                        csr_mtval_we_o <= 1;
-                        csr_mepc_o <= next_pc;
-                        csr_mepc_we_o <= 1;
-                        csr_mstatus_o <= {
-                            csr_mstatus_i[31:13],
-                            priv_level_i, // mpp <= priv_level
-                            csr_mstatus_i[10:8],
-                            csr_mstatus_i[3], // mpie <= mie
-                            csr_mstatus_i[6:4],
-                            1'b0, // mie <= 0
-                            csr_mstatus_i[2:0]
-                        };
-                        csr_mstatus_we_o <= 1;
-                        pc_next_exception_o <= csr_mtvec_i;
-                        priv_level_o <= `PRIV_M_LEVEL;
-                        priv_level_we_o <= 1;
-                    end else if (exception_occured_i) begin // exception
+                    if (exception_occured_i) begin // exception
                         if (mission_to_s) begin // to S-level
                             csr_scause_o <= exception_cause_i;
                             csr_scause_we_o <= 1;
@@ -439,6 +399,46 @@ module CSR_controller #(
                                 priv_level_we_o <= 0;
                             end
                         endcase
+                    end else if (s_time_interrupt) begin
+                        csr_scause_o <= {1'b1, `SUPERVISOR_TIMER_INTERRUPT};
+                        csr_scause_we_o <= 1;
+                        csr_stval_o <= csr_stval_i;
+                        csr_stval_we_o <= 1;
+                        csr_sepc_o <= next_pc;
+                        csr_sepc_we_o <= 1;
+                        csr_mstatus_o <= {
+                            csr_mstatus_i[31:9],
+                            priv_level_i[0], // spp <= priv_level
+                            csr_mstatus_i[7:6],
+                            csr_mstatus_i[1], // spie <= sie
+                            csr_mstatus_i[4:2],
+                            1'b0, // sie <= 0
+                            csr_mstatus_i[0]
+                        };
+                        csr_mstatus_we_o <= 1;
+                        pc_next_exception_o <= csr_stvec_i;
+                        priv_level_o <= `PRIV_S_LEVEL;
+                        priv_level_we_o <= 1;
+                    end else if (m_time_interrupt) begin // m time_interrupt
+                        csr_mcause_o <= {1'b1, `MACHINE_TIMER_INTERRUPT};
+                        csr_mcause_we_o <= 1;
+                        csr_mtval_o <= csr_mtval_i;
+                        csr_mtval_we_o <= 1;
+                        csr_mepc_o <= next_pc;
+                        csr_mepc_we_o <= 1;
+                        csr_mstatus_o <= {
+                            csr_mstatus_i[31:13],
+                            priv_level_i, // mpp <= priv_level
+                            csr_mstatus_i[10:8],
+                            csr_mstatus_i[3], // mpie <= mie
+                            csr_mstatus_i[6:4],
+                            1'b0, // mie <= 0
+                            csr_mstatus_i[2:0]
+                        };
+                        csr_mstatus_we_o <= 1;
+                        pc_next_exception_o <= csr_mtvec_i;
+                        priv_level_o <= `PRIV_M_LEVEL;
+                        priv_level_we_o <= 1;
                     end
                 end
             end
