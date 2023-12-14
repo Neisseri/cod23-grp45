@@ -260,7 +260,7 @@ module CSR_controller #(
                             priv_level_o <= `PRIV_M_LEVEL;
                             priv_level_we_o <= 1;
                         end
-                    end else begin
+                    end else if (csr_op_i == `ENV_MRET || csr_op_i == `ENV_ECALL || csr_op_i == `ENV_EBREAK || csr_op_i == `ENV_SRET) begin
                         case(csr_op_i)
                             `ENV_MRET: begin
                                 csr_mstatus_o <= {
@@ -439,6 +439,17 @@ module CSR_controller #(
                         pc_next_exception_o <= csr_mtvec_i;
                         priv_level_o <= `PRIV_M_LEVEL;
                         priv_level_we_o <= 1;
+                    end else begin
+                        csr_sepc_we_o <= 0;
+                        csr_scause_we_o <= 0;
+                        csr_stval_we_o <= 0;
+                        csr_mstatus_we_o <= 0;
+                        csr_mepc_we_o <= 0;
+                        csr_mcause_we_o <= 0;
+                        csr_mtval_we_o <= 0;
+                        csr_mtvec_we_o <= 0;
+                        csr_mie_we_o <= 0;
+                        priv_level_we_o <= 0;
                     end
                 end
             end
