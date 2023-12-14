@@ -3,11 +3,7 @@
 
 module instruction_cache #(
     parameter ADDR_WIDTH = 32,
-    parameter DATA_WIDTH = 32,
-    parameter CACHE_SIZE = 128,  // 256 instructions
-    parameter CACHE_LINE_SIZE = 32, // 32 bytes per line
-    parameter CACHE_ASSOCIATIVITY = 8,  // CACHE_ASSOCIATIVITY ways
-    parameter CACHE_GROUP_SIZE = CACHE_SIZE / CACHE_ASSOCIATIVITY // 128 / 8 = 16
+    parameter DATA_WIDTH = 32
 )(
     input wire clk,
     input wire rst,
@@ -40,7 +36,7 @@ module instruction_cache #(
     
     logic [ADDR_WIDTH-1:0] pre_addr = 0;
     logic [DATA_WIDTH-1:0] pre_data = 0;
-    reg cache_hit;
+    logic cache_hit;
 
     assign cache_hit = (pre_addr == addr) && (pre_addr != 0);
     
@@ -80,6 +76,12 @@ module instruction_cache #(
                         pre_data <= data_out;
                         master_ready_o <= 1'b0;
                         state <= STATE_READ_SRAM_ACTION;
+                    end
+
+                    default: begin
+                        data_out <= `NOP_INSTR;
+                        master_ready_o <= 1'b0;
+                        state <= STATE_DONE;
                     end
 
                 endcase
