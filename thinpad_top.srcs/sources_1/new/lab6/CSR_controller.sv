@@ -85,9 +85,9 @@ module CSR_controller #(
     logic mission_to_s;
     assign mission_to_s = (priv_level_i == `PRIV_U_LEVEL || priv_level_i == `PRIV_S_LEVEL) && csr_medeleg_i[exc_cause];
     logic s_time_interrupt;
-    assign s_time_interrupt = csr_sip_i[5] && csr_sie_i[5] && (priv_level_i == `PRIV_U_LEVEL || (priv_level_i == `PRIV_S_LEVEL && csr_mstatus_i[1]));
+    assign s_time_interrupt = (mem_pc_i != 0) && csr_sip_i[5] && csr_sie_i[5] && (priv_level_i == `PRIV_U_LEVEL || (priv_level_i == `PRIV_S_LEVEL && csr_mstatus_i[1]));
     logic m_time_interrupt;
-    assign m_time_interrupt = csr_mip_i[7] && csr_mie_i[7] && (priv_level_i == `PRIV_U_LEVEL || priv_level_i == `PRIV_S_LEVEL || (priv_level_i == `PRIV_M_LEVEL && csr_mstatus_i[3]));
+    assign m_time_interrupt = (mem_pc_i != 0) && csr_mip_i[7] && csr_mie_i[7] && (priv_level_i == `PRIV_U_LEVEL || priv_level_i == `PRIV_S_LEVEL || (priv_level_i == `PRIV_M_LEVEL && csr_mstatus_i[3]));
     logic system_call;
     assign system_call = (csr_op_i == `ENV_MRET) || (csr_op_i == `ENV_ECALL) || (csr_op_i == `ENV_EBREAK) || (csr_op_i == `ENV_SRET);
     logic exception_occur_real;
@@ -95,16 +95,16 @@ module CSR_controller #(
 
     assign csr_stall_req = exception_occur_real && !mem_exception_o;
 
-    logic [DATA_WIDTH-1:0] next_pc;
-    always_comb begin
-        if (id_exe_pc_i != 0) begin
-            next_pc = id_exe_pc_i;
-        end else if (if_id_pc_i != 0) begin
-            next_pc = if_id_pc_i;
-        end else begin
-            next_pc = if_pc_i;
-        end
-    end
+    // logic [DATA_WIDTH-1:0] next_pc;
+    // always_comb begin
+    //     if (id_exe_pc_i != 0) begin
+    //         next_pc = id_exe_pc_i;
+    //     end else if (if_id_pc_i != 0) begin
+    //         next_pc = if_id_pc_i;
+    //     end else begin
+    //         next_pc = if_pc_i;
+    //     end
+    // end
 
     always_comb begin
         csr_adr_o = 0;
@@ -404,7 +404,7 @@ module CSR_controller #(
                         csr_scause_we_o <= 1;
                         csr_stval_o <= csr_stval_i;
                         csr_stval_we_o <= 1;
-                        csr_sepc_o <= next_pc;
+                        csr_sepc_o <= mem_pc_i;
                         csr_sepc_we_o <= 1;
                         csr_mstatus_o <= {
                             csr_mstatus_i[31:9],
@@ -424,7 +424,7 @@ module CSR_controller #(
                         csr_mcause_we_o <= 1;
                         csr_mtval_o <= csr_mtval_i;
                         csr_mtval_we_o <= 1;
-                        csr_mepc_o <= next_pc;
+                        csr_mepc_o <= mem_pc_i;
                         csr_mepc_we_o <= 1;
                         csr_mstatus_o <= {
                             csr_mstatus_i[31:13],
