@@ -49,7 +49,7 @@ module instruction_cache #(
     always_ff @(posedge clk) begin
         if (rst) begin
             data_out <= `NOP_INSTR;
-            state <= STATE_DONE;
+            state <= STATE_READ_SRAM_ACTION;
             master_ready_o <= 1'b0;
             pre_addr <= 0;
             pre_data <= 0;
@@ -67,7 +67,6 @@ module instruction_cache #(
                         end else begin // cache hit
                             data_out <= pre_data;
                             master_ready_o <= 1'b1;
-                            state <= STATE_DONE;
                         end
                     end
 
@@ -81,7 +80,7 @@ module instruction_cache #(
                     default: begin
                         data_out <= `NOP_INSTR;
                         master_ready_o <= 1'b0;
-                        state <= STATE_DONE;
+                        state <= STATE_READ_SRAM_ACTION;
                     end
 
                 endcase

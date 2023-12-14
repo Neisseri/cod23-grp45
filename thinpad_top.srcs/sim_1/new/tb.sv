@@ -46,7 +46,7 @@ module tb;
   wire uart_tsre;  // ���ݷ�����ϱ��?
 
   // Windows ��Ҫע��·���ָ�����ת�壬���� "D:\\foo\\bar.bin"
-  parameter BASE_RAM_INIT_FILE = "C:\\tep\\homework\\ComputerPrinciple\\ucore\\bin\\rbl.img"; // BaseRAM ��ʼ���ļ������޸�Ϊʵ�ʵľ���·��
+  parameter BASE_RAM_INIT_FILE = "D:\\1privateFiles\\PROJECT\\rv-2023\\asmcode\\testload.bin"; // BaseRAM ��ʼ���ļ������޸�Ϊʵ�ʵľ���·��
   parameter EXT_RAM_INIT_FILE = "C:\\tep\\homework\\ComputerPrinciple\\ucore\\bin\\ucore.img";  // ExtRAM ��ʼ���ļ������޸�Ϊʵ�ʵľ���·��
   parameter FLASH_INIT_FILE = "/tmp/kernel.elf";  // Flash ��ʼ���ļ������޸�Ϊʵ�ʵľ���·��
 
@@ -84,7 +84,7 @@ module tb;
 
   end
 
-  // �������û����????
+  // �������û����????
   thinpad_top dut (
       .clk_50M(clk_50M),
       .clk_11M0592(clk_11M0592),
