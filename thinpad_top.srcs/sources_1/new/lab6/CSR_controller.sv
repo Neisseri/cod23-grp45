@@ -113,51 +113,53 @@ module CSR_controller #(
         csr_o = 0;
         csr_mip_o = 0;
         csr_mip_we_o = 0;
-        if (!exception_idle && !m_time_interrupt && !s_time_interrupt) begin
-            case(csr_op_i)
-                `CSR_CSRRW: begin
-                    csr_adr_o = csr_adr_i;
-                    csr_wdat_o = rs1_dat_i;
-                    csr_we_o = csr_we_i;
-                    csr_o = csr_i;
-                end
-                `CSR_CSRRS: begin
-                    csr_adr_o = csr_adr_i;
-                    csr_wdat_o = csr_i | rs1_dat_i;
-                    csr_we_o = csr_we_i;
-                    csr_o = csr_i;
-                end
-                `CSR_CSRRC: begin
-                    csr_adr_o = csr_adr_i;
-                    csr_wdat_o = csr_i & ~rs1_dat_i;
-                    csr_we_o = csr_we_i;
-                    csr_o = csr_i;
-                end
-                `CSR_CSRRWI: begin
-                    csr_adr_o = csr_adr_i;
-                    csr_wdat_o = imm_dat_i;
-                    csr_we_o = csr_we_i;
-                    csr_o = csr_i;
-                end
-                `CSR_CSRRSI: begin
-                    csr_adr_o = csr_adr_i;
-                    csr_wdat_o = csr_i | imm_dat_i;
-                    csr_we_o = csr_we_i;
-                    csr_o = csr_i;
-                end
-                `CSR_CSRRCI: begin
-                    csr_adr_o = csr_adr_i;
-                    csr_wdat_o = csr_i & ~imm_dat_i;
-                    csr_we_o = csr_we_i;
-                    csr_o = csr_i;
-                end
-                default: begin
-                    csr_adr_o = 0;
-                    csr_wdat_o = 0;
-                    csr_we_o = 0;
-                    csr_o = 0;
-                end
-            endcase
+        if (!exception_idle) begin
+            if (!m_time_interrupt && !s_time_interrupt) begin
+                case(csr_op_i)
+                    `CSR_CSRRW: begin
+                        csr_adr_o = csr_adr_i;
+                        csr_wdat_o = rs1_dat_i;
+                        csr_we_o = csr_we_i;
+                        csr_o = csr_i;
+                    end
+                    `CSR_CSRRS: begin
+                        csr_adr_o = csr_adr_i;
+                        csr_wdat_o = csr_i | rs1_dat_i;
+                        csr_we_o = csr_we_i;
+                        csr_o = csr_i;
+                    end
+                    `CSR_CSRRC: begin
+                        csr_adr_o = csr_adr_i;
+                        csr_wdat_o = csr_i & ~rs1_dat_i;
+                        csr_we_o = csr_we_i;
+                        csr_o = csr_i;
+                    end
+                    `CSR_CSRRWI: begin
+                        csr_adr_o = csr_adr_i;
+                        csr_wdat_o = imm_dat_i;
+                        csr_we_o = csr_we_i;
+                        csr_o = csr_i;
+                    end
+                    `CSR_CSRRSI: begin
+                        csr_adr_o = csr_adr_i;
+                        csr_wdat_o = csr_i | imm_dat_i;
+                        csr_we_o = csr_we_i;
+                        csr_o = csr_i;
+                    end
+                    `CSR_CSRRCI: begin
+                        csr_adr_o = csr_adr_i;
+                        csr_wdat_o = csr_i & ~imm_dat_i;
+                        csr_we_o = csr_we_i;
+                        csr_o = csr_i;
+                    end
+                    default: begin
+                        csr_adr_o = 0;
+                        csr_wdat_o = 0;
+                        csr_we_o = 0;
+                        csr_o = 0;
+                    end
+                endcase
+            end
             if (time_interrupt_i) begin
                 csr_mip_o = {csr_mip_i[31:8], 1'b1, csr_mip_i[6:0]};
                 csr_mip_we_o = 1;
