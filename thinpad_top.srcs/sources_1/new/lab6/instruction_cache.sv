@@ -57,7 +57,6 @@ module instruction_cache #(
             master_ready_o <= 1'b0;
             pre_addr <= 0;
             pre_data <= 0;
-            cache_hit <= 0;
         end else begin
             if (mem_en) begin
                 case (state)
