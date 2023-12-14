@@ -30,105 +30,55 @@ module instruction_cache #(
     input wire [DATA_WIDTH/8-1:0] sel,
     output reg [DATA_WIDTH-1:0] data_out
 );
-    // instruction cache
-    reg [DATA_WIDTH-1:0] cache [CACHE_GROUP_SIZE-1:0][CACHE_ASSOCIATIVITY-1:0];
-    // CACHE_SIZE/CACHE_ASSOCIATIVITY groups (1024 / 4 = 256)
-    // CACHE_ASSOCIATIVITY rows in each group (4)
-    reg [ADDR_WIDTH-1:0] cache_tag [CACHE_GROUP_SIZE-1:0][CACHE_ASSOCIATIVITY-1:0];
-    // tag for each cache row: index of memory block
-    reg [$clog2(CACHE_ASSOCIATIVITY)-1:0] cache_group_num [CACHE_GROUP_SIZE-1:0];
-    // number of valid rows in group
-
-    reg [$clog2(CACHE_GROUP_SIZE)-1:0] group_index;
     
     typedef enum logic [3:0] {
         STATE_READ_SRAM_ACTION,
-        STATE_DONE_HIT,
-        STATE_DONE_NO_HIT
+        STATE_DONE
     } state_t;
 
     state_t state;
     
+    logic [ADDR_WIDTH-1:0] pre_addr = 0;
+    logic [DATA_WIDTH-1:0] pre_data = 0;
     reg cache_hit;
+
+    assign cache_hit = (pre_addr == addr) && (pre_addr != 0);
     
     assign wb_adr_o = addr;
     assign wb_sel_o = sel;
-    assign wb_cyc_o = (state == STATE_READ_SRAM_ACTION) && !cache_hit && mem_en;
-    assign wb_stb_o = (state == STATE_READ_SRAM_ACTION) && !cache_hit && mem_en;
+    assign wb_cyc_o = (state == STATE_READ_SRAM_ACTION) && mem_en && !cache_hit;
+    assign wb_stb_o = (state == STATE_READ_SRAM_ACTION) && mem_en && !cache_hit;
     assign wb_we_o = 1'b0;
-
-    // cache hit sign
-    reg [$clog2(CACHE_ASSOCIATIVITY)-1:0] selected_way; // which way is selected 
-
-    always_comb begin
-        // check if the cache hit
-        cache_hit = 0;
-        selected_way = 0;
-        group_index = ((addr - 32'h8000_0000) / 4 / CACHE_ASSOCIATIVITY) % CACHE_GROUP_SIZE;
-        if (mem_en) begin
-            for (int i = 0; i < CACHE_ASSOCIATIVITY; i++) begin
-                if (cache_tag[group_index][i] == addr) begin
-                    cache_hit = 1;
-                    selected_way = i;
-                end
-            end
-        end
-    end
 
     always_ff @(posedge clk) begin
         if (rst) begin
-            for (int i = 0; i < CACHE_GROUP_SIZE; i = i + 1) begin
-                for (int j = 0; j < CACHE_ASSOCIATIVITY; j = j + 1) begin
-                    cache[i][j] = 0;
-                end
-            end
-            for (int i = 0; i < CACHE_GROUP_SIZE; i = i + 1) begin
-                for (int j = 0; j < CACHE_ASSOCIATIVITY; j = j + 1) begin
-                    cache_tag[i][j] = 0;
-                end
-            end
-            for (int i = 0; i < CACHE_GROUP_SIZE; i = i + 1) begin
-                for (int j = 0; j < $clog2(CACHE_ASSOCIATIVITY); j = j + 1) begin
-                    cache_group_num[i][j] = 0;
-                end
-            end
             data_out <= `NOP_INSTR;
-            state <= STATE_DONE_NO_HIT;
+            state <= STATE_DONE;
             master_ready_o <= 1'b0;
+            pre_addr <= 0;
+            pre_data <= 0;
+            cache_hit <= 0;
         end else begin
             if (mem_en) begin
                 case (state)
 
                     STATE_READ_SRAM_ACTION: begin
-                        if (!cache_hit) begin
-                            // cache miss
+                        if (!cache_hit) begin // cache miss
                             if (wb_ack_i) begin
-                                // update cache
-                                cache[group_index][cache_group_num[group_index]] <= wb_dat_i;
-                                cache_tag[group_index][cache_group_num[group_index]] <= addr;
-                                // pass data
                                 data_out <= wb_dat_i;
                                 master_ready_o <= 1'b1;
-                                state <= STATE_DONE_HIT;
+                                state <= STATE_DONE;
                             end
-                        end else begin
-                            // cache hit
-                            data_out <= cache[group_index][selected_way];
+                        end else begin // cache hit
+                            data_out <= pre_data;
                             master_ready_o <= 1'b1;
-                            state <= STATE_DONE_NO_HIT;
+                            state <= STATE_DONE;
                         end
                     end
 
-                    STATE_DONE_HIT: begin
-                        cache_group_num[group_index] <= cache_group_num[group_index] + 1;
-                        if (cache_group_num[group_index] == CACHE_ASSOCIATIVITY) begin
-                            cache_group_num[group_index] <= 0;
-                        end
-                        master_ready_o <= 1'b0;
-                        state <= STATE_READ_SRAM_ACTION;
-                    end
-
-                    STATE_DONE_NO_HIT: begin
+                    STATE_DONE: begin
+                        pre_addr <= addr;
+                        pre_data <= data_out;
                         master_ready_o <= 1'b0;
                         state <= STATE_READ_SRAM_ACTION;
                     end
