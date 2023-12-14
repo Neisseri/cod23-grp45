@@ -85,7 +85,7 @@ module CSR_controller #(
     logic mission_to_s;
     assign mission_to_s = (priv_level_i == `PRIV_U_LEVEL || priv_level_i == `PRIV_S_LEVEL) && csr_medeleg_i[exc_cause];
     logic s_time_interrupt;
-    assign s_time_interrupt = (mem_pc_i != 0) && csr_sip_i[5] && csr_sie_i[5] && (priv_level_i == `PRIV_U_LEVEL || (priv_level_i == `PRIV_S_LEVEL && csr_mstatus_i[1]));
+    assign s_time_interrupt = (csr_mideleg_i[5]) && (mem_pc_i != 0) && csr_sip_i[5] && csr_sie_i[5] && (priv_level_i == `PRIV_U_LEVEL || (priv_level_i == `PRIV_S_LEVEL && csr_mstatus_i[1]));
     logic m_time_interrupt;
     assign m_time_interrupt = (mem_pc_i != 0) && csr_mip_i[7] && csr_mie_i[7] && (priv_level_i == `PRIV_U_LEVEL || priv_level_i == `PRIV_S_LEVEL || (priv_level_i == `PRIV_M_LEVEL && csr_mstatus_i[3]));
     logic system_call;
