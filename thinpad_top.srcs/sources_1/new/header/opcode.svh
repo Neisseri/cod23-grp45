@@ -17,6 +17,7 @@
     `define ALU_MINU 13
     `define ALU_SLTU 14
     `define ALU_SLT 15
+    `define ALU_CRAS16 16
 
     // ALU_mux
     `define ALU_MUX_DATA 0

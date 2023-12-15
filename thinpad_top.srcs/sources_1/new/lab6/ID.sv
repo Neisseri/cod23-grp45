@@ -135,7 +135,9 @@ module ID(
         OP_SFENCE_VMA,
 
         OP_NOP,
-        OP_UNKNOWN
+        OP_UNKNOWN,
+
+        OP_CRAS16
     } OP_TYPE_T;
 
     OP_TYPE_T op_type;
@@ -167,7 +169,16 @@ module ID(
                 rd = instr[11:7];
                 rs1 = instr[19:15];
                 rs2 = instr[24:20];
-            end 
+            end
+            7'b1110111: begin // CRAS16
+                case (funct)
+                    10'b0100010_000: op_type = OP_CRAS16;
+                    default: op_type = OP_UNKNOWN;
+                endcase
+                rd = instr[11:7];
+                rs1 = instr[19:15];
+                rs2 = instr[24:20];
+            end
             7'b0010011: begin // I-type-Compute
                 case (funct3)
                     3'b000: begin
@@ -937,6 +948,16 @@ module ID(
                 exception_occured_o = 1;
                 exception_cause_o = 2;
                 exception_val_o = instr; // TODO:change to the correct val
+            end
+            OP_CRAS16: begin
+                alu_op = `ALU_CRAS16;
+                alu_mux_a = `ALU_MUX_DATA;
+                alu_mux_b = `ALU_MUX_DATA;
+                mem_en = 0;
+                we = 0;
+                sel = 4'b0000;
+                rf_wen = 1;
+                wb_if_mem = 0;
             end
             default: begin // NOP: addi zero, zero, 0
                 alu_op = `ALU_ADD;
