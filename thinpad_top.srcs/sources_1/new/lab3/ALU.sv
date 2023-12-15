@@ -120,7 +120,11 @@ module ALU #(
                 alu_y = 0;
             end
         end else if (alu_op == `ALU_CRAS16) begin
-            alu_y = {(alu_a[31:16] + alu_b[15:0]), (alu_a[15:0] + alu_b[31:16])};
+            logic [15:0] high16;
+            logic [15:0] low16;
+            high16 = alu_a[31:16] + alu_b[15:0];
+            low16 = alu_a[15:0] - alu_b[31:16];
+            alu_y = {high16, low16};
         end else begin
             alu_y = 0;
         end
